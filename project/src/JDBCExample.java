@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.Scanner;
 
 public class JDBCExample {
 
@@ -15,6 +16,8 @@ public class JDBCExample {
         System.out.println("Connecting to database...");
 
         try {
+        	Scanner sc = new Scanner(System.in);
+        	String sql = null;
             //Establish connection
             Connection conn = DriverManager.getConnection(CONNECTION,USER,PASS);
             System.out.println("Successfully connected to MySQL!");
@@ -22,27 +25,31 @@ public class JDBCExample {
             //Execute a query
             System.out.println("Preparing a statement...");
             Statement stmt = conn.createStatement();
-            String sql = "SELECT * FROM Sailors;";
-            ResultSet rs = stmt.executeQuery(sql);
-
-            //STEP 5: Extract data from result set
-            while(rs.next()){
-                //Retrieve by column name
-                int sid  = rs.getInt("sid");
-                String sname = rs.getString("sname");
-                int rating = rs.getInt("rating");
-                int age = rs.getInt("age");
-
-                //Display values
-                System.out.print("ID: " + sid);
-                System.out.print(", Name: " + sname);
-                System.out.print(", Rating: " + rating);
-                System.out.println(", Age: " + age);
+            while(sc.hasNext()) {
+        		if(sc.next().equals("a")) {
+        			sql = "SELECT * FROM Sailors;";
+        			ResultSet rs = stmt.executeQuery(sql);
+		            //STEP 5: Extract data from result set
+		            while(rs.next()){
+		                //Retrieve by column name
+		                int sid  = rs.getInt("sid");
+		                String sname = rs.getString("sname");
+		                int rating = rs.getInt("rating");
+		                int age = rs.getInt("age");
+		
+		                //Display values
+		                System.out.print("ID: " + sid);
+		                System.out.print(", Name: " + sname);
+		                System.out.print(", Rating: " + rating);
+		                System.out.println(", Age: " + age);
+		            }
+		            rs.close();
+        		}else {
+        			System.out.println("Invalid Input. Try Again: ");
+        		}
+	            
             }
-
-
             System.out.println("Closing connection...");
-            rs.close();
             stmt.close();
             conn.close();
             System.out.println("Success!");

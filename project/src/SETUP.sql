@@ -1,5 +1,6 @@
 -- Run this in the mysql terminal beforehand
-USE mydatabase  /*change it to your databse*/
+Create DATABASE IF NOT EXISTS mydatabase;
+USE mydatabase;
 -- Drop table
 Drop TABLE IF EXISTS Available;
 Drop TABLE IF EXISTS Judgement;
