@@ -14,6 +14,7 @@ Drop TABLE IF EXISTS Located_At;
 Drop TABLE IF EXISTS Renter;
 Drop TABLE IF EXISTS Host;
 Drop TABLE IF EXISTS Owns;
+Drop TABLE IF EXISTS Books;
 -- Create new tables and their schema
 
 create table Address (
@@ -83,10 +84,22 @@ create table Book (
     cancellation TINYINT DEFAULT 0
 );
 
+create table Books (
+    renter_sin int(12) NOT NULL,
+    foreign key (renter_sin) references Renter(SIN), 
+    BID int(50) NOT NULL,
+    foreign key (BID) references Book(BID), 
+    UNIQUE (BID)
+);
+
 create table Comment (
     CID int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     rate int(1) NOT NULL, /*range from 1 to 5, constraints set in java file*/
-    text varchar(250) /*comments less than 250*/
+    text varchar(250), /*comments less than 250*/
+    lid int(50) NOT NULL,
+    foreign key (lid) references Listing(lid),
+    renter_sin int(12) NOT NULL,
+    foreign key (renter_sin) references Renter(SIN) /*M-to-M & multiple time allowed*/
 );
 
 create table Judgement (
@@ -110,7 +123,16 @@ create table Calendar (
 );
 
 create table Available (
-    price int(50) NOT NULL PRIMARY KEY /*hasn't check how to set relation so far*/
+    price int(50) NOT NULL,
+    month int(2) NOT NULL,
+    day int(2) NOT NULL,
+    foreign key (month, day) references Calendar(month, day), /*Don't forget to create all days 
+                                                                in Java implementation, otherwise can not create*/
+    lid int(50) NOT NULL, 
+    foreign key (lid) references Listing(lid),
+    BID int(50),
+    foreign key (BID) references Book(BID),
+    UNIQUE (BID)   /*to-One book*/
 );
 -- Add data
 
@@ -118,22 +140,29 @@ create table Available (
 
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A");
 INSERT INTO User (SIN, name, password, birth) VALUES ("123124125", "Jonathan", "123456", "2001"); /*Do we need to parse sin*/
+INSERT INTO User (SIN, name, password, birth, occupation) VALUES ("987654321", "Felix", "123456", "2002", "IronMan"); /*Do we need to parse sin*/
+--delete from user where name="Felix";
 INSERT INTO Host (SIN) VALUES ("123124125");
 INSERT INTO Renter (SIN) VALUES ("123124125");
+INSERT INTO Renter (SIN) VALUES ("987654321");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.222", "18.999", "full house"); 
 INSERT INTO Listing (lon, lat, type) VALUES ( "3.222", "19", "apartment"); 
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.622", "1.999", "room"); 
 
-INSERT INTO Book (payment, BID) VALUES ( "130.22", "18"); 
-INSERT INTO Calendar (month, day) VALUES("03", "23"); /*In Java, create all dates in a year*/
-INSERT INTO Comment (rate, text) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.");
-INSERT INTO Comment (rate, text) VALUES ("5", "My husband loves it");
+INSERT INTO Book (payment, BID) VALUES ( "130.22", "18");
+ /*In Java, create all dates in a year*/
+INSERT INTO Calendar (month, day) VALUES("03", "23"); 
+INSERT INTO Comment (rate, text, lid, renter_sin) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"987654321");
+INSERT INTO Comment (rate, text, lid, renter_sin) VALUES ("5", "My husband loves it", 3,"123124125");
 INSERT INTO Judgement (words, host_sin, renter_sin, direction) VALUES ("The room was cleaned by the renter!", "123124125", "123124125",1);
-INSERT INTO Available (price) VALUES ("30");
+INSERT INTO Available (price, month, day, lid) VALUES ("30", 03, 23,2);
 INSERT INTO Lives (postal_code, unit, SIN) VALUES ( "M1C 1A", "1367", "123124125");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A", "1367", "1");
 INSERT INTO Owns (host, lid) VALUES ( "123124125", "1");
 INSERT INTO Owns (host, lid) VALUES ( "123124125", "2");
 INSERT INTO Owns (host, lid) VALUES ( "123124125", "3");
+INSERT INTO Books (BID, renter_sin) VALUES ( "18", "987654321");
+
+
 
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
