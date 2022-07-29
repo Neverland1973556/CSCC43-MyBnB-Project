@@ -1,20 +1,20 @@
 -- Run this in the mysql terminal beforehand
-
+USE mydatabase  /*change it to your databse*/
 -- Drop table
+Drop TABLE IF EXISTS Available;
+Drop TABLE IF EXISTS Judgement;
+Drop TABLE IF EXISTS Owns;
+Drop TABLE IF EXISTS Books;
+Drop TABLE IF EXISTS Located_At;
+Drop TABLE IF EXISTS Lives;
+Drop TABLE IF EXISTS Comment;
 Drop TABLE IF EXISTS Address;
+Drop TABLE IF EXISTS Renter;
+Drop TABLE IF EXISTS Host;
 Drop TABLE IF EXISTS User;
 Drop TABLE IF EXISTS Listing;
 Drop TABLE IF EXISTS Book;
 Drop TABLE IF EXISTS Calendar;
-Drop TABLE IF EXISTS Comment;
-Drop TABLE IF EXISTS Judgement;
-Drop TABLE IF EXISTS Available;
-Drop TABLE IF EXISTS Lives;
-Drop TABLE IF EXISTS Located_At;
-Drop TABLE IF EXISTS Renter;
-Drop TABLE IF EXISTS Host;
-Drop TABLE IF EXISTS Owns;
-Drop TABLE IF EXISTS Books;
 -- Create new tables and their schema
 
 create table Address (
@@ -53,28 +53,28 @@ create table Listing (
 create table Lives (
     unit INT NOT NULL,
     postal_code char(7) NOT NULL,  
-    foreign key (postal_code, unit) references Address(postal_code, unit),
+    foreign key (postal_code, unit) references Address(postal_code, unit) ON DELETE CASCADE ON UPDATE CASCADE,
     SIN int(12) NOT NULL, 
-    foreign key (SIN) references USER(SIN),
+    foreign key (SIN) references USER(SIN) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (postal_code, unit, SIN)     /*changed to M-to-M relation*/
 );
 
 create table Located_At (
     unit INT NOT NULL,
     postal_code char(7) NOT NULL,  
-    foreign key (postal_code, unit) references Address(postal_code, unit),
+    foreign key (postal_code, unit) references Address(postal_code, unit) ON DELETE CASCADE ON UPDATE CASCADE,
     lid int(50) NOT NULL, 
-    foreign key (lid) references Listing(lid),
+    foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (postal_code, unit),     /*changed to 1-to-1 relation*/
     UNIQUE (lid)
 );
 
 create table Owns (
     lid int(50) NOT NULL, 
-    foreign key (lid) references Listing(lid),
+    foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (lid),
     host int(12) NOT NULL,
-    foreign key (host) references Host(SIN),
+    foreign key (host) references Host(SIN) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE(lid)
 );
 
@@ -86,9 +86,9 @@ create table Book (
 
 create table Books (
     renter_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN), 
+    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE, 
     BID int(50) NOT NULL,
-    foreign key (BID) references Book(BID), 
+    foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE, 
     UNIQUE (BID)
 );
 
@@ -97,9 +97,9 @@ create table Comment (
     rate int(1) NOT NULL, /*range from 1 to 5, constraints set in java file*/
     text varchar(250), /*comments less than 250*/
     lid int(50) NOT NULL,
-    foreign key (lid) references Listing(lid),
+    foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     renter_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN) /*M-to-M & multiple time allowed*/
+    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE /*M-to-M & multiple time allowed*/
 );
 
 create table Judgement (
@@ -109,8 +109,8 @@ create table Judgement (
     direction TINYINT DEFAULT 0,
     renter_sin int(12) NOT NULL,
     host_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN), 
-    foreign key (host_sin) references Host(SIN)
+    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE, 
+    foreign key (host_sin) references Host(SIN) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 /*It seems that Judgement should have a ISA relation with comment , nvm so far*/
@@ -126,12 +126,13 @@ create table Available (
     price int(50) NOT NULL,
     month int(2) NOT NULL,
     day int(2) NOT NULL,
-    foreign key (month, day) references Calendar(month, day), /*Don't forget to create all days 
+    foreign key (month, day) references Calendar(month, day)
+         ON DELETE CASCADE ON UPDATE CASCADE, /*Don't forget to create all days 
                                                                 in Java implementation, otherwise can not create*/
     lid int(50) NOT NULL, 
-    foreign key (lid) references Listing(lid),
+    foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     BID int(50),
-    foreign key (BID) references Book(BID),
+    foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (BID)   /*to-One book*/
 );
 -- Add data
@@ -141,7 +142,7 @@ create table Available (
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A");
 INSERT INTO User (SIN, name, password, birth) VALUES ("123124125", "Jonathan", "123456", "2001"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation) VALUES ("987654321", "Felix", "123456", "2002", "IronMan"); /*Do we need to parse sin*/
---delete from user where name="Felix";
+/*delete from user where name="Felix";*/
 INSERT INTO Host (SIN) VALUES ("123124125");
 INSERT INTO Renter (SIN) VALUES ("123124125");
 INSERT INTO Renter (SIN) VALUES ("987654321");
@@ -165,4 +166,4 @@ INSERT INTO Books (BID, renter_sin) VALUES ( "18", "987654321");
 
 
 
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+/*created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP*/
