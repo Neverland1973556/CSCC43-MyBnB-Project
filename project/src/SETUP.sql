@@ -18,7 +18,7 @@ Drop TABLE IF EXISTS Book;
 Drop TABLE IF EXISTS Calendar;
 -- Create new tables and their schema
 
-create table IF NOT EXISTS Address (
+create table IF NOT EXISTS Address  (
     unit INT NOT NULL, 
     city varchar(100) NOT NULL,
     country varchar(100) NOT NULL,
@@ -31,7 +31,8 @@ create table IF NOT EXISTS User (
     name varchar(100) NOT NULL,
     password varchar(100) NOT NULL,
     occupation varchar(100),
-    birth int(5) NOT NULL   
+    birth int(5) NOT NULL,
+    username varchar(100) NOT NULL UNIQUE
 );
 
 create table IF NOT EXISTS Renter (
@@ -141,8 +142,8 @@ create table IF NOT EXISTS Available (
 /* POPULATE TABLES BELONGING IN OUR DESIRED SCHEMA */
 
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A");
-INSERT INTO User (SIN, name, password, birth) VALUES ("123124125", "Jonathan", "123456", "2001"); /*Do we need to parse sin*/
-INSERT INTO User (SIN, name, password, birth, occupation) VALUES ("987654321", "Felix", "123456", "2002", "IronMan"); /*Do we need to parse sin*/
+INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001", "Jonathan"); /*Do we need to parse sin*/
+INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/
 INSERT INTO Host (SIN) VALUES ("123124125");
 INSERT INTO Renter (SIN) VALUES ("123124125");
