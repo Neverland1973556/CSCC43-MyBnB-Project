@@ -11,6 +11,7 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306/test";
 	private static int state = 0;
+	private Statement stmt = null;
 	
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, SQLException {
         //Register JDBC driver
@@ -22,7 +23,6 @@ public class JDBCExample {
         System.out.println("Connecting to database...");
    
         Connection conn = null;
-        Statement stmt = null;
         
         try {
         	
@@ -61,95 +61,97 @@ public class JDBCExample {
         	String sql = null;
             while(sc.hasNext()) {
             	String input = sc.next();
-        		if(input.equals("a")) {
-        			sql = "SELECT * FROM Sailors;";
-        			ResultSet rs = stmt.executeQuery(sql);
-		            //STEP 5: Extract data from result set
-		            while(rs.next()){
-		                //Retrieve by column name
-		                int sid  = rs.getInt("sid");
-		                String sname = rs.getString("sname");
-		                int rating = rs.getInt("rating");
-		                int age = rs.getInt("age");
+        		// if(input.equals("a")) {
+        		// 	sql = "SELECT * FROM Sailors;";
+        		// 	ResultSet rs = stmt.executeQuery(sql);
+		        //     //STEP 5: Extract data from result set
+		        //     while(rs.next()){
+		        //         //Retrieve by column name
+		        //         int sid  = rs.getInt("sid");
+		        //         String sname = rs.getString("sname");
+		        //         int rating = rs.getInt("rating");
+		        //         int age = rs.getInt("age");
 		
-		                //Display values
-		                System.out.print("ID: " + sid);
-		                System.out.print(", Name: " + sname);
-		                System.out.print(", Rating: " + rating);
-		                System.out.println(", Age: " + age);
-		            }
-		            rs.close();
-        		}
-        		else if (input.equals("show users")){ /*Show User Table*/
-        			sql = "SELECT * FROM User;";
-        			ResultSet rs = stmt.executeQuery(sql);
-		            //STEP 5: Extract data from result set
-		            while(rs.next()){
-		                //Retrieve by column name
-		                int sid  = rs.getInt("SIN");
-		                String name = rs.getString("name");
-		                String occupation = rs.getString("occupation");
-		                int birth = rs.getInt("birth");
-		                String username = rs.getString("username");
-		                //Display values
-		                System.out.print("SIN: " + sid);
-		                System.out.print(", Name: " + name);
-		                System.out.print(", Occupation: " + occupation);
-		                System.out.print(", birth: " + birth);
-						System.out.println(", Username: " + username);
-		            }
-		            rs.close();
+		        //         //Display values
+		        //         System.out.print("ID: " + sid);
+		        //         System.out.print(", Name: " + sname);
+		        //         System.out.print(", Rating: " + rating);
+		        //         System.out.println(", Age: " + age);
+		        //     }
+		        //     rs.close();
+        		// }
+        		// else 
+				if (input.equals("show")){ /*Show User Table*/
+					show_database();
+        			// sql = "SELECT * FROM User;";
+        			// ResultSet rs = stmt.executeQuery(sql);
+		            // //STEP 5: Extract data from result set
+		            // while(rs.next()){
+		            //     //Retrieve by column name
+		            //     int sid  = rs.getInt("SIN");
+		            //     String name = rs.getString("name");
+		            //     String occupation = rs.getString("occupation");
+		            //     int birth = rs.getInt("birth");
+		            //     String username = rs.getString("username");
+		            //     //Display values
+		            //     System.out.print("SIN: " + sid);
+		            //     System.out.print(", Name: " + name);
+		            //     System.out.print(", Occupation: " + occupation);
+		            //     System.out.print(", birth: " + birth);
+					// 	System.out.println(", Username: " + username);
+		            // }
+		            // rs.close();
         		} /* Create User*/
         		else if (input.matches("Name:(.*), Password:(.*), Occupation:(.*), SIN:(.*), Birth:(.*), UserName:(.*)")){
+					register(input);
 
 					//
-        			String reg = "Name:(?<name>.*), Password:(?<password>.*), Occupation:(?<occupation>.*), SIN:(?<sin>.*), Birth:(?<birth>.*), UserName:(?<username>.*)";
-        			Pattern pattern = Pattern.compile(reg);
-        			Matcher matcher = pattern.matcher(input);
-        			if(matcher.find()) {
-        			   String name = matcher.group("name").toString();
-        			   String password = matcher.group("password").toString();
-        			   String occupation = matcher.group("occupation").toString();
-        			   String sin = matcher.group("sin").toString();
-        			   String birth = matcher.group("birth").toString();
-					   String username = matcher.group("username").toString();
-        			   sql = String.format("INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation, username);
-        			   System.out.print(sql.concat("\n"));
-        			   //stmt.execute(sql);
-        			   //stmt.execute(sql);
-        			   try {
-        			   		stmt.executeUpdate(sql);
-        			   }catch (SQLException e) {
-        				   // do nothing
-        			   }
+        			// String reg = "Name:(?<name>.*), Password:(?<password>.*), Occupation:(?<occupation>.*), SIN:(?<sin>.*), Birth:(?<birth>.*), UserName:(?<username>.*)";
+        			// Pattern pattern = Pattern.compile(reg);
+        			// Matcher matcher = pattern.matcher(input);
+        			// if(matcher.find()) {
+        			//    String name = matcher.group("name").toString();
+        			//    String password = matcher.group("password").toString();
+        			//    String occupation = matcher.group("occupation").toString();
+        			//    String sin = matcher.group("sin").toString();
+        			//    String birth = matcher.group("birth").toString();
+					//    String username = matcher.group("username").toString();
+        			//    sql = String.format("INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation, username);
+        			//    System.out.print(sql.concat("\n"));
+        			//    //stmt.execute(sql);
+        			//    //stmt.execute(sql);
+        			//    try {
+        			//    		stmt.executeUpdate(sql);
+        			//    }catch (SQLException e) {
+        			// 	   // do nothing
+        			//    }
         			   
-        			}else {
-        			   System.out.print("sad");
-        			}
+        			// }else {
+        			//    System.out.print("sad");
+        			// }
         			
         		} /*Delete user*/
 				else if (input.matches("UserName:(.*), Password:(.*), Delete!")){
-        			String reg = "UserName:(?<name>.*), Password:(?<password>.*), Delete";
-        			Pattern pattern = Pattern.compile(reg);
-        			Matcher matcher = pattern.matcher(input);
-        			if(matcher.find()) {
-        			   String name = matcher.group("name").toString();
-        			   String password = matcher.group("password").toString();
+					delete_user(input);
+        			// String reg = "UserName:(?<name>.*), Password:(?<password>.*), Delete";
+        			// Pattern pattern = Pattern.compile(reg);
+        			// Matcher matcher = pattern.matcher(input);
+        			// if(matcher.find()) {
+        			//    String name = matcher.group("name").toString();
+        			//    String password = matcher.group("password").toString();
 					   
-        			   //sql = String.format("DELETE FROM User where (SIN, name, password, birth, occupation) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation);
-        			   System.out.print(sql.concat("\n"));
-        			   //stmt.execute(sql);
-        			   //stmt.execute(sql);
-        			   try {
-        			   		stmt.executeUpdate(sql);
-        			   }catch (SQLException e) {
-        				   // do nothing
-        			   }
-        			   
-        			}else {
-        			   System.out.print("sad");
-        			}
-        			
+        			//    //sql = String.format("DELETE FROM User where (SIN, name, password, birth, occupation) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation);
+        			//    System.out.print(sql.concat("\n"));
+        			//    //stmt.execute(sql);
+        			//    //stmt.execute(sql);
+        			//    try {
+        			//    		stmt.executeUpdate(sql);
+        			//    }catch (SQLException e) {
+        			// 	   // do nothing
+        			//    }
+        			// }else {
+        			//    System.out.print("sad");
+        			// }
         		}
         		else {
         			System.out.println("Invalid Input. Try Again: ");
@@ -168,46 +170,101 @@ public class JDBCExample {
         }
     }
 
-	// // register function, register a user to the database
-	// public static register(String string) throws SQLException{
+	// register function, register a user to the database
+	public static void register(String input) throws SQLException{
+		try{
+			String sql;
+			String reg = "Name:(?<name>.*), Password:(?<password>.*), Occupation:(?<occupation>.*), SIN:(?<sin>.*), Birth:(?<birth>.*), UserName:(?<username>.*)";
+			Pattern pattern = Pattern.compile(reg);
+			Matcher matcher = pattern.matcher(input);
+			if(matcher.find()) {
+				String name = matcher.group("name").toString();
+				String password = matcher.group("password").toString();
+				String occupation = matcher.group("occupation").toString();
+				String sin = matcher.group("sin").toString();
+				String birth = matcher.group("birth").toString();
+				String username = matcher.group("username").toString();
+				sql = String.format("INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation, username);
+				System.out.print(sql.concat("\n"));
+				//stmt.execute(sql);
+				//stmt.execute(sql);
+				try {
+					stmt.executeUpdate(sql);
+				}catch (SQLException e) {
+					// do nothing
+				}
+				
+			}else {
+				System.out.print("sad");
+			}	
+		}catch(SQLException e){
+			System.err.println("Something went wrong with register");
+		}
+	}
 
-	// }
+	// login function, check if the user exists in the database and if the password matches
+	public static void login(String string) throws SQLException{
+		try{
+			
+		}catch(SQLException e){
+			System.err.println("Something went wrong with login");
+		}
+	}
 
-	// // login function, check if the user exists in the database and if the password matches
-	// public static login(String string) throws SQLException{
+	// delete function, after login, a use can choose to delete them self from database
+	public static void delete_user(String input) throws SQLException{
+		try{
+			String reg = "UserName:(?<name>.*), Password:(?<password>.*), Delete";
+			Pattern pattern = Pattern.compile(reg);
+			Matcher matcher = pattern.matcher(input);
+			if(matcher.find()) {
+				String name = matcher.group("name").toString();
+				String password = matcher.group("password").toString();
 
-	// }
+				//sql = String.format("DELETE FROM User where (SIN, name, password, birth, occupation) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");",sin,name,password,birth,occupation);
+				System.out.print(sql.concat("\n"));
+				//stmt.execute(sql);
+				//stmt.execute(sql);
+				try {
+					stmt.executeUpdate(sql);
+				}catch (SQLException e) {
+					// do nothing
+				}
 
-	// // delete function, after login, a use can choose to delete them self from database
-	// public static delete_user(String string) throws SQLException{
-	//	try{
-			// }catch(SQLException){
-	// 	 System.err.println("Something went wrong with the show database");
-	//}
-	// 
+			}else {
+				System.out.print("sad");
+			}
+			
+		}catch(SQLException){
+			System.err.println("Something went wrong with delete user");
+		}
+	}
+	
 
-	// // helper function to show all users in the database
-	// public static show_database() throws SQLException{
-	//	try{
-	// 	String sql = "SELECT * FROM User;";
-	// 	ResultSet rs = stmt.executeQuery(sql);
-	// 	//STEP 5: Extract data from result set
-	// 	while(rs.next()){
-	// 		//Retrieve by column name
-	// 		int sid  = rs.getInt("SIN");
-	// 		String name = rs.getString("name");
-	// 		String occupation = rs.getString("occupation");
-	// 		int birth = rs.getInt("birth");
-												
-	// 		//Display values
-	// 		System.out.print("SIN: " + sid);
-	// 		System.out.print(", Name: " + name);
-	// 		System.out.print(", Occupation: " + occupation);
-	// 		System.out.println(", birth: " + birth);
-	// 	}
-	// 	rs.close();
-	// }catch(SQLException){
-	// 	 System.err.println("Something went wrong with the show database");
-	//}
-
+	// helper function to show all users in the database
+	public static void show_database() throws SQLException{
+		try{
+			String sql = "SELECT * FROM User;";
+			ResultSet rs = stmt.executeQuery(sql);
+			//STEP 5: Extract data from result set
+			while(rs.next()){
+				//Retrieve by column name
+				int sid  = rs.getInt("SIN");
+				String name = rs.getString("name");
+				String occupation = rs.getString("occupation");
+				int birth = rs.getInt("birth");
+				String username = rs.getString("username");
+				//Display values
+				System.out.print("SIN: " + sid);
+				System.out.print(", Name: " + name);
+				System.out.print(", Occupation: " + occupation);
+				System.out.print(", birth: " + birth);
+				System.out.println(", Username: " + username);
+			}
+			rs.close();
+		}catch(SQLException){
+			System.err.println("Something went wrong with the show database");
+		}
+	}
+	
 }
