@@ -27,22 +27,22 @@ create table IF NOT EXISTS Address  (
 );
 
 create table IF NOT EXISTS User (
-    SIN int(12) NOT NULL PRIMARY KEY, 
+    SIN int(12) NOT NULL UNIQUE, 
     name varchar(100) NOT NULL,
     password varchar(100) NOT NULL,
     occupation varchar(100),
     birth int(5) NOT NULL,
-    username varchar(100) NOT NULL UNIQUE
+    username varchar(100) NOT NULL PRIMARY KEY
 );
 
 create table IF NOT EXISTS Renter (
-    SIN int(12) NOT NULL PRIMARY KEY, 
-    foreign key (SIN) references User(SIN) ON DELETE CASCADE ON UPDATE CASCADE
+    username varchar(100) NOT NULL PRIMARY KEY, 
+    foreign key (username) references User(username) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table IF NOT EXISTS Host (
-    SIN int(12) NOT NULL PRIMARY KEY, 
-    foreign key (SIN) references User(SIN) ON DELETE CASCADE ON UPDATE CASCADE
+    username varchar(100) NOT NULL PRIMARY KEY, 
+    foreign key (username) references User(username) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 create table IF NOT EXISTS Listing (
@@ -56,9 +56,9 @@ create table IF NOT EXISTS Lives (
     unit INT NOT NULL,
     postal_code char(7) NOT NULL,  
     foreign key (postal_code, unit) references Address(postal_code, unit) ON DELETE CASCADE ON UPDATE CASCADE,
-    SIN int(12) NOT NULL, 
-    foreign key (SIN) references USER(SIN) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE (postal_code, unit, SIN)     /*changed to M-to-M relation*/
+    username varchar(100) NOT NULL, 
+    foreign key (username) references USER(username) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE (postal_code, unit, username)     /*changed to M-to-M relation*/
 );
 
 create table IF NOT EXISTS Located_At (
@@ -75,20 +75,21 @@ create table IF NOT EXISTS Owns (
     lid int(50) NOT NULL, 
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (lid),
-    host int(12) NOT NULL,
-    foreign key (host) references Host(SIN) ON DELETE CASCADE ON UPDATE CASCADE,
+    username varchar(100) NOT NULL,
+    foreign key (username) references Host(username) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE(lid)
 );
 
 create table IF NOT EXISTS Book (
     BID int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     payment float(10,2) NOT NULL,
+    credit_card int(12),
     cancellation TINYINT DEFAULT 0
 );
 
 create table IF NOT EXISTS Books (
-    renter_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE, 
+    username varchar(100) NOT NULL,
+    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE, 
     BID int(50) NOT NULL,
     foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE, 
     UNIQUE (BID)
@@ -100,8 +101,8 @@ create table IF NOT EXISTS Comment (
     text varchar(250), /*comments less than 250*/
     lid int(50) NOT NULL,
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
-    renter_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE /*M-to-M & multiple time allowed*/
+    username varchar(100) NOT NULL,
+    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE /*M-to-M & multiple time allowed*/
 );
 
 create table IF NOT EXISTS Judgement (
@@ -109,10 +110,10 @@ create table IF NOT EXISTS Judgement (
     likes int(1) DEFAULT 3,
     words varchar(100),
     direction TINYINT DEFAULT 0,
-    renter_sin int(12) NOT NULL,
-    host_sin int(12) NOT NULL,
-    foreign key (renter_sin) references Renter(SIN) ON DELETE CASCADE ON UPDATE CASCADE, 
-    foreign key (host_sin) references Host(SIN) ON DELETE CASCADE ON UPDATE CASCADE
+    renter_username varchar(100) NOT NULL,
+    host_username varchar(100) NOT NULL,
+    foreign key (renter_username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE, 
+    foreign key (host_username) references Host(username) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 /*It seems that Judgement should have a ISA relation with comment , nvm so far*/
@@ -133,7 +134,7 @@ create table IF NOT EXISTS Available (
                                                                 in Java implementation, otherwise can not create*/
     lid int(50) NOT NULL, 
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
-    BID int(50),
+    BID int(50) ,
     foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (BID)   /*to-One book*/
 );
@@ -145,9 +146,9 @@ INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto"
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/
-INSERT INTO Host (SIN) VALUES ("123124125");
-INSERT INTO Renter (SIN) VALUES ("123124125");
-INSERT INTO Renter (SIN) VALUES ("987654321");
+INSERT INTO Host (username) VALUES ("Jonathan");
+INSERT INTO Renter (username) VALUES ("Jonathan");
+INSERT INTO Renter (username) VALUES ("Felix");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.222", "18.999", "full house"); 
 INSERT INTO Listing (lon, lat, type) VALUES ( "3.222", "19", "apartment"); 
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.622", "1.999", "room"); 
@@ -155,16 +156,16 @@ INSERT INTO Listing (lon, lat, type) VALUES ( "30.622", "1.999", "room");
 INSERT INTO Book (payment, BID) VALUES ( "130.22", "18");
  /*In Java, create all dates in a year*/
 INSERT INTO Calendar (month, day) VALUES("03", "23"); 
-INSERT INTO Comment (rate, text, lid, renter_sin) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"987654321");
-INSERT INTO Comment (rate, text, lid, renter_sin) VALUES ("5", "My husband loves it", 3,"123124125");
-INSERT INTO Judgement (words, host_sin, renter_sin, direction) VALUES ("The room was cleaned by the renter!", "123124125", "123124125",1);
-INSERT INTO Available (price, month, day, lid) VALUES ("30", 03, 23,2);
-INSERT INTO Lives (postal_code, unit, SIN) VALUES ( "M1C 1A", "1367", "123124125");
+INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"Jonathan");
+INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it", 3,"Felix");
+INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
+INSERT INTO Available (price, month, day, lid) VALUES ("30", "03", "23","2");
+INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A", "1367", "Jonathan");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A", "1367", "1");
-INSERT INTO Owns (host, lid) VALUES ( "123124125", "1");
-INSERT INTO Owns (host, lid) VALUES ( "123124125", "2");
-INSERT INTO Owns (host, lid) VALUES ( "123124125", "3");
-INSERT INTO Books (BID, renter_sin) VALUES ( "18", "987654321");
+INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "1");
+INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "2");
+INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "3");
+INSERT INTO Books (BID, username) VALUES ( "18", "Jonathan");
 
 
 
