@@ -669,4 +669,12 @@ public class JDBCExample {
 			System.err.println("Something went wrong with the show database");
 		}
 	}
+	
+	public static void print_header(String string) {
+        System.out.println(half_line + string + half_line);
+    }
+
+    public static void print_error(String string) {
+        System.err.println(half_line + string + half_line);
+    }
 }
