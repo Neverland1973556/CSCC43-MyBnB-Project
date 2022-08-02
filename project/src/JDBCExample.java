@@ -512,10 +512,10 @@ public class JDBCExample {
                 String city = rs2.getString("city");
                 String country = rs2.getString("country");
                 //Display values
-                System.out.print("Address: unit: " + unit);
-                System.out.print(", Occupation: " + postal_code);
+                System.out.print("Address (Unit: " + unit);
+                System.out.print(", Postal Code: " + postal_code);
                 System.out.print(", City: " + city);
-                System.out.println(", Country: " + country);
+                System.out.println(", Country: " + country + ")");
             }
             rs2.close();
             return true;
@@ -555,10 +555,12 @@ public class JDBCExample {
             System.out.println("get_address");
             ResultSet rs = stmt.executeQuery(get_address);
             if (rs.next()) {
-                //
-                System.out.println("else");
+                // get unit and address
+                int old_unit = rs.getInt("unit");
+                String old_postal_code = rs.getString("postal_code");
                 // update address
-                String sql = String.format("update user set postal_code = '%s', unit = '%s', city = '%s', country = '%s' where username = '%s';", postal_code, unit, city, country, username);
+                String sql = String.format("update address set postal_code = '%s', unit = '%s', city = '%s', country = '%s' where postal_code = '%s' and unit = '%d';", postal_code, unit, city, country, old_postal_code, old_unit);
+                System.out.println(sql);
                 stmt.executeUpdate(sql);
             } else {
                 System.out.println("rs = null");
