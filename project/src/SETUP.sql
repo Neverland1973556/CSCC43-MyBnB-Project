@@ -18,14 +18,6 @@ Drop TABLE IF EXISTS Book;
 Drop TABLE IF EXISTS Calendar;
 -- Create new tables and their schema
 
-create table IF NOT EXISTS Address  (
-                                        unit INT NOT NULL,
-                                        city varchar(100) NOT NULL,
-    country varchar(100) NOT NULL,
-    postal_code char(7) NOT NULL,
-    PRIMARY KEY (postal_code, unit)
-    );
-
 create table IF NOT EXISTS User (
     SIN int(12) NOT NULL UNIQUE,
     name varchar(100) NOT NULL,
@@ -45,6 +37,14 @@ create table IF NOT EXISTS Host (
     foreign key (username) references User(username) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
+create table IF NOT EXISTS Address  (
+    unit INT NOT NULL,
+    city varchar(100) NOT NULL,
+    country varchar(100) NOT NULL,
+    postal_code char(7) NOT NULL,
+    PRIMARY KEY (postal_code, unit)
+    );
+
 create table IF NOT EXISTS Listing (
     lid int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     lon decimal(10,6) NOT NULL,
@@ -53,8 +53,8 @@ create table IF NOT EXISTS Listing (
     );
 
 create table IF NOT EXISTS Lives (
-                                     unit INT NOT NULL,
-                                     postal_code char(7) NOT NULL,
+    unit INT NOT NULL,
+    postal_code char(7) NOT NULL,
     foreign key (postal_code, unit) references Address(postal_code, unit) ON DELETE CASCADE ON UPDATE CASCADE,
     username varchar(100) NOT NULL,
     foreign key (username) references USER(username) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -62,8 +62,8 @@ create table IF NOT EXISTS Lives (
     );
 
 create table IF NOT EXISTS Located_At (
-                                          unit INT NOT NULL,
-                                          postal_code char(7) NOT NULL,
+    unit INT NOT NULL,
+    postal_code char(7) NOT NULL,
     foreign key (postal_code, unit) references Address(postal_code, unit) ON DELETE CASCADE ON UPDATE CASCADE,
     lid int(50) NOT NULL,
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -141,12 +141,17 @@ create table IF NOT EXISTS Available (
 
 /* POPULATE TABLES BELONGING IN OUR DESIRED SCHEMA */
 
-INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A");
+INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A2");
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/
+INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("777777", "test real name", "test", "1999", "teacher", "test"); /*Do we need to parse sin*/
 INSERT INTO Host (username) VALUES ("Jonathan");
+INSERT INTO Host (username) VALUES ("test");
+INSERT INTO Host (username) VALUES ("Felix");
+
 INSERT INTO Renter (username) VALUES ("Jonathan");
+INSERT INTO Renter (username) VALUES ("test");
 INSERT INTO Renter (username) VALUES ("Felix");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.222", "18.999", "full house");
 INSERT INTO Listing (lon, lat, type) VALUES ( "3.222", "19", "apartment");
@@ -159,8 +164,8 @@ INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--
 INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it", 3,"Felix");
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
 INSERT INTO Available (price, month, day, lid) VALUES ("30", "03", "23","2");
-INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A", "1367", "Jonathan");
-INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A", "1367", "1");
+INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A2", "1367", "Jonathan");
+INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A2", "1367", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "2");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "3");

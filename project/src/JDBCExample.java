@@ -1,5 +1,3 @@
-import com.sun.security.jgss.GSSUtil;
-
 import java.sql.*;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -10,7 +8,7 @@ import java.io.FileNotFoundException;
 public class JDBCExample {
     // database information
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
-    private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306/test";
+    private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
 
     // your username and password of mysql
     private static final String USER = "root";
@@ -30,8 +28,8 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Update Information, 2: Manage My Listings, 3: Check Booking, 4: check booking history, 5: rating, 9: logout";
     private static final String is_renter_prompt = "1: Update Information, 2: Manage My Booking, 5: rating, 9: logout";
-    private static final String a_line = "----------------------------------------------------------------------------";
-    private static final String half_line = "--------------------";
+    private static final String a_line = "--------------------------------------------------------------------------------";
+    private static final String half_line = "------------------------------";
 
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, SQLException {
         Class.forName(dbClassName);
@@ -44,7 +42,7 @@ public class JDBCExample {
             System.out.println("Successfully connected to MySQL!");
             File setup = new File("src/SETUP.sql");
             assert (setup.exists());
-            System.out.println("Preparing a statement...");
+            System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
             set.useDelimiter(";");
             while (set.hasNext()) {
@@ -52,6 +50,7 @@ public class JDBCExample {
                 stmt.execute(data.concat(";"));
             }
             set.close();
+            System.out.println("Start up database done...");
             create_calendar();
 
             // scanner initialization
@@ -188,11 +187,11 @@ public class JDBCExample {
                             } else if (listing_decide.equals("2")) {
                                 // add a listing to database
                                 print_header("Add a Listing");
-                                System.out.println("ADD A LISTING - Please input your listing latitude.");
+                                System.out.println("Add a Listing- Please input your listing latitude.");
                                 String latitude = validate_double(sc, -90, 90);
-                                System.out.println("ADD A LISTING - Please input your listing longitude.");
+                                System.out.println("Add a Listing - Please input your listing longitude.");
                                 String longitude = validate_double(sc, -180, 180);
-                                System.out.println("ADD A LISTING - Please input your listing type");
+                                System.out.println("Add a Listing - Please input your listing type");
                                 System.out.println("              - 1: full house, 2: apartment, 3: room");
                                 String listing_type = validate_int(sc, 1, 3);
                                 int listing_type_int = Integer.parseInt(listing_type);
@@ -203,9 +202,18 @@ public class JDBCExample {
                                 } else {
                                     listing_type = "room";
                                 }
+                                System.out.println("Add Listing Address - Please input your postal code.");
+                                String postal_code = validate_postal_code(sc);
+                                System.out.println("Add Listing Address - Please input your unit.");
+                                String unit = validate_int(sc, 0, 9999);
+                                System.out.println("Add Listing Address - Please input your city.");
+                                String city = validate(sc);
+                                System.out.println("Add Listing Address - Please input your country.");
+                                String country = validate(sc);
+
                                 String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
                                 System.out.println(reg);
-                                boolean success = create_listing(reg);
+                                boolean success = create_listing(reg, postal_code, unit, city, country);
                                 if (!success) {
                                     // cannot login
                                     print_error("Cannot add, please try again");
@@ -219,12 +227,17 @@ public class JDBCExample {
                                 print_error("Not Valid input in Managing my List!");
                             }
                         } else if (input.equals("3")) {
-                            print_header("Check Booking");
-                            // check who book my stuff
+                            print_header("Manage My Booking");
+                            // checking booking history
+                            // check current booking
+                            // check availability
+
+
                         } else if (input.equals("4")) {
                             System.out.println("Check Booking");
                         } else if (input.equals("5")) {
-                            System.out.println("Check Booking");
+                            System.out.println("Rating and Comment");
+
                         } else if (input.equals("break")) {
                             System.out.println("Terminate the program.");
                             break label_whole;
@@ -276,7 +289,7 @@ public class JDBCExample {
                                 print_error("Not Valid input!");
                             }
                         } else if (input.equals("5")) {
-                            print_header("Check Booking");
+                            print_header("Rating and Comment");
                         } else if (input.equals("break")) {
                             print_header("Terminate the program.");
                             break label_whole;
@@ -295,8 +308,7 @@ public class JDBCExample {
                 }
 
             }
-        } catch (
-                SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Connection error occurred!");
             conn.rollback();
         }
@@ -308,7 +320,7 @@ public class JDBCExample {
 
 
     // sql functions
-    public static boolean create_calendar() throws SQLException {
+    public static void create_calendar() throws SQLException {
         try {
             String month = "1";
             String day = "1";
@@ -346,11 +358,9 @@ public class JDBCExample {
             //System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             System.out.print("Calendar created!");
-            return true;
 
         } catch (SQLException e) {
             System.err.println("Something went wrong with calendar");
-            return false;
         }
     }
 
@@ -437,18 +447,18 @@ public class JDBCExample {
         }
     }
 
-    public static boolean create_listing(String input) throws SQLException {
+    public static boolean create_listing(String input, String postal_code, String unit, String city, String country) throws SQLException {
         try {
             String reg = "UserName:(?<username>.*), Lon:(?<lon>.*), Lat:(?<lat>.*), Type:(?<type>.*)";
             Pattern pattern = Pattern.compile(reg);
             Matcher matcher = pattern.matcher(input);
             if (matcher.find()) {
-                String lat = matcher.group("lat").toString();
-                String lon = matcher.group("lon").toString();
-                String type = matcher.group("type").toString();
-                String username = matcher.group("username").toString();
+                String lat = matcher.group("lat");
+                String lon = matcher.group("lon");
+                String type = matcher.group("type");
+                String username = matcher.group("username");
                 String sql = String.format("INSERT INTO Listing (lon, lat, type) VALUES ( '%s', '%s', '%s');", lon, lat, type);
-                System.out.print(sql.concat("\n"));
+                System.out.println(sql);
                 stmt.executeUpdate(sql);
 
                 sql = String.format("SELECT * FROM Listing where lon = '%s' and lat = '%s';", lon, lat);
@@ -458,9 +468,9 @@ public class JDBCExample {
                 if (rs.next()) {
                     String lid = rs.getString("lid").toString();
                     sql = String.format("INSERT INTO Owns (username, lid) VALUES ('%s', '%s');", username, lid);
-                    System.out.print(sql.concat("\n"));
+                    System.out.println(sql);
                     stmt.executeUpdate(sql);
-                    return true;
+                    return owner_add_address(postal_code, unit, city, country, lid);
                 }
                 return false;
             } else {
@@ -479,7 +489,7 @@ public class JDBCExample {
             ResultSet rs = stmt.executeQuery(sql);
             //STEP 5: Extract data from result set
             while (rs.next()) {
-                int sid  = rs.getInt("SIN");
+                int sid = rs.getInt("SIN");
                 String name = rs.getString("name");
                 String occupation = rs.getString("occupation");
                 int birth = rs.getInt("birth");
@@ -493,6 +503,21 @@ public class JDBCExample {
                 System.out.println(", Occupation: " + occupation);
             }
             rs.close();
+            String sql2 = String.format("select * from Lives NATURAL JOIN Address where username = '%s';", username);
+            ResultSet rs2 = stmt.executeQuery(sql2);
+            System.out.println(sql + "\n" + sql2);
+            while (rs2.next()) {
+                int unit = rs2.getInt("unit");
+                String postal_code = rs2.getString("postal_code");
+                String city = rs2.getString("city");
+                String country = rs2.getString("country");
+                //Display values
+                System.out.print("Address: unit: " + unit);
+                System.out.print(", Occupation: " + postal_code);
+                System.out.print(", City: " + city);
+                System.out.println(", Country: " + country);
+            }
+            rs2.close();
             return true;
         } catch (SQLException e) {
             System.err.println("Cannot show profile");
@@ -503,26 +528,70 @@ public class JDBCExample {
     public static boolean change_profile(String username, String to_change, int int_type) throws SQLException {
         try {
             String type;
-            if(int_type == 1){
+            if (int_type == 1) {
                 type = "name";
-            }else if(int_type == 2){
+            } else if (int_type == 2) {
                 type = "birth";
-            }else if(int_type == 3){
-                type = "occupation";
-            }else if(int_type == 4) {
+            } else if (int_type == 3) {
                 type = "password";
-            }else{
+            } else if (int_type == 4) {
+                type = "occupation";
+            } else {
                 return false;
             }
-            String sql = String.format("UPDATE user SET '%s' = '%s' WHERE username = '%s';", type, to_change, username);
-            ResultSet rs = stmt.executeQuery(sql);
-            rs.close();
+            String sql = String.format("update user set %s = '%s' where username = '%s';", type, to_change, username);
+            stmt.executeUpdate(sql);
             return true;
         } catch (SQLException e) {
-            System.err.println("Cannot show my profile");
+            System.err.println("Cannot change my profile");
             return false;
         }
     }
+
+    public static boolean change_address(String username, String postal_code, String unit, String city, String country) throws SQLException {
+        try {
+            System.out.println("here");
+            String get_address = String.format("select * from Lives where username = '%s';", username);
+            System.out.println("get_address");
+            ResultSet rs = stmt.executeQuery(get_address);
+            if (rs.next()) {
+                //
+                System.out.println("else");
+                // update address
+                String sql = String.format("update user set postal_code = '%s', unit = '%s', city = '%s', country = '%s' where username = '%s';", postal_code, unit, city, country, username);
+                stmt.executeUpdate(sql);
+            } else {
+                System.out.println("rs = null");
+                // add address
+                String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+                stmt.executeUpdate(sql);
+                System.out.println(sql);
+                String sql2 = String.format("INSERT INTO Lives (postal_code, unit, username) VALUES ('%s','%s','%s');", postal_code, unit, username);
+                stmt.executeUpdate(sql2);
+                System.out.println(sql2);
+            }
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Cannot change my profile");
+            return false;
+        }
+    }
+
+    public static boolean owner_add_address(String postal_code, String unit, String city, String country, String lid) throws SQLException {
+        try {
+            String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+            stmt.executeUpdate(sql);
+            System.out.println(sql);
+            String sql2 = String.format("INSERT INTO Located_At (postal_code, unit, lid) VALUES ('%s','%s','%s');", postal_code, unit, lid);
+            stmt.executeUpdate(sql2);
+            System.out.println(sql2);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Cannot change my profile");
+            return false;
+        }
+    }
+
     // my helper function
     public static String validate(Scanner sc) {
         String input;
@@ -532,6 +601,22 @@ public class JDBCExample {
                 break;
             } else {
                 print_error("Input cannot be NULL, please re submit your input.");
+            }
+        }
+        return input;
+    }
+
+    public static String validate_postal_code(Scanner sc) {
+        String input;
+        String regex = "^(?!.*[DFIOQU])[A-VXY][0-9][A-Z] ?[0-9][A-Z][0-9]$";
+        Pattern pattern = Pattern.compile(regex);
+        while (true) {
+            input = sc.nextLine();
+            Matcher matcher = pattern.matcher(input);
+            if (!matcher.matches()) {
+                print_error("Input postal code is not valid!");
+            } else {
+                break;
             }
         }
         return input;
@@ -596,27 +681,46 @@ public class JDBCExample {
         if (profile_decide.equals("1")) {
             print_header("Check My Profile");
             boolean success = get_profile(username);
-            if(!success){
+            if (!success) {
                 print_error("Cannot show my profile");
             }
         } else if (profile_decide.equals("2")) {
             print_header("Change My Profile");
             // select what your want to change
             System.out.println("Select the profile you want to change");
-            System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation.");
-            String change_profile_decide = validate_int(sc, 1, 4);
+            System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address.");
+            String change_profile_decide = validate_int(sc, 1, 5);
             int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-            System.out.println("What do you want to change to?");
-            String to_change;
-            if(change_profile_decide_int == 2){
-                to_change = validate_int(sc, 1800, 2022);
-            }else{
-                to_change = validate(sc);
-            }
-            if(change_profile(username, to_change, change_profile_decide_int)){
-                System.out.println("Successfully change profile");
-            }else{
-                print_error("Cannot change profile");
+            if (change_profile_decide_int == 5) {
+                // change address
+                print_header("Change Address");
+                System.out.println("Change Address - Please input your postal code.");
+                // error checking of postal code
+                String postal_code = validate_postal_code(sc);
+                System.out.println("Change Address - Please input your unit.");
+                String unit = validate_int(sc, 0, 9999);
+                System.out.println("Change Address - Please input your city.");
+                String city = validate(sc);
+                System.out.println("Change Address - Please input your country.");
+                String country = validate(sc);
+                if (change_address(username, postal_code, unit, city, country)) {
+                    print_header("Successfully change address");
+                } else {
+                    print_error("Cannot change address");
+                }
+            } else {
+                System.out.println("What do you want to change to?");
+                String to_change;
+                if (change_profile_decide_int == 2) {
+                    to_change = validate_int(sc, 1800, 2022);
+                } else {
+                    to_change = validate(sc);
+                }
+                if (change_profile(username, to_change, change_profile_decide_int)) {
+                    System.out.println("Successfully change profile");
+                } else {
+                    print_error("Cannot change profile");
+                }
             }
         } else if (profile_decide.equals("3")) {
             print_header("Delete My Account");
