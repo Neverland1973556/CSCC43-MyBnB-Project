@@ -26,8 +26,8 @@ public class JDBCExample {
     private static String username;
 
     // some strings
-    private static final String is_owner_prompt = "1: Update Information, 2: Manage My Listings, 3: Check Booking, 4: check booking history, 5: rating, 9: logout";
-    private static final String is_renter_prompt = "1: Update Information, 2: Manage My Booking, 5: rating, 9: logout";
+    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Check Booking, 4: check booking history, 5: rating, 9: logout";
+    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: rating, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
     private static final String half_line = "------------------------------";
 
@@ -175,15 +175,20 @@ public class JDBCExample {
                         String input = sc.nextLine();
                         if (input.equals("1")) {
                             select_profile(sc);
+                            if(is_owner == -1){
+                                continue label_whole;
+                            }
                         } else if (input.equals("2")) {
                             print_header("Manage My Listings");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Check My Listings, 2: Add a Listing");
+                            System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing");
                             String listing_decide = sc.nextLine();
                             if (listing_decide.equals("1")) {
                                 print_header("Check My Listings");
                                 // get all my listings
-                                show_user_owns(username);
+                                if (!show_user_owns(username)) {
+                                    print_header("Currently you don't have a listing.");
+                                }
                             } else if (listing_decide.equals("2")) {
                                 // add a listing to database
                                 print_header("Add a Listing");
@@ -222,9 +227,104 @@ public class JDBCExample {
                                     // success, can continue
                                     System.out.println("Add success!");
                                 }
+                            } else if (listing_decide.equals("3")) {
+                                print_header("Change a Listing");
+                                System.out.println("Press the Corresponding number to continue.");
+                                System.out.println("1: Modify a Listing, 2: Delete a Listing, 3: Go Back.");
+                                String change_listing_decide = sc.nextLine();
+                                label_listing:
+                                if (change_listing_decide.equals("1")) {
+                                    print_header("Modify a Listing");
+                                    if (!show_user_owns(username)) {
+                                        print_header("Currently you don't have a listing.");
+                                        break label_listing;
+                                    }
+                                    System.out.println("Type the lid of the list your want to modify.");
+                                    String lid = validate(sc);
+                                    System.out.println("Choose the property of the listing you want to modify.");
+                                    System.out.println("1: latitude, 2: longitude, 3: type, 4: address");
+                                    String modify_listing_decide = sc.nextLine();
+                                    String to_change;
+                                    int type;
+                                    if (modify_listing_decide.equals("1")) {
+                                        print_header("Modify listing - latitude");
+                                        System.out.println("Type the latitude your want to change to.");
+                                        to_change = validate_double(sc, -90, 90);
+                                        type = 1;
+                                        if (handle_modify_listing(lid, type, to_change)) {
+                                            print_header("modify success");
+                                        } else {
+                                            print_error("cannot modify");
+                                        }
+                                    } else if (modify_listing_decide.equals("2")) {
+                                        print_header("Modify listing - longitude");
+                                        System.out.println("Type the longitude your want to change to.");
+                                        to_change = validate_double(sc, -180, 180);
+                                        type = 2;
+                                        if (handle_modify_listing(lid, type, to_change)) {
+                                            print_header("modify success");
+                                        } else {
+                                            print_error("cannot modify");
+                                        }
+
+                                    } else if (modify_listing_decide.equals("3")) {
+                                        print_header("Modify listing - type");
+                                        System.out.println("Type the listing type your want to change to.");
+                                        System.out.println("1: full house, 2: apartment, 3: room");
+                                        to_change = validate_int(sc, 1, 3);
+                                        int listing_type_int = Integer.parseInt(to_change);
+                                        if (listing_type_int == 1) {
+                                            to_change = "full house";
+                                        } else if (listing_type_int == 2) {
+                                            to_change = "apartment";
+                                        } else {
+                                            to_change = "room";
+                                        }
+                                        type = 3;
+                                        if (handle_modify_listing(lid, type, to_change)) {
+                                            print_header("modify success");
+                                        } else {
+                                            print_error("cannot modify");
+                                        }
+                                    } else if (modify_listing_decide.equals("4")) {
+                                        print_header("Modify listing - address");
+                                        System.out.println("Modify listing address - Please input your new postal code.");
+                                        String postal_code = validate_postal_code(sc);
+                                        System.out.println("Modify listing address - Please input your new unit.");
+                                        String unit = validate_int(sc, 0, 9999);
+                                        System.out.println("Modify listing address - Please input your new city.");
+                                        String city = validate(sc);
+                                        System.out.println("Modify listing address - Please input your new country.");
+                                        String country = validate(sc);
+                                        if (change_address_listing(lid, postal_code, unit, city, country)) {
+                                            print_header("modify success");
+                                        } else {
+                                            print_error("cannot modify");
+                                        }
+                                    } else {
+                                        print_error("Not Valid input when change a Listing!");
+                                    }
+                                } else if (change_listing_decide.equals("2")) {
+                                    print_header("Delete a Listing");
+                                    if (!show_user_owns(username)) {
+                                        print_header("Currently you don't have a list");
+                                        break label_listing;
+                                    }
+                                    System.out.println("Type the lid of the list your want to delete.");
+                                    String lid = validate(sc);
+                                    if (handle_delete_listing(username, lid)) {
+                                        print_header("delete success");
+                                    } else {
+                                        print_error("cannot delete");
+                                    }
+                                } else if (change_listing_decide.equals("3")) {
+                                    // do nothing
+                                } else {
+                                    print_error("Not Valid input when change a Listing!");
+                                }
                             } else {
                                 // not valid
-                                print_error("Not Valid input in Managing my List!");
+                                print_error("Not Valid input in Managing my Listing!");
                             }
                         } else if (input.equals("3")) {
                             print_header("Manage My Booking");
@@ -245,7 +345,7 @@ public class JDBCExample {
                             // logout
                             is_login = 0;
                             is_owner = -1;
-                            System.out.println("Try to logout");
+                            print_header("Log Out");
                             continue label_whole;
                         } else {
                             // not valid
@@ -429,12 +529,14 @@ public class JDBCExample {
         }
     }
 
-    public static void show_user_owns(String username) throws SQLException {
+    public static boolean show_user_owns(String username) throws SQLException {
+        boolean result = false;
         try {
             String sql = String.format("SELECT * FROM Owns where username = '%s';", username);
             ResultSet rs = stmt.executeQuery(sql);
             //STEP 5: Extract data from result set
             while (rs.next()) {
+                result = true;
                 //Retrieve by column name
                 int lid = rs.getInt("lid");
                 System.out.println("Lid: " + lid);
@@ -442,8 +544,10 @@ public class JDBCExample {
                 //System.out.println(", HostName: " + username);
             }
             rs.close();
+            return result;
         } catch (SQLException e) {
             System.err.println("Something went wrong with the show database");
+            return result;
         }
     }
 
@@ -548,33 +652,128 @@ public class JDBCExample {
         }
     }
 
+    public static boolean handle_modify_listing(String lid, int int_type, String to_change) throws SQLException {
+        try {
+            String type;
+            if (int_type == 1) {
+                type = "lat";
+            } else if (int_type == 2) {
+                type = "lon";
+            } else if (int_type == 3) {
+                type = "type";
+            } else {
+                return false;
+            }
+            String sql = String.format("update listing set %s = '%s' where lid = '%s';", type, to_change, lid);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Cannot modify listing");
+            return false;
+        }
+    }
+
     public static boolean change_address(String username, String postal_code, String unit, String city, String country) throws SQLException {
         try {
-            System.out.println("here");
+            // first, check if the address exists
+            // if not exist, add it
+            String check_address = String.format("select * from address where postal_code = '%s' and unit = '%s';", postal_code, unit);
+            ResultSet rs_check = stmt.executeQuery(check_address);
+            if (!rs_check.next()) {
+                // not exist, add it
+                String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+                stmt.executeUpdate(sql);
+            }
+            rs_check.close();
+            // the address exists, check if there's old connection
             String get_address = String.format("select * from Lives where username = '%s';", username);
-            System.out.println("get_address");
             ResultSet rs = stmt.executeQuery(get_address);
             if (rs.next()) {
-                // get unit and address
+                // exist old connection, delete the connection
                 int old_unit = rs.getInt("unit");
                 String old_postal_code = rs.getString("postal_code");
                 // update address
-                String sql = String.format("update address set postal_code = '%s', unit = '%s', city = '%s', country = '%s' where postal_code = '%s' and unit = '%d';", postal_code, unit, city, country, old_postal_code, old_unit);
-                System.out.println(sql);
+                String sql = String.format("delete from Lives where postal_code = '%s' and unit = '%d' and username = '%s';", old_postal_code, old_unit, username);
                 stmt.executeUpdate(sql);
-            } else {
-                System.out.println("rs = null");
-                // add address
-                String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
-                stmt.executeUpdate(sql);
-                System.out.println(sql);
-                String sql2 = String.format("INSERT INTO Lives (postal_code, unit, username) VALUES ('%s','%s','%s');", postal_code, unit, username);
-                stmt.executeUpdate(sql2);
-                System.out.println(sql2);
+
+                // if the address in not in live nor in located at, delete it
+                String check_live = String.format("select * from Lives where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                String check_located = String.format("select * from Located_at where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                ResultSet rs_temp1 = stmt.executeQuery(check_live);
+                System.out.println(check_live);
+                if (!rs_temp1.next()) {
+                    ResultSet rs_temp2 = stmt.executeQuery(check_located);
+                    System.out.println(check_located);
+                    if ((!rs_temp2.next())) {
+                        // no live and located
+                        // delete it
+                        sql = String.format("delete from address where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                        System.out.println(sql);
+                        stmt.executeUpdate(sql);
+                    }
+                }
+
             }
+            // no connection btw user and address
+            // add new relation
+            String sql2 = String.format("INSERT INTO Lives (postal_code, unit, username) VALUES ('%s','%s','%s');", postal_code, unit, username);
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
             return true;
+
         } catch (SQLException e) {
             System.err.println("Cannot change my profile");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean change_address_listing(String lid, String postal_code, String unit, String city, String country) throws SQLException {
+        try {
+            String check_address = String.format("select * from address where postal_code = '%s' and unit = '%s';", postal_code, unit);
+            ResultSet rs_check = stmt.executeQuery(check_address);
+            // if not in the database, add it
+            if (!rs_check.next()) {
+                // not exist, add it
+                String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+                stmt.executeUpdate(sql);
+            }
+            rs_check.close();
+            // delete old address from located_at and re add it
+            String get_address = String.format("select * from Located_At where lid = '%s';", lid);
+            ResultSet rs = stmt.executeQuery(get_address);
+            if (rs.next()) {
+                int old_unit = rs.getInt("unit");
+                String old_postal_code = rs.getString("postal_code");
+                String sql = String.format("delete from Located_At where postal_code = '%s' and unit = '%d' and lid = '%s';", old_postal_code, old_unit, lid);
+                stmt.executeUpdate(sql);
+                // if the address in not in live nor in located at, delete it
+                String check_live = String.format("select * from Lives where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                String check_located = String.format("select * from Located_at where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                ResultSet rs_temp1 = stmt.executeQuery(check_live);
+                System.out.println(check_live);
+                if (!rs_temp1.next()) {
+                    ResultSet rs_temp2 = stmt.executeQuery(check_located);
+                    System.out.println(check_located);
+                    if ((!rs_temp2.next())) {
+                        // no live and located
+                        // delete it
+                        sql = String.format("delete from address where postal_code = '%s' and unit = '%d';", old_postal_code, old_unit);
+                        System.out.println(sql);
+                        stmt.executeUpdate(sql);
+                    }
+                }
+            }
+            // delete done, need to re add
+            String sql2 = String.format("INSERT INTO Located_At (postal_code, unit, lid) VALUES ('%s','%s','%s');", postal_code, unit, lid);
+            System.out.println(sql2);
+            stmt.executeUpdate(sql2);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Cannot change listing address");
+            e.printStackTrace();
             return false;
         }
     }
@@ -590,6 +789,30 @@ public class JDBCExample {
             return true;
         } catch (SQLException e) {
             System.err.println("Cannot change my profile");
+            return false;
+        }
+    }
+
+
+    public static boolean delete_user(String username) throws SQLException {
+        try {
+            String sql = String.format("DELETE FROM User where username = \"%s\";", username);
+            System.out.print(sql.concat("\n"));
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Something went wrong with delete user");
+            return false;
+        }
+    }
+
+    public static boolean handle_delete_listing(String username, String lid) throws SQLException {
+        try {
+            String sql = String.format("delete from listing where lid = '%s';", lid);
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Something went wrong with delete listing");
             return false;
         }
     }
@@ -651,7 +874,6 @@ public class JDBCExample {
     }
 
     public static String validate_double(Scanner sc, double min, double max) {
-
         String result;
         double temp;
         while (true) {
@@ -726,9 +948,24 @@ public class JDBCExample {
             }
         } else if (profile_decide.equals("3")) {
             print_header("Delete My Account");
-            // how to delete my account?
-            // delete my profile
-            // what should we delete?
+            System.out.println("Are you sure you want to delete your user?");
+            System.out.println("Press 1 to continue");
+            String delete_decide = sc.nextLine();
+            if (delete_decide.equals("1")) {
+                if(delete_user(username)){
+                    print_header("delete_success");
+                    // set log out
+                    is_login = 0;
+                    is_owner = -1;
+                    // todo: break
+                    // continue label_whole;
+                }else{
+                    print_error("delete error");
+                }
+            } else {
+                // don't delete
+                // go back
+            }
         } else {
             // not valid
             System.out.println("Not Valid input in Update Information!");

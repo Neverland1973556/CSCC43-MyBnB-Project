@@ -142,6 +142,7 @@ create table IF NOT EXISTS Available (
 /* POPULATE TABLES BELONGING IN OUR DESIRED SCHEMA */
 
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A2");
+INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A3");
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/
@@ -165,6 +166,7 @@ INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves i
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
 INSERT INTO Available (price, month, day, lid) VALUES ("30", "03", "23","2");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A2", "1367", "Jonathan");
+INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A3", "1367", "test");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A2", "1367", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "2");
