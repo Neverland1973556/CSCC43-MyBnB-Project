@@ -12,7 +12,7 @@ public class JDBCExample {
 
     // your username and password of mysql
     private static final String USER = "root";
-    private static final String PASS = "Xzt1973556";
+    private static final String PASS = "123456";
 
     // connection
     private static Statement stmt;
@@ -40,7 +40,7 @@ public class JDBCExample {
         try {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
-            File setup = new File("src/SETUP.sql");
+            File setup = new File("project/src/SETUP.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -532,16 +532,20 @@ public class JDBCExample {
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
         try {
-            String sql = String.format("SELECT * FROM Owns where username = '%s';", username);
+            String sql = String.format("SELECT * FROM Owns Natural Join Listing where username = '%s';", username);
             ResultSet rs = stmt.executeQuery(sql);
             //STEP 5: Extract data from result set
             while (rs.next()) {
                 result = true;
                 //Retrieve by column name
                 int lid = rs.getInt("lid");
-                System.out.println("Lid: " + lid);
-                //String username = rs.getString("username");
-                //System.out.println(", HostName: " + username);
+                System.out.print("Lid: " + lid);
+                String lat = rs.getString("lat");
+                System.out.print(", Latitude: " + lat);
+                String lon = rs.getString("lon");
+                System.out.print(", Longitude: " + lon);
+                String type = rs.getString("type");
+                System.out.println(", Type: " + type);
             }
             rs.close();
             return result;
