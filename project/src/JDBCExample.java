@@ -34,7 +34,7 @@ public class JDBCExample {
             //Establish connection
 //            conn = DriverManager.getConnection(CONNECTION,USER,PASS);
             System.out.println("Successfully connected to MySQL!");
-            File setup = new File("src/SETUP.sql");
+            File setup = new File("project/src/SETUP.sql");
             //System.out.println(setup.exists());
             //Execute a query
             System.out.println("Preparing a statement...");
@@ -107,6 +107,9 @@ public class JDBCExample {
 				else if(input.matches("Username:(?<username>.*), Payment:(?<payment>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)")){
 					create_book(input);
 				}
+                else if(input.matches("Rentername:(?<rentername>.*), Hostname:(?<hostname>.*), Rate:(?<rate>.*), Text:(?<text>.*), Direction:(?<direction>.*)")){
+					create_judgement(input);
+				}
 				else if(input.matches("BID:(.*), Username:(?<username>.*)")){
 					book_cancellation(input);
 				}
@@ -118,6 +121,7 @@ public class JDBCExample {
         		}
 	            
             }
+            sc.close();
            
         } catch (SQLException e) {
             System.err.println("Connection error occured!");
@@ -245,7 +249,46 @@ public class JDBCExample {
 			return false;
 		}
 	}
-	
+	public static boolean create_judgement(String input) throws SQLException{
+		try{
+			String reg = "Rentername:(?<rentername>.*), Hostname:(?<hostname>.*), Rate:(?<rate>.*), Text:(?<text>.*), Direction:(?<direction>.*)";
+			Pattern pattern = Pattern.compile(reg);
+			Matcher matcher = pattern.matcher(input);
+			if(matcher.find()) {
+				String rentername = matcher.group("rentername").toString();
+				String hostname = matcher.group("hostname").toString();
+				String rate = matcher.group("rate").toString();
+				String text = matcher.group("text").toString();
+                String direction = matcher.group("direction").toString();
+				
+				//Check whether he booked the listing of the owner
+                //if(direction.equals("0")){
+                    String sql = String.format("SELECT * FROM Books Natural Join Available Natural Join Listing where username = '%s';", rentername);
+                    ResultSet rs = stmt.executeQuery(sql);
+                    while(rs.next()){
+                        String lid = rs.getString("lid");
+                        String sql1 = String.format("SELECT * FROM Owns where lid = '%s';", lid);
+                        ResultSet rs1 = stmt.executeQuery(sql1);
+                        rs1.next();
+                        if(rs1.getString("username").equals(hostname)){
+                            String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname,rentername,direction,rate);
+                            System.out.print(sql2.concat("\n"));
+                            stmt.executeUpdate(sql2);
+                            return true;
+                        }
+                    }
+                //}
+
+				return false;
+			}else {
+				System.out.println("Invalid Listing.");
+				return false;
+			}
+		}catch(SQLException e){
+			System.err.println("Something went wrong with Listing");
+			return false;
+		}
+	}
 	public static boolean create_available(String input) throws SQLException{
 		try{
 			String reg = "Price:(?<price>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)";
@@ -670,11 +713,11 @@ public class JDBCExample {
 		}
 	}
 	
-	public static void print_header(String string) {
+	/*public static void print_header(String string) {
         System.out.println(half_line + string + half_line);
     }
 
     public static void print_error(String string) {
         System.err.println(half_line + string + half_line);
-    }
+    }*/
 }
