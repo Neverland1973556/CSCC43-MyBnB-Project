@@ -47,8 +47,8 @@ create table IF NOT EXISTS Address  (
 
 create table IF NOT EXISTS Listing (
     lid int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    lon decimal(10,6) NOT NULL,
-    lat decimal(10,6) NOT NULL,
+    lon decimal(10,2) NOT NULL,
+    lat decimal(10,2) NOT NULL,
     type ENUM("full house", "apartment", "room") NOT NULL
     );
 
@@ -97,11 +97,11 @@ create table IF NOT EXISTS Books (
 create table IF NOT EXISTS Comment (
     CID int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     rate int(1) NOT NULL, /*range from 1 to 5, constraints set in java file*/
-    text varchar(250), /*comments less than 250*/
     lid int(50) NOT NULL,
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     username varchar(100) NOT NULL,
-    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE /*M-to-M & multiple time allowed*/
+    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE, /*M-to-M & multiple time allowed*/
+    text varchar(250) /*comments less than 250*/
     );
 
 create table IF NOT EXISTS Judgement (
@@ -154,9 +154,9 @@ INSERT INTO Host (username) VALUES ("Felix");
 INSERT INTO Renter (username) VALUES ("Jonathan");
 INSERT INTO Renter (username) VALUES ("test");
 INSERT INTO Renter (username) VALUES ("Felix");
-INSERT INTO Listing (lon, lat, type) VALUES ( "30.222", "18.999", "full house");
-INSERT INTO Listing (lon, lat, type) VALUES ( "3.222", "19", "apartment");
-INSERT INTO Listing (lon, lat, type) VALUES ( "30.622", "1.999", "room");
+INSERT INTO Listing (lon, lat, type) VALUES ( "30.22", "18.99", "full house");
+INSERT INTO Listing (lon, lat, type) VALUES ( "3.22", "19", "apartment");
+INSERT INTO Listing (lon, lat, type) VALUES ( "30.62", "1.99", "room");
 
 INSERT INTO Book (payment, BID) VALUES ( "130.22", "18");
 /*In Java, create all dates in a year*/

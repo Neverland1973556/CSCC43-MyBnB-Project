@@ -12,7 +12,7 @@ public class JDBCExample {
 
     // your username and password of mysql
     private static final String USER = "root";
-    private static final String PASS = "123456";
+    private static final String PASS = "Xzt1973556";
 
     // connection
     private static Statement stmt;
@@ -22,11 +22,13 @@ public class JDBCExample {
     private static int is_login = 0;
     private static int is_owner = -1;
 
+    private static boolean is_admin = false;
+
     // user data
     private static String username;
 
     // some strings
-    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Check Booking, 4: check booking history, 5: rating, 9: logout";
+    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Change Availability 4: Check Booking, 5: rating, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: rating, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
     private static final String half_line = "------------------------------";
@@ -40,7 +42,7 @@ public class JDBCExample {
         try {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
-            File setup = new File("project/src/SETUP.sql");
+            File setup = new File("src/SETUP.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -66,7 +68,7 @@ public class JDBCExample {
                     // didn't login
                     System.out.println(a_line);
                     System.out.println("Please Login or register.");
-                    System.out.println("Press 1 to Login, 2 to Register.");
+                    System.out.println("Press 1 to Login, 2 to Register, 3: Administer Mode.");
                     while (sc.hasNextLine()) {
                         String input = sc.nextLine();
                         if (input.equals("1")) {
@@ -121,6 +123,10 @@ public class JDBCExample {
                                 is_login = 1;
                                 break;
                             }
+                        } else if (input.equals("3")) {
+                            print_header("You are in administer mode");
+                            is_admin = true;
+                            break;
                         } else if (input.equals("break")) {
                             System.out.println("Terminate the program.");
                             break label_whole;
@@ -128,7 +134,24 @@ public class JDBCExample {
                             // not valid
                             print_error("Please use valid input!");
                             System.out.println(a_line);
-                            System.out.println("Press 1 to Login, 2 to Register.");
+                            System.out.println("Press 1 to Login, 2 to Register, 3: Administer Mode.");
+                        }
+                    }
+                }
+
+                if (is_admin) {
+                    // can see report
+                    System.out.println("Select a report to see!");
+                    System.out.println("1: sdfsdf, 2: dssdfsd, 9: logout");
+                    while (sc.hasNextLine()) {
+                        String input = sc.nextLine();
+                        if (input.equals("1")) {
+                            print_header("sdfsdf");
+                        } else if (input.equals("9")) {
+                            is_admin = false;
+                            continue label_whole;
+                        } else {
+                            print_error("Input is not valid");
                         }
                     }
                 }
@@ -175,7 +198,7 @@ public class JDBCExample {
                         String input = sc.nextLine();
                         if (input.equals("1")) {
                             select_profile(sc);
-                            if(is_owner == -1){
+                            if (is_owner == -1) {
                                 continue label_whole;
                             }
                         } else if (input.equals("2")) {
@@ -216,19 +239,50 @@ public class JDBCExample {
                                 System.out.println("Add Listing Address - Please input your country.");
                                 String country = validate(sc);
 
-                                String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
-                                System.out.println(reg);
-                                boolean success = create_listing(reg, postal_code, unit, city, country);
-                                if (!success) {
-                                    // cannot login
-                                    print_error("Cannot add, please try again");
-                                    // continue the loop
-                                } else {
-                                    // success, can continue
-                                    System.out.println("Add success!");
+                                if(check_address_owner(postal_code, unit, city, country)){
+                                    System.out.println("Address is valid");
+                                }else{
+                                    // address is not valid, re
+                                    continue;
+                                }
+                                print_header("Do you want to make the Listing available?");
+                                System.out.println("1: yes, others: no");
+                                String temp_choose = validate(sc);
+                                // check if the address is duplicated
+                                if(temp_choose.equals("1")){
+                                    // add
+                                    print_header("Add start time of Listing Available.");
+                                    System.out.println("Please input the start time in this format: yyyy-mm-dd");
+                                    String start_time = validate_time(sc);
+                                    System.out.println("Please input the end time in this format: yyyy-mm-dd");
+                                    String end_time = validate_time(sc);
+                                    System.out.println("Please input daily price of the available:");
+                                    String price = validate_double(sc, 0, 9999);
+                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
+                                    System.out.println(reg);
+                                    String success = create_listing(reg, postal_code, unit, city, country);
+                                    if (success.equals("false")) {
+                                        print_error("Cannot add, please try again");
+                                    } else {
+                                        // success = lid
+                                        add_available(start_time, end_time, price, success);
+                                        System.out.println("Add success!");
+                                    }
+                                }else{
+                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
+                                    System.out.println(reg);
+                                    String success = create_listing(reg, postal_code, unit, city, country);
+                                    if (success.equals("false")) {
+                                        // cannot login
+                                        print_error("Cannot add, please try again");
+                                        // continue the loop
+                                    } else {
+                                        // success, can continue
+                                        System.out.println("Add success!");
+                                    }
                                 }
                             } else if (listing_decide.equals("3")) {
-                                print_header("Change a Listing");
+                                print_header("Change a Listing Information");
                                 System.out.println("Press the Corresponding number to continue.");
                                 System.out.println("1: Modify a Listing, 2: Delete a Listing, 3: Go Back.");
                                 String change_listing_decide = sc.nextLine();
@@ -327,12 +381,33 @@ public class JDBCExample {
                                 print_error("Not Valid input in Managing my Listing!");
                             }
                         } else if (input.equals("3")) {
-                            print_header("Manage My Booking");
-                            // checking booking history
-                            // check current booking
-                            // check availability
+                            print_header("Change Availability");
+                            System.out.println("Press the Corresponding number to continue");
+                            System.out.println("1: Add Availability, 2: Change Availability");
+                            String avail = validate_int(sc, 1, 2);
+                            label_avail:
+                            if(avail.equals("1")){
+                                print_header("Add Availability");
+                                if (!show_user_owns(username)) {
+                                    print_header("Currently you don't have a listing.");
+                                    break label_avail;
+                                }
+                                System.out.println("Please type the lid you want to add availability to");
+                                String lid = validate_int(sc, 1, 10000);
+                                print_header("Add start time of Listing Available.");
+                                System.out.println("Please input the start time in this format: yyyy-mm-dd");
+                                String start_time = validate_time(sc);
+                                System.out.println("Please input the end time in this format: yyyy-mm-dd");
+                                String end_time = validate_time(sc);
+                                System.out.println("Please input daily price of the available:");
+                                String price = validate_double(sc, 0, 9999);
+                                add_available(start_time, end_time, price, lid);
 
 
+                            } else if(avail.equals("2")){
+                                // add with verify if the time is available or not;
+
+                            }
                         } else if (input.equals("4")) {
                             System.out.println("Check Booking");
                         } else if (input.equals("5")) {
@@ -363,6 +438,9 @@ public class JDBCExample {
                         String input = sc.nextLine();
                         if (input.equals("1")) {
                             select_profile(sc);
+                            if (is_owner == -1) {
+                                continue label_whole;
+                            }
                         } else if (input.equals("2")) {
                             print_header("Booking a list");
                             System.out.println("Press the Corresponding number to continue");
@@ -370,10 +448,15 @@ public class JDBCExample {
                             String booking_decide = sc.nextLine();
                             if (booking_decide.equals("1")) {
                                 print_header("Show my bookings");
+                                if (!show_user_books(username)) {
+                                    print_header("you don't have any booking");
+                                }
                                 // get all my listings
 //                                show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
+                                String reg = "";
+                                create_book(username, payment, month, day, lid);
                                 // get_all listings that is available
                                 // search?
                                 // choose the one you want to book
@@ -428,34 +511,34 @@ public class JDBCExample {
             for (int j = 1; j < 13; j++) {
                 month = String.format("%d", j);
                 for (int i = 1; i < 32; i++) {
-                    if (!(i == 23 && j == 3)) { //Avoid deleting the available related
+                    if (!(i == 23 && j == 3)) { // Avoid deleting the available related
                         day = String.format("%d", i);
                         String sql = String.format("INSERT INTO Calendar (month, day) VALUES (\"%s\", \"%s\");", month, day);
-                        //System.out.print(sql.concat("\n"));
+                        // System.out.print(sql.concat("\n"));
                         stmt.executeUpdate(sql);
                     }
                 }
             }
             String sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "31");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "30");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "29");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "4", "31");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "6", "31");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "9", "31");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "11", "31");
-            //System.out.print(sql.concat("\n"));
+            // System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             System.out.print("Calendar created!");
 
@@ -503,12 +586,12 @@ public class JDBCExample {
             Pattern pattern = Pattern.compile(reg);
             Matcher matcher = pattern.matcher(input);
             if (matcher.find()) {
-                String name = matcher.group("name").toString();
-                String password = matcher.group("password").toString();
-                String occupation = matcher.group("occupation").toString();
-                String sin = matcher.group("sin").toString();
-                String birth = matcher.group("birth").toString();
-                String username = matcher.group("username").toString();
+                String name = matcher.group("name");
+                String password = matcher.group("password");
+                String occupation = matcher.group("occupation");
+                String sin = matcher.group("sin");
+                String birth = matcher.group("birth");
+                String username = matcher.group("username");
                 String sql = String.format("INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", sin, name, password, birth, occupation, username);
                 System.out.print(sql.concat("\n"));
                 stmt.executeUpdate(sql);
@@ -534,10 +617,10 @@ public class JDBCExample {
         try {
             String sql = String.format("SELECT * FROM Owns Natural Join Listing where username = '%s';", username);
             ResultSet rs = stmt.executeQuery(sql);
-            //STEP 5: Extract data from result set
+            // STEP 5: Extract data from result set
             while (rs.next()) {
                 result = true;
-                //Retrieve by column name
+                // Retrieve by column name
                 int lid = rs.getInt("lid");
                 System.out.print("Lid: " + lid);
                 String lat = rs.getString("lat");
@@ -555,7 +638,8 @@ public class JDBCExample {
         }
     }
 
-    public static boolean create_listing(String input, String postal_code, String unit, String city, String country) throws SQLException {
+    public static String create_listing(String input, String postal_code, String unit, String city, String country) throws SQLException {
+        String result;
         try {
             String reg = "UserName:(?<username>.*), Lon:(?<lon>.*), Lat:(?<lat>.*), Type:(?<type>.*)";
             Pattern pattern = Pattern.compile(reg);
@@ -569,25 +653,26 @@ public class JDBCExample {
                 System.out.println(sql);
                 stmt.executeUpdate(sql);
 
-                sql = String.format("SELECT * FROM Listing where lon = '%s' and lat = '%s';", lon, lat);
-                //System.out.print(sql.concat("\n"));
-                //stmt.executeUpdate(sql);
+                sql = "SELECT LAST_INSERT_ID();";
+                System.out.println(sql);
+                // stmt.executeUpdate(sql);
                 ResultSet rs = stmt.executeQuery(sql);
-                if (rs.next()) {
-                    String lid = rs.getString("lid").toString();
-                    sql = String.format("INSERT INTO Owns (username, lid) VALUES ('%s', '%s');", username, lid);
-                    System.out.println(sql);
-                    stmt.executeUpdate(sql);
-                    return owner_add_address(postal_code, unit, city, country, lid);
+                String lid = rs.getString("LAST_INSERT_ID()");
+                result = lid;
+                sql = String.format("INSERT INTO Owns (username, lid) VALUES ('%s', '%s');", username, lid);
+                System.out.println(sql);
+                stmt.executeUpdate(sql);
+                if(!owner_add_address(postal_code, unit, city, country, lid)){
+                    return "false";
                 }
-                return false;
+                return result;
             } else {
                 System.out.println("Invalid Listing.");
-                return false;
+                return "false";
             }
         } catch (SQLException e) {
             System.err.println("Something went wrong with Listing");
-            return false;
+            return "false";
         }
     }
 
@@ -595,14 +680,14 @@ public class JDBCExample {
         try {
             String sql = String.format("SELECT * FROM user where username = '%s';", username);
             ResultSet rs = stmt.executeQuery(sql);
-            //STEP 5: Extract data from result set
+            // STEP 5: Extract data from result set
             while (rs.next()) {
                 int sid = rs.getInt("SIN");
                 String name = rs.getString("name");
                 String occupation = rs.getString("occupation");
                 int birth = rs.getInt("birth");
                 String password = rs.getString("password");
-                //Display values
+                // Display values
                 System.out.print("SIN: " + sid);
                 System.out.print(", Username: " + username);
                 System.out.print(", Password: " + password);
@@ -619,7 +704,7 @@ public class JDBCExample {
                 String postal_code = rs2.getString("postal_code");
                 String city = rs2.getString("city");
                 String country = rs2.getString("country");
-                //Display values
+                // Display values
                 System.out.print("Address (Unit: " + unit);
                 System.out.print(", Postal Code: " + postal_code);
                 System.out.print(", City: " + city);
@@ -652,6 +737,107 @@ public class JDBCExample {
             return true;
         } catch (SQLException e) {
             System.err.println("Cannot change my profile");
+            return false;
+        }
+    }
+
+    public static boolean show_user_books(String username) throws SQLException {
+        boolean result = false;
+        try {
+            String sql = String.format("SELECT * FROM Books Natural Join Available Natural Join Listing where username = '%s';", username);
+            ResultSet rs = stmt.executeQuery(sql);
+            // STEP 5: Extract data from result set
+            while (rs.next()) {
+                // Retrieve by column name
+                String bid = rs.getString("BID");
+                System.out.print("BID: " + bid);
+                String lid = rs.getString("lid");
+                System.out.print(", ListingID: " + lid);
+                String lon = rs.getString("lon");
+                System.out.print(", Longitude: " + lon);
+                String lat = rs.getString("lat");
+                System.out.print(", Latitude: " + lat);
+                String type = rs.getString("type");
+                System.out.print(", Type: " + type);
+                String month = rs.getString("month");
+                System.out.print(", Month: " + month);
+                String day = rs.getString("day");
+                System.out.print(", Day: " + day);
+                result = true;
+            }
+            rs.close();
+            return result;
+        } catch (SQLException e) {
+            System.err.println("Something went wrong with the show user booking");
+            return false;
+        }
+    }
+
+    public static boolean add_available(String start_time, String end_time, String price, String lid) throws SQLException{
+        try{
+            String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");",price, month, day,lid);
+            System.out.println(sql);
+            stmt.executeQuery(sql);
+            return false;
+        }catch(SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean create_available(String input) throws SQLException{
+        try{
+            String reg = "Price:(?<price>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)";
+            Pattern pattern = Pattern.compile(reg);
+            Matcher matcher = pattern.matcher(input);
+            if(matcher.find()) {
+                String price = matcher.group("price").toString();
+                String month = matcher.group("month").toString();
+                String day = matcher.group("day").toString();
+                String lid = matcher.group("lid").toString();
+                String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");",price, month, day,lid);
+                System.out.print(sql.concat("\n"));
+                stmt.executeUpdate(sql);
+                return true;
+            }else {
+                System.out.println("Invalid Listing.");
+                return false;
+            }
+        }catch(SQLException e){
+            System.err.println("Something went wrong with creating Available");
+            return false;
+        }
+    }
+
+    public static boolean create_book(String username, String payment, String month, String day, String lid) throws SQLException {
+        try {
+            String sql = String.format("SELECT * FROM Available where month = \"%s\" and day = \"%s\" and lid = \"%s\";", month, day, lid);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                String price = rs.getString("price");
+                sql = String.format("DELETE FROM Available where month = \"%s\" and day = \"%s\" and lid = \"%s\";", month, day, lid);
+                System.out.print(sql.concat("\n"));
+                stmt.executeUpdate(sql);
+
+                bookid++;
+                sql = String.format("INSERT INTO Book (payment, BID) VALUES (\"%s\", \"%s\");", payment, bookid);
+                System.out.print(sql.concat("\n"));
+                stmt.executeUpdate(sql);
+
+                sql = String.format("INSERT INTO Available (price, month, day, lid, BID) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid, bookid);
+                System.out.print(sql.concat("\n"));
+                stmt.executeUpdate(sql);
+
+                sql = String.format("INSERT INTO Books (BID, username) VALUES (\"%s\", \"%s\");", bookid, username);
+                System.out.print(sql.concat("\n"));
+                stmt.executeUpdate(sql);
+                return true;
+            }
+            System.out.println("The booking is not available.");
+            return false;
+        } catch (SQLException e) {
+            System.err.println("Something went wrong with creating Book");
             return false;
         }
     }
@@ -784,15 +970,37 @@ public class JDBCExample {
 
     public static boolean owner_add_address(String postal_code, String unit, String city, String country, String lid) throws SQLException {
         try {
-            String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+            String sql = String.format("INSERT INTO Located_At (postal_code, unit, lid) VALUES ('%s','%s','%s');", postal_code, unit, lid);
             stmt.executeUpdate(sql);
             System.out.println(sql);
-            String sql2 = String.format("INSERT INTO Located_At (postal_code, unit, lid) VALUES ('%s','%s','%s');", postal_code, unit, lid);
-            stmt.executeUpdate(sql2);
-            System.out.println(sql2);
             return true;
         } catch (SQLException e) {
             System.err.println("Cannot change my profile");
+            return false;
+        }
+    }
+    public static boolean check_address_owner(String postal_code, String unit, String city, String country) throws SQLException {
+        try {
+            // if the address is in located_at, return false;
+            String check = String.format("select * from located_at where postal_code = '%s' and unit = '%s", postal_code, unit);
+            ResultSet rs = stmt.executeQuery(check);
+            if(rs.next()){
+                // fault, already exists
+                print_error("Address is duplicated, please try another");
+                return false;
+            }
+            // not exist
+            String check_2 = String.format("select * from address where postal_code = '%s' and unit = '%s", postal_code, unit);
+            System.out.println(check_2);
+            ResultSet rs2 = stmt.executeQuery(check_2);
+            if(!rs2.next()){
+                String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
+                System.out.println(sql);
+                stmt.executeUpdate(sql);
+            }
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Cannot add address");
             return false;
         }
     }
@@ -844,6 +1052,21 @@ public class JDBCExample {
             Matcher matcher = pattern.matcher(input);
             if (!matcher.matches()) {
                 print_error("Input postal code is not valid!");
+            } else {
+                break;
+            }
+        }
+        return input;
+    }
+    public static String validate_time(Scanner sc) {
+        String input;
+        String regex = "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$";
+        Pattern pattern = Pattern.compile(regex);
+        while (true) {
+            input = sc.nextLine();
+            Matcher matcher = pattern.matcher(input);
+            if (!matcher.matches()) {
+                print_error("Input time is not valid!");
             } else {
                 break;
             }
@@ -956,14 +1179,14 @@ public class JDBCExample {
             System.out.println("Press 1 to continue");
             String delete_decide = sc.nextLine();
             if (delete_decide.equals("1")) {
-                if(delete_user(username)){
+                if (delete_user(username)) {
                     print_header("delete_success");
                     // set log out
                     is_login = 0;
                     is_owner = -1;
                     // todo: break
                     // continue label_whole;
-                }else{
+                } else {
                     print_error("delete error");
                 }
             } else {
