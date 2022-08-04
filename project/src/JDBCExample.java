@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +30,7 @@ public class JDBCExample {
     private static String username;
 
     // some strings
-    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Change Availability 4: Check Booking, 5: rating, 9: logout";
+    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: rating, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: rating, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
     private static final String half_line = "------------------------------";
@@ -238,49 +240,20 @@ public class JDBCExample {
                                 String city = validate(sc);
                                 System.out.println("Add Listing Address - Please input your country.");
                                 String country = validate(sc);
-
-                                if(check_address_owner(postal_code, unit, city, country)){
-                                    System.out.println("Address is valid");
-                                }else{
-                                    // address is not valid, re
+                                if (!check_address_owner(postal_code, unit, city, country)) {
                                     continue;
                                 }
-                                print_header("Do you want to make the Listing available?");
-                                System.out.println("1: yes, others: no");
-                                String temp_choose = validate(sc);
-                                // check if the address is duplicated
-                                if(temp_choose.equals("1")){
-                                    // add
-                                    print_header("Add start time of Listing Available.");
-                                    System.out.println("Please input the start time in this format: yyyy-mm-dd");
-                                    String start_time = validate_time(sc);
-                                    System.out.println("Please input the end time in this format: yyyy-mm-dd");
-                                    String end_time = validate_time(sc);
-                                    System.out.println("Please input daily price of the available:");
-                                    String price = validate_double(sc, 0, 9999);
-                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
-                                    System.out.println(reg);
-                                    String success = create_listing(reg, postal_code, unit, city, country);
-                                    if (success.equals("false")) {
-                                        print_error("Cannot add, please try again");
-                                    } else {
-                                        // success = lid
-                                        add_available(start_time, end_time, price, success);
-                                        System.out.println("Add success!");
-                                    }
-                                }else{
-                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
-                                    System.out.println(reg);
-                                    String success = create_listing(reg, postal_code, unit, city, country);
-                                    if (success.equals("false")) {
-                                        // cannot login
-                                        print_error("Cannot add, please try again");
-                                        // continue the loop
-                                    } else {
-                                        // success, can continue
-                                        System.out.println("Add success!");
-                                    }
+                                System.out.println("Address is valid");
+                                String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
+                                System.out.println(reg);
+                                String success = create_listing(reg, postal_code, unit, city, country);
+                                if (success.equals("false")) {
+                                    print_error("Cannot add, please try again");
+                                } else {
+                                    // success, can continue
+                                    System.out.println("Add success!");
                                 }
+
                             } else if (listing_decide.equals("3")) {
                                 print_header("Change a Listing Information");
                                 System.out.println("Press the Corresponding number to continue.");
@@ -381,30 +354,58 @@ public class JDBCExample {
                                 print_error("Not Valid input in Managing my Listing!");
                             }
                         } else if (input.equals("3")) {
-                            print_header("Change Availability");
+                            print_header("Listing Availability");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Add Availability, 2: Change Availability");
+                            System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability");
                             String avail = validate_int(sc, 1, 2);
                             label_avail:
-                            if(avail.equals("1")){
+                            if (avail.equals("1")) {
+                                print_header("Show Availability");
+                                // print out the availability
+                            } else if (avail.equals("2")) {
                                 print_header("Add Availability");
                                 if (!show_user_owns(username)) {
                                     print_header("Currently you don't have a listing.");
                                     break label_avail;
                                 }
+                                // new add will replace old one, add can be not success
                                 System.out.println("Please type the lid you want to add availability to");
                                 String lid = validate_int(sc, 1, 10000);
-                                print_header("Add start time of Listing Available.");
-                                System.out.println("Please input the start time in this format: yyyy-mm-dd");
-                                String start_time = validate_time(sc);
-                                System.out.println("Please input the end time in this format: yyyy-mm-dd");
-                                String end_time = validate_time(sc);
+                                print_header("Add date period for Listing Available.");
+                                System.out.println("Valid Period: 2020-01-01 to 2026-01-01.");
+                                System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                                String start_time = validate(sc);
+                                System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                                String end_time = validate(sc);
+                                SimpleDateFormat sd_format = new SimpleDateFormat("yyyy-MM-dd");
+                                try {
+                                    Date d1 = (Date) sd_format.parse(start_time);
+                                    Date d2 = (Date) sd_format.parse(end_time);
+                                    Date d3 = (Date) sd_format.parse("2020-01-01");
+                                    Date d4 = (Date) sd_format.parse("2026-01-01");
+                                    if (d1.after(d2)) {
+                                        print_error("End date is before start date.");
+                                        continue;
+                                    }
+                                    if (d1.before(d3)) {
+                                        print_error("Start date is too early");
+                                        continue;
+                                    }
+                                    if (d2.after(d4)) {
+                                        print_error("End date is too late");
+                                        continue;
+                                    }
+                                } catch (ParseException e) {
+                                    print_error("Input date is not valid.");
+                                    continue;
+                                }
                                 System.out.println("Please input daily price of the available:");
                                 String price = validate_double(sc, 0, 9999);
-                                add_available(start_time, end_time, price, lid);
+                                // in this period, this listing is this price
+                                // add_available(start_time, end_time, price, lid);
+                            } else if (avail.equals("3")) {
+                                print_header("Change Availability");
 
-
-                            } else if(avail.equals("2")){
                                 // add with verify if the time is available or not;
 
                             }
@@ -452,11 +453,11 @@ public class JDBCExample {
                                     print_header("you don't have any booking");
                                 }
                                 // get all my listings
-//                                show_user_booking(username);
+                               // show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
                                 String reg = "";
-                                create_book(username, payment, month, day, lid);
+                                // create_book(username, payment, month, day, lid);
                                 // get_all listings that is available
                                 // search?
                                 // choose the one you want to book
@@ -465,7 +466,7 @@ public class JDBCExample {
                             } else if (booking_decide.equals("3")) {
                                 print_header("Cancel a booking");
                                 // get all my listings
-//                                show_user_booking(username);
+                               // show_user_booking(username);
                                 // choose the one you want to cancel
                                 // cancel by aid
                             } else {
@@ -492,7 +493,7 @@ public class JDBCExample {
 
             }
         } catch (SQLException e) {
-            System.err.println("Connection error occurred!");
+            e.printStackTrace();
             conn.rollback();
         }
         System.out.println("Closing connection...");
@@ -543,7 +544,7 @@ public class JDBCExample {
             System.out.print("Calendar created!");
 
         } catch (SQLException e) {
-            System.err.println("Something went wrong with calendar");
+            e.printStackTrace();
         }
     }
 
@@ -574,7 +575,7 @@ public class JDBCExample {
             }
 
         } catch (SQLException e) {
-            System.err.println("Something went wrong with user login");
+            e.printStackTrace();
             return false;
         }
     }
@@ -607,7 +608,7 @@ public class JDBCExample {
                 return false;
             }
         } catch (SQLException e) {
-            System.err.println("Something went wrong with register");
+            e.printStackTrace();
             return false;
         }
     }
@@ -633,7 +634,7 @@ public class JDBCExample {
             rs.close();
             return result;
         } catch (SQLException e) {
-            System.err.println("Something went wrong with the show database");
+            e.printStackTrace();
             return result;
         }
     }
@@ -651,18 +652,18 @@ public class JDBCExample {
                 String username = matcher.group("username");
                 String sql = String.format("INSERT INTO Listing (lon, lat, type) VALUES ( '%s', '%s', '%s');", lon, lat, type);
                 System.out.println(sql);
-                stmt.executeUpdate(sql);
+                stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+                String lid = "";
+                ResultSet rs = stmt.getGeneratedKeys();
+                if(rs.next())
+                    lid = rs.getString(1);
 
-                sql = "SELECT LAST_INSERT_ID();";
-                System.out.println(sql);
-                // stmt.executeUpdate(sql);
-                ResultSet rs = stmt.executeQuery(sql);
-                String lid = rs.getString("LAST_INSERT_ID()");
+                // String lid = rs.getString("LAST_INSERT_ID()");
                 result = lid;
                 sql = String.format("INSERT INTO Owns (username, lid) VALUES ('%s', '%s');", username, lid);
                 System.out.println(sql);
                 stmt.executeUpdate(sql);
-                if(!owner_add_address(postal_code, unit, city, country, lid)){
+                if (!owner_add_address(postal_code, unit, city, country, lid)) {
                     return "false";
                 }
                 return result;
@@ -671,7 +672,7 @@ public class JDBCExample {
                 return "false";
             }
         } catch (SQLException e) {
-            System.err.println("Something went wrong with Listing");
+            e.printStackTrace();
             return "false";
         }
     }
@@ -713,7 +714,7 @@ public class JDBCExample {
             rs2.close();
             return true;
         } catch (SQLException e) {
-            System.err.println("Cannot show profile");
+            e.printStackTrace();
             return false;
         }
     }
@@ -736,7 +737,7 @@ public class JDBCExample {
             stmt.executeUpdate(sql);
             return true;
         } catch (SQLException e) {
-            System.err.println("Cannot change my profile");
+            e.printStackTrace();
             return false;
         }
     }
@@ -768,42 +769,43 @@ public class JDBCExample {
             rs.close();
             return result;
         } catch (SQLException e) {
-            System.err.println("Something went wrong with the show user booking");
-            return false;
-        }
-    }
-
-    public static boolean add_available(String start_time, String end_time, String price, String lid) throws SQLException{
-        try{
-            String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");",price, month, day,lid);
-            System.out.println(sql);
-            stmt.executeQuery(sql);
-            return false;
-        }catch(SQLException e){
             e.printStackTrace();
             return false;
         }
     }
 
-    public static boolean create_available(String input) throws SQLException{
-        try{
+    /*
+    public static boolean add_available(String start_time, String end_time, String price, String lid) throws SQLException {
+        try {
+            String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid);
+            System.out.println(sql);
+            stmt.executeQuery(sql);
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean create_available(String input) throws SQLException {
+        try {
             String reg = "Price:(?<price>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)";
             Pattern pattern = Pattern.compile(reg);
             Matcher matcher = pattern.matcher(input);
-            if(matcher.find()) {
+            if (matcher.find()) {
                 String price = matcher.group("price").toString();
                 String month = matcher.group("month").toString();
                 String day = matcher.group("day").toString();
                 String lid = matcher.group("lid").toString();
-                String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");",price, month, day,lid);
+                String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid);
                 System.out.print(sql.concat("\n"));
                 stmt.executeUpdate(sql);
                 return true;
-            }else {
+            } else {
                 System.out.println("Invalid Listing.");
                 return false;
             }
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.err.println("Something went wrong with creating Available");
             return false;
         }
@@ -842,6 +844,8 @@ public class JDBCExample {
         }
     }
 
+
+     */
     public static boolean handle_modify_listing(String lid, int int_type, String to_change) throws SQLException {
         try {
             String type;
@@ -962,7 +966,6 @@ public class JDBCExample {
             return true;
 
         } catch (SQLException e) {
-            System.err.println("Cannot change listing address");
             e.printStackTrace();
             return false;
         }
@@ -975,32 +978,33 @@ public class JDBCExample {
             System.out.println(sql);
             return true;
         } catch (SQLException e) {
-            System.err.println("Cannot change my profile");
+            e.printStackTrace();
             return false;
         }
     }
+
     public static boolean check_address_owner(String postal_code, String unit, String city, String country) throws SQLException {
         try {
             // if the address is in located_at, return false;
-            String check = String.format("select * from located_at where postal_code = '%s' and unit = '%s", postal_code, unit);
+            String check = String.format("select * from located_at where postal_code = '%s' and unit = '%s';", postal_code, unit);
             ResultSet rs = stmt.executeQuery(check);
-            if(rs.next()){
+            if (rs.next()) {
                 // fault, already exists
                 print_error("Address is duplicated, please try another");
                 return false;
             }
             // not exist
-            String check_2 = String.format("select * from address where postal_code = '%s' and unit = '%s", postal_code, unit);
+            String check_2 = String.format("select * from address where postal_code = '%s' and unit = '%s';", postal_code, unit);
             System.out.println(check_2);
             ResultSet rs2 = stmt.executeQuery(check_2);
-            if(!rs2.next()){
+            if (!rs2.next()) {
                 String sql = String.format("INSERT INTO Address (postal_code, unit, city, country) VALUES ('%s','%s','%s','%s');", postal_code, unit, city, country);
                 System.out.println(sql);
                 stmt.executeUpdate(sql);
             }
             return true;
         } catch (SQLException e) {
-            System.err.println("Cannot add address");
+            e.printStackTrace();
             return false;
         }
     }
@@ -1013,18 +1017,45 @@ public class JDBCExample {
             stmt.executeUpdate(sql);
             return true;
         } catch (SQLException e) {
-            System.err.println("Something went wrong with delete user");
+            e.printStackTrace();
             return false;
         }
     }
 
     public static boolean handle_delete_listing(String username, String lid) throws SQLException {
         try {
-            String sql = String.format("delete from listing where lid = '%s';", lid);
-            stmt.executeUpdate(sql);
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Something went wrong with delete listing");
+            // first, check if the address exists
+            // if not exist, add it
+            String check_address = String.format("select * from located_at where lid = '%s';", lid);
+            System.out.println(check_address);
+            ResultSet rs_check = stmt.executeQuery(check_address);
+            if (rs_check.next()) {
+                // get postal_code and unit
+                String postal_code = rs_check.getString("postal_code");
+                String unit = rs_check.getString("unit");
+
+                String sql = String.format("delete from listing where lid = '%s';", lid);
+                System.out.println(sql);
+                stmt.executeUpdate(sql);
+
+                String check_live = String.format("select * from Lives where postal_code = '%s' and unit = '%d';", postal_code, unit);
+                System.out.println(check_live);
+                ResultSet rs_live = stmt.executeQuery(check_live);
+                if (!rs_live.next()) {
+                    // address is useless
+                    // delete the address
+                    sql = String.format("delete from address where postal_code = '%s' and unit = '%d';", postal_code, unit);
+                    System.out.println(sql);
+                    stmt.executeUpdate(sql);
+                }
+                return true;
+            } else {
+                print_error("cannot find the listing");
+                return false;
+            }
+        }catch (SQLException e) {
+            System.err.println("Cannot delete listing");
+            e.printStackTrace();
             return false;
         }
     }
@@ -1058,6 +1089,7 @@ public class JDBCExample {
         }
         return input;
     }
+
     public static String validate_time(Scanner sc) {
         String input;
         String regex = "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$";
@@ -1126,76 +1158,80 @@ public class JDBCExample {
     }
 
     public static void select_profile(Scanner sc) throws SQLException {
-        System.out.println(half_line + "Update Information" + half_line);
-        System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account");
-        String profile_decide = sc.nextLine();
-        if (profile_decide.equals("1")) {
-            print_header("Check My Profile");
-            boolean success = get_profile(username);
-            if (!success) {
-                print_error("Cannot show my profile");
-            }
-        } else if (profile_decide.equals("2")) {
-            print_header("Change My Profile");
-            // select what your want to change
-            System.out.println("Select the profile you want to change");
-            System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address.");
-            String change_profile_decide = validate_int(sc, 1, 5);
-            int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-            if (change_profile_decide_int == 5) {
-                // change address
-                print_header("Change Address");
-                System.out.println("Change Address - Please input your postal code.");
-                // error checking of postal code
-                String postal_code = validate_postal_code(sc);
-                System.out.println("Change Address - Please input your unit.");
-                String unit = validate_int(sc, 0, 9999);
-                System.out.println("Change Address - Please input your city.");
-                String city = validate(sc);
-                System.out.println("Change Address - Please input your country.");
-                String country = validate(sc);
-                if (change_address(username, postal_code, unit, city, country)) {
-                    print_header("Successfully change address");
+        try {
+            System.out.println(half_line + "Update Information" + half_line);
+            System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account");
+            String profile_decide = sc.nextLine();
+            if (profile_decide.equals("1")) {
+                print_header("Check My Profile");
+                boolean success = get_profile(username);
+                if (!success) {
+                    print_error("Cannot show my profile");
+                }
+            } else if (profile_decide.equals("2")) {
+                print_header("Change My Profile");
+                // select what your want to change
+                System.out.println("Select the profile you want to change");
+                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address.");
+                String change_profile_decide = validate_int(sc, 1, 5);
+                int change_profile_decide_int = Integer.parseInt(change_profile_decide);
+                if (change_profile_decide_int == 5) {
+                    // change address
+                    print_header("Change Address");
+                    System.out.println("Change Address - Please input your postal code.");
+                    // error checking of postal code
+                    String postal_code = validate_postal_code(sc);
+                    System.out.println("Change Address - Please input your unit.");
+                    String unit = validate_int(sc, 0, 9999);
+                    System.out.println("Change Address - Please input your city.");
+                    String city = validate(sc);
+                    System.out.println("Change Address - Please input your country.");
+                    String country = validate(sc);
+                    if (change_address(username, postal_code, unit, city, country)) {
+                        print_header("Successfully change address");
+                    } else {
+                        print_error("Cannot change address");
+                    }
                 } else {
-                    print_error("Cannot change address");
+                    System.out.println("What do you want to change to?");
+                    String to_change;
+                    if (change_profile_decide_int == 2) {
+                        to_change = validate_int(sc, 1800, 2022);
+                    } else {
+                        to_change = validate(sc);
+                    }
+                    if (change_profile(username, to_change, change_profile_decide_int)) {
+                        System.out.println("Successfully change profile");
+                    } else {
+                        print_error("Cannot change profile");
+                    }
+                }
+            } else if (profile_decide.equals("3")) {
+                print_header("Delete My Account");
+                System.out.println("Are you sure you want to delete your user?");
+                System.out.println("Press 1 to continue");
+                String delete_decide = sc.nextLine();
+                if (delete_decide.equals("1")) {
+                    if (delete_user(username)) {
+                        print_header("delete_success");
+                        // set log out
+                        is_login = 0;
+                        is_owner = -1;
+                        // todo: break
+                        // continue label_whole;
+                    } else {
+                        print_error("delete error");
+                    }
+                } else {
+                    // don't delete
+                    // go back
                 }
             } else {
-                System.out.println("What do you want to change to?");
-                String to_change;
-                if (change_profile_decide_int == 2) {
-                    to_change = validate_int(sc, 1800, 2022);
-                } else {
-                    to_change = validate(sc);
-                }
-                if (change_profile(username, to_change, change_profile_decide_int)) {
-                    System.out.println("Successfully change profile");
-                } else {
-                    print_error("Cannot change profile");
-                }
+                // not valid
+                print_error("Input is not valid");
             }
-        } else if (profile_decide.equals("3")) {
-            print_header("Delete My Account");
-            System.out.println("Are you sure you want to delete your user?");
-            System.out.println("Press 1 to continue");
-            String delete_decide = sc.nextLine();
-            if (delete_decide.equals("1")) {
-                if (delete_user(username)) {
-                    print_header("delete_success");
-                    // set log out
-                    is_login = 0;
-                    is_owner = -1;
-                    // todo: break
-                    // continue label_whole;
-                } else {
-                    print_error("delete error");
-                }
-            } else {
-                // don't delete
-                // go back
-            }
-        } else {
-            // not valid
-            System.out.println("Not Valid input in Update Information!");
+        }catch (SQLException e){
+            e.printStackTrace();
         }
     }
 
