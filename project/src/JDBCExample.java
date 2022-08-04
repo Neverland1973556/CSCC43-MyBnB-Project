@@ -1,11 +1,10 @@
+import java.io.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.File;
-import java.io.FileNotFoundException;
 
 public class JDBCExample {
     // database information
@@ -44,18 +43,43 @@ public class JDBCExample {
         try {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
-            File setup = new File("src/SETUP.sql");
+
+            File setup = new File("src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
             set.useDelimiter(";");
             while (set.hasNext()) {
                 String data = set.next();
-                stmt.execute(data.concat(";"));
+                stmt.execute(data);
             }
             set.close();
-            System.out.println("Start up database done...");
-            create_calendar();
+
+            String calendar_sql = "DROP PROCEDURE IF EXISTS insert_year_dates;";
+            System.out.println(calendar_sql);
+            stmt.execute(calendar_sql);
+            calendar_sql = "create PROCEDURE insert_year_dates()\n" +
+                    "BEGIN\n" +
+                    "    SET @t_current = DATE(NOW());\n" +
+                    "    SET @t_end = DATE(DATE_ADD(NOW(), INTERVAL 1 YEAR));\n" +
+                    "    WHILE(@t_current< @t_end) DO\n" +
+                    "        INSERT INTO Calendar (date) VALUES (@t_current);\n" +
+                    "        SET @t_current = DATE_ADD(@t_current, INTERVAL 1 DAY);\n" +
+                    "    END WHILE;\n" +
+                    "END;";
+            stmt.execute(calendar_sql);
+            calendar_sql = "CALL insert_year_dates();";
+            stmt.execute(calendar_sql);
+
+            setup = new File("src/insert_data.sql");
+            assert (setup.exists());
+            set = new Scanner(setup);
+            set.useDelimiter(";");
+            while (set.hasNext()) {
+                String data = set.next();
+                stmt.execute(data);
+            }
+            set.close();
 
             // scanner initialization
             Scanner sc = new Scanner(System.in);
@@ -361,6 +385,7 @@ public class JDBCExample {
                             label_avail:
                             if (avail.equals("1")) {
                                 print_header("Show Availability");
+
                                 // print out the availability
                             } else if (avail.equals("2")) {
                                 print_header("Add Availability");
@@ -456,6 +481,7 @@ public class JDBCExample {
                                // show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
+
                                 String reg = "";
                                 // create_book(username, payment, month, day, lid);
                                 // get_all listings that is available
@@ -504,49 +530,49 @@ public class JDBCExample {
 
 
     // sql functions
-    public static void create_calendar() throws SQLException {
-        try {
-            String month = "1";
-            String day = "1";
-
-            for (int j = 1; j < 13; j++) {
-                month = String.format("%d", j);
-                for (int i = 1; i < 32; i++) {
-                    if (!(i == 23 && j == 3)) { // Avoid deleting the available related
-                        day = String.format("%d", i);
-                        String sql = String.format("INSERT INTO Calendar (month, day) VALUES (\"%s\", \"%s\");", month, day);
-                        // System.out.print(sql.concat("\n"));
-                        stmt.executeUpdate(sql);
-                    }
-                }
-            }
-            String sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "31");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "30");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "29");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "4", "31");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "6", "31");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "9", "31");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "11", "31");
-            // System.out.print(sql.concat("\n"));
-            stmt.executeUpdate(sql);
-            System.out.print("Calendar created!");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    // public static void create_calendar() throws SQLException {
+    //     try {
+    //         String month = "1";
+    //         String day = "1";
+    //
+    //         for (int j = 1; j < 13; j++) {
+    //             month = String.format("%d", j);
+    //             for (int i = 1; i < 32; i++) {
+    //                 if (!(i == 23 && j == 3)) { // Avoid deleting the available related
+    //                     day = String.format("%d", i);
+    //                     String sql = String.format("INSERT INTO Calendar (month, day) VALUES (\"%s\", \"%s\");", month, day);
+    //                     // System.out.print(sql.concat("\n"));
+    //                     stmt.executeUpdate(sql);
+    //                 }
+    //             }
+    //         }
+    //         String sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "31");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "30");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "29");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "4", "31");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "6", "31");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "9", "31");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "11", "31");
+    //         // System.out.print(sql.concat("\n"));
+    //         stmt.executeUpdate(sql);
+    //         System.out.print("Calendar created!");
+    //
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     // login function, check if the user exists in the database and if the password matches
     public static boolean login(String string) throws SQLException {
