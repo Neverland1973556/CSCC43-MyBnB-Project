@@ -2,6 +2,7 @@ import java.io.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +33,11 @@ public class JDBCExample {
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: rating, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: rating, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
-    private static final String half_line = "------------------------------";
+    private static final String half_line = "-----------------------------------";
+
+    private static final String start_date = "2022-01-01";
+    private static final String end_date = "2024-01-01";
+    private static final String valid_date = "Valid date: " + start_date + " to " + end_date + ".";
 
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, SQLException {
         Class.forName(dbClassName);
@@ -60,8 +65,10 @@ public class JDBCExample {
             stmt.execute(calendar_sql);
             calendar_sql = "create PROCEDURE insert_year_dates()\n" +
                     "BEGIN\n" +
-                    "    SET @t_current = DATE(NOW());\n" +
-                    "    SET @t_end = DATE(DATE_ADD(NOW(), INTERVAL 1 YEAR));\n" +
+                    // "    SET @t_current = DATE(NOW());\n" +
+                    // "    SET @t_end = DATE(DATE_ADD(NOW(), INTERVAL 1 YEAR));\n" +
+                    "    SET @t_current = DATE('" + start_date + "');\n" +
+                    "    SET @t_end = DATE('" + end_date + "');\n" +
                     "    WHILE(@t_current< @t_end) DO\n" +
                     "        INSERT INTO Calendar (date) VALUES (@t_current);\n" +
                     "        SET @t_current = DATE_ADD(@t_current, INTERVAL 1 DAY);\n" +
@@ -221,7 +228,7 @@ public class JDBCExample {
                     System.out.println("Press the Corresponding number to continue");
                     System.out.println(is_owner_prompt);
                     while (sc.hasNextLine()) {
-                        String input = sc.nextLine();
+                        String input = validate_int(sc, 1, 9);
                         if (input.equals("1")) {
                             select_profile(sc);
                             if (is_owner == -1) {
@@ -230,8 +237,8 @@ public class JDBCExample {
                         } else if (input.equals("2")) {
                             print_header("Manage My Listings");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing");
-                            String listing_decide = sc.nextLine();
+                            System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
+                            String listing_decide = validate_int(sc, 1, 4);
                             if (listing_decide.equals("1")) {
                                 print_header("Check My Listings");
                                 // get all my listings
@@ -265,17 +272,18 @@ public class JDBCExample {
                                 System.out.println("Add Listing Address - Please input your country.");
                                 String country = validate(sc);
                                 if (!check_address_owner(postal_code, unit, city, country)) {
-                                    continue;
-                                }
-                                System.out.println("Address is valid");
-                                String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
-                                System.out.println(reg);
-                                String success = create_listing(reg, postal_code, unit, city, country);
-                                if (success.equals("false")) {
-                                    print_error("Cannot add, please try again");
+                                    // not valid
                                 } else {
-                                    // success, can continue
-                                    System.out.println("Add success!");
+                                    System.out.println("Address is valid");
+                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
+                                    System.out.println(reg);
+                                    String success = create_listing(reg, postal_code, unit, city, country);
+                                    if (success.equals("false")) {
+                                        print_error("Cannot add, please try again");
+                                    } else {
+                                        // success, can continue
+                                        System.out.println("Add success!");
+                                    }
                                 }
 
                             } else if (listing_decide.equals("3")) {
@@ -373,20 +381,28 @@ public class JDBCExample {
                                 } else {
                                     print_error("Not Valid input when change a Listing!");
                                 }
-                            } else {
+                            } else if (listing_decide.equals("4")) {
                                 // not valid
-                                print_error("Not Valid input in Managing my Listing!");
+                                // continue;
                             }
                         } else if (input.equals("3")) {
                             print_header("Listing Availability");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability");
-                            String avail = validate_int(sc, 1, 2);
+                            System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
+                            String avail = validate_int(sc, 1, 4);
                             label_avail:
                             if (avail.equals("1")) {
                                 print_header("Show Availability");
+                                if (!show_user_owns(username)) {
+                                    print_header("Currently you don't have a listing.");
+                                    break label_avail;
+                                }
+                                System.out.println("Please type the lid your want to check");
+                                String lid = validate_int(sc, 0, 9999);
+                                if (!show_available(lid)) {
+                                    print_error("Cannot find availability for giving lid.");
+                                }
 
-                                // print out the availability
                             } else if (avail.equals("2")) {
                                 print_header("Add Availability");
                                 if (!show_user_owns(username)) {
@@ -397,49 +413,148 @@ public class JDBCExample {
                                 System.out.println("Please type the lid you want to add availability to");
                                 String lid = validate_int(sc, 1, 10000);
                                 print_header("Add date period for Listing Available.");
-                                System.out.println("Valid Period: 2020-01-01 to 2026-01-01.");
+                                System.out.println(valid_date);
                                 System.out.println("Please input the start date in this format: yyyy-mm-dd");
-                                String start_time = validate(sc);
+                                String start_time = validate_time(sc);
                                 System.out.println("Please input the end date in this format: yyyy-mm-dd");
-                                String end_time = validate(sc);
-                                SimpleDateFormat sd_format = new SimpleDateFormat("yyyy-MM-dd");
+                                String end_time = validate_time(sc);
+                                LocalDate d1;
+                                LocalDate d2;
                                 try {
-                                    Date d1 = (Date) sd_format.parse(start_time);
-                                    Date d2 = (Date) sd_format.parse(end_time);
-                                    Date d3 = (Date) sd_format.parse("2020-01-01");
-                                    Date d4 = (Date) sd_format.parse("2026-01-01");
-                                    if (d1.after(d2)) {
-                                        print_error("End date is before start date.");
-                                        continue;
-                                    }
-                                    if (d1.before(d3)) {
-                                        print_error("Start date is too early");
-                                        continue;
-                                    }
-                                    if (d2.after(d4)) {
-                                        print_error("End date is too late");
-                                        continue;
-                                    }
-                                } catch (ParseException e) {
-                                    print_error("Input date is not valid.");
+                                    d1 = LocalDate.parse(start_time);
+                                    d2 = LocalDate.parse(end_time);
+                                } catch (Exception e) {
+                                    print_error("input date is not valid");
+                                    end_of_owner();
+                                    continue;
+                                }
+                                LocalDate d3 = LocalDate.parse("2022-01-01");
+                                LocalDate d4 = LocalDate.parse("2024-01-01");
+                                if (d1.isAfter(d2)) {
+                                    print_error("End date is before start date.");
+                                    end_of_owner();
+                                    continue;
+                                }
+                                if (d3.isAfter(d1)) {
+                                    print_error("Start date is too early");
+                                    end_of_owner();
+                                    continue;
+                                }
+                                if (d2.isAfter(d4)) {
+                                    print_error("End date is too late");
+                                    end_of_owner();
                                     continue;
                                 }
                                 System.out.println("Please input daily price of the available:");
                                 String price = validate_double(sc, 0, 9999);
                                 // in this period, this listing is this price
-                                // add_available(start_time, end_time, price, lid);
+                                add_available(d1, d2, price, lid, false);
                             } else if (avail.equals("3")) {
                                 print_header("Change Availability");
+                                System.out.println("1: Change Availability Price, 2: Remove Existing Availability, 3: Go Back.");
+                                String change_avail = validate_int(sc, 1, 3);
+                                if (change_avail.equals("1")) {
+                                    print_header("Change Availability Price.");
+                                    if (!show_user_owns(username)) {
+                                        print_header("Currently you don't have a listing.");
+                                        break label_avail;
+                                    }
+                                    // new add will replace old one, add can be not success
+                                    System.out.println("Please type the lid you want to change it's availability");
+                                    String lid = validate_int(sc, 1, 10000);
+                                    print_header("Add date period for changing Listing Available.");
+                                    System.out.println(valid_date);
+                                    System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                                    String start_time = validate_time(sc);
+                                    System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                                    String end_time = validate_time(sc);
+                                    LocalDate d1;
+                                    LocalDate d2;
+                                    try {
+                                        d1 = LocalDate.parse(start_time);
+                                        d2 = LocalDate.parse(end_time);
+                                    } catch (Exception e) {
+                                        print_error("input date is not valid");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    LocalDate d3 = LocalDate.parse("2022-01-01");
+                                    LocalDate d4 = LocalDate.parse("2024-01-01");
+                                    if (d1.isAfter(d2)) {
+                                        print_error("End date is before start date.");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    if (d3.isAfter(d1)) {
+                                        print_error("Start date is too early");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    if (d2.isAfter(d4)) {
+                                        print_error("End date is too late");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    System.out.println("Please input daily price of the available:");
+                                    String price = validate_double(sc, 0, 9999);
+                                    // in this period, this listing is this price
+                                    // hard = true, will delete first
+                                    add_available(d1, d2, price, lid, true);
 
-                                // add with verify if the time is available or not;
-
+                                } else if (change_avail.equals("2")) {
+                                    print_header(" Remove Availability.");
+                                    if (!show_user_owns(username)) {
+                                        print_header("Currently you don't have a listing.");
+                                        break label_avail;
+                                    }
+                                    // new add will replace old one, add can be not success
+                                    System.out.println("Please type the lid you want to remove it's availability");
+                                    String lid = validate_int(sc, 1, 10000);
+                                    print_header("Add date period for remove Listing Available.");
+                                    System.out.println(valid_date);
+                                    System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                                    String start_time = validate_time(sc);
+                                    System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                                    String end_time = validate_time(sc);
+                                    LocalDate d1;
+                                    LocalDate d2;
+                                    try {
+                                        d1 = LocalDate.parse(start_time);
+                                        d2 = LocalDate.parse(end_time);
+                                    } catch (Exception e) {
+                                        print_error("input date is not valid");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    LocalDate d3 = LocalDate.parse("2022-01-01");
+                                    LocalDate d4 = LocalDate.parse("2024-01-01");
+                                    if (d1.isAfter(d2)) {
+                                        print_error("End date is before start date.");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    if (d3.isAfter(d1)) {
+                                        print_error("Start date is too early");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    if (d2.isAfter(d4)) {
+                                        print_error("End date is too late");
+                                        end_of_owner();
+                                        continue;
+                                    }
+                                    remove_available(d1, d2, lid);
+                                } else if (change_avail.equals("3")) {
+                                    // continue;
+                                }
+                            } else if (avail.equals("4")) {
+                                // continue the loop;
                             }
                         } else if (input.equals("4")) {
                             System.out.println("Check Booking");
                         } else if (input.equals("5")) {
                             System.out.println("Rating and Comment");
-
-                        } else if (input.equals("break")) {
+                        } else if (input.equals("8")) {
                             System.out.println("Terminate the program.");
                             break label_whole;
                         } else if (input.equals("9")) {
@@ -448,9 +563,6 @@ public class JDBCExample {
                             is_owner = -1;
                             print_header("Log Out");
                             continue label_whole;
-                        } else {
-                            // not valid
-                            print_error("Not Valid input!");
                         }
                         end_of_owner();
                     }
@@ -461,7 +573,7 @@ public class JDBCExample {
                     System.out.println("Press the Corresponding number to continue");
                     System.out.println(is_renter_prompt);
                     while (sc.hasNextLine()) {
-                        String input = sc.nextLine();
+                        String input = validate_int(sc, 1, 9);
                         if (input.equals("1")) {
                             select_profile(sc);
                             if (is_owner == -1) {
@@ -478,7 +590,7 @@ public class JDBCExample {
                                     print_header("you don't have any booking");
                                 }
                                 // get all my listings
-                               // show_user_booking(username);
+                                // show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
 
@@ -492,7 +604,7 @@ public class JDBCExample {
                             } else if (booking_decide.equals("3")) {
                                 print_header("Cancel a booking");
                                 // get all my listings
-                               // show_user_booking(username);
+                                // show_user_booking(username);
                                 // choose the one you want to cancel
                                 // cancel by aid
                             } else {
@@ -500,7 +612,7 @@ public class JDBCExample {
                             }
                         } else if (input.equals("5")) {
                             print_header("Rating and Comment");
-                        } else if (input.equals("break")) {
+                        } else if (input.equals("8")) {
                             print_header("Terminate the program.");
                             break label_whole;
                         } else if (input.equals("9")) {
@@ -509,9 +621,6 @@ public class JDBCExample {
                             is_owner = -1;
                             System.out.println("Try to logout");
                             continue label_whole;
-                        } else {
-                            // not valid
-                            print_error("Not Valid input!");
                         }
                         end_of_renter();
                     }
@@ -527,7 +636,6 @@ public class JDBCExample {
         conn.close();
         System.out.println("Closing success!");
     }
-
 
     // sql functions
     // public static void create_calendar() throws SQLException {
@@ -681,7 +789,7 @@ public class JDBCExample {
                 stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
                 String lid = "";
                 ResultSet rs = stmt.getGeneratedKeys();
-                if(rs.next())
+                if (rs.next())
                     lid = rs.getString(1);
 
                 // String lid = rs.getString("LAST_INSERT_ID()");
@@ -800,19 +908,82 @@ public class JDBCExample {
         }
     }
 
-    /*
-    public static boolean add_available(String start_time, String end_time, String price, String lid) throws SQLException {
+    public static boolean show_available(String lid) throws SQLException {
         try {
-            String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid);
-            System.out.println(sql);
-            stmt.executeQuery(sql);
-            return false;
+            boolean result = false;
+            // use lid to show all avaiable
+            String sql;
+            // check if the time is available
+            String check_avail = String.format("select * from available where lid = '%s';", lid);
+            ResultSet rs = stmt.executeQuery(check_avail);
+            while (rs.next()) {
+                result = true;
+                String date = rs.getString("date");
+                String price = rs.getString("price");
+                System.out.print("Date: " + date);
+                System.out.println(", Price: " + price);
+            }
+            return result;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
 
+    public static boolean add_available(LocalDate start_time, LocalDate end_time, String price, String lid, boolean hard) throws SQLException {
+        try {
+            // start time, end time, price, lid is valid
+            LocalDate temp = start_time;
+            String sql;
+            if (hard) {
+                // delete the corresponding date first
+                while (temp.isBefore(end_time)) {
+                    sql = String.format("delete from Available where lid = '%s' and date = '%s';", lid, temp);
+                    System.out.println(sql);
+                    stmt.executeUpdate(sql);
+                    temp = temp.plusDays(1);
+                }
+            } else {
+                // check if the time is available
+                String check_avail = String.format("select * from available where lid = '%s' and date >= '%s' and date <= '%s';", lid, start_time, end_time);
+                ResultSet rs = stmt.executeQuery(check_avail);
+                if (rs.next()) {
+                    print_error("Input time period is duplicate");
+                    return false;
+                }
+            }
+            temp = start_time;
+            while (temp.isBefore(end_time)) {
+                sql = String.format("INSERT INTO Available (price, date, lid) VALUES ('%s', '%s', '%s');", price, temp, lid);
+                System.out.println(sql);
+                stmt.executeUpdate(sql);
+                temp = temp.plusDays(1);
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean remove_available(LocalDate start_time, LocalDate end_time, String lid) throws SQLException {
+        try {
+            LocalDate temp = start_time;
+            String sql;
+            while (temp.isBefore(end_time)) {
+                sql = String.format("delete from Available where lid = '%s' and date = '%s';", lid, temp);
+                System.out.println(sql);
+                stmt.executeUpdate(sql);
+                temp = temp.plusDays(1);
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /*
     public static boolean create_available(String input) throws SQLException {
         try {
             String reg = "Price:(?<price>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)";
@@ -1064,13 +1235,13 @@ public class JDBCExample {
                 System.out.println(sql);
                 stmt.executeUpdate(sql);
 
-                String check_live = String.format("select * from Lives where postal_code = '%s' and unit = '%d';", postal_code, unit);
+                String check_live = String.format("select * from Lives where postal_code = '%s' and unit = '%s';", postal_code, unit);
                 System.out.println(check_live);
                 ResultSet rs_live = stmt.executeQuery(check_live);
                 if (!rs_live.next()) {
                     // address is useless
                     // delete the address
-                    sql = String.format("delete from address where postal_code = '%s' and unit = '%d';", postal_code, unit);
+                    sql = String.format("delete from address where postal_code = '%s' and unit = '%s';", postal_code, unit);
                     System.out.println(sql);
                     stmt.executeUpdate(sql);
                 }
@@ -1079,7 +1250,7 @@ public class JDBCExample {
                 print_error("cannot find the listing");
                 return false;
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Cannot delete listing");
             e.printStackTrace();
             return false;
@@ -1186,8 +1357,8 @@ public class JDBCExample {
     public static void select_profile(Scanner sc) throws SQLException {
         try {
             System.out.println(half_line + "Update Information" + half_line);
-            System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account");
-            String profile_decide = sc.nextLine();
+            System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
+            String profile_decide = validate_int(sc, 1, 4);
             if (profile_decide.equals("1")) {
                 print_header("Check My Profile");
                 boolean success = get_profile(username);
@@ -1198,10 +1369,12 @@ public class JDBCExample {
                 print_header("Change My Profile");
                 // select what your want to change
                 System.out.println("Select the profile you want to change");
-                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address.");
-                String change_profile_decide = validate_int(sc, 1, 5);
+                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address, 6: Go Back.");
+                String change_profile_decide = validate_int(sc, 1, 6);
                 int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-                if (change_profile_decide_int == 5) {
+                if (change_profile_decide_int == 6) {
+                    // do nothing
+                } else if (change_profile_decide_int == 5) {
                     // change address
                     print_header("Change Address");
                     System.out.println("Change Address - Please input your postal code.");
@@ -1252,11 +1425,11 @@ public class JDBCExample {
                     // don't delete
                     // go back
                 }
-            } else {
+            } else if (profile_decide.equals("4")) {
                 // not valid
-                print_error("Input is not valid");
+                // go back
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

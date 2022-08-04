@@ -76,8 +76,7 @@ create table IF NOT EXISTS Owns (
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (lid),
     username varchar(100) NOT NULL,
-    foreign key (username) references Host(username) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE(lid)
+    foreign key (username) references Host(username) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 create table IF NOT EXISTS Book (
@@ -130,6 +129,7 @@ create table IF NOT EXISTS Available (
                                                                 in Java implementation, otherwise can not create*/
     lid int(50) NOT NULL,
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE (lid, date),
     BID int(50) ,
     foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (BID)   /*to-One book*/
