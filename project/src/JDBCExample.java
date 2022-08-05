@@ -15,7 +15,7 @@ public class JDBCExample {
 
     // your username and password of mysql
     private static final String USER = "root";
-    private static final String PASS = "Xzt1973556";
+    private static final String PASS = "123456";
 
     // connection
     private static Statement stmt;
@@ -32,7 +32,7 @@ public class JDBCExample {
 
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: rating, 9: logout";
-    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: rating, 9: logout";
+    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: Rating, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
     private static final String half_line = "-----------------------------------";
 
@@ -50,7 +50,7 @@ public class JDBCExample {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
 
-            File setup = new File("src/setup_table.sql");
+            File setup = new File("project/src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -80,7 +80,7 @@ public class JDBCExample {
             calendar_sql = "CALL insert_year_dates();";
             stmt.execute(calendar_sql);
 
-            setup = new File("src/insert_data.sql");
+            setup = new File("project/src/insert_data.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -684,6 +684,44 @@ public class JDBCExample {
                             }
                         } else if (input.equals("5")) {
                             print_header("Rating and Comment");
+							
+                            System.out.println("Press the Corresponding number to continue");
+                            System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
+                            String booking_decide = sc.nextLine();
+                            if (booking_decide.equals("1")) {
+                                print_header("Show how I was being rated");
+                                if (!show_renter_s_judgement(username)) {
+                                    print_header("No host has rated you so far.");
+                                }
+                            } else if (booking_decide.equals("2")){
+								print_header("Show what I've rated");
+								if (!show_renter_s_rate(username)) {
+                                    print_header("You haven't rate anyone yet.");
+                                }
+							} else if (booking_decide.equals("3")) {
+                                print_header("Rate a host");
+                                System.out.println("Please input the host's username that you want to rate");
+                                String host_username = validate(sc);
+                                System.out.println("Please input how much you like this host from 1-5");
+                                String likes = validate_int(sc, 1, 5);
+								System.out.println("Please make any comment (100 words limit):");
+                                String words = validate(sc);
+
+								create_renter_rate(username, host_username, likes, words);
+                            } else if (booking_decide.equals("4")) {
+                                // cannot change a book
+                                print_header("Delete a rating");
+                                System.out.println("Input the JID that you want to cancel");
+                                if (!show_renter_s_rate(username)) {
+                                    print_header("you don't have any booking");
+                                }
+                                String jid = validate_int(sc, 1, 9999);
+                                if(!cancel_judgement(jid)){
+                                    print_error("Cannot cancel book");
+                                }
+                            } else if (booking_decide.equals("5")) {
+                                //go back
+                            }
                         } else if (input.equals("8")) {
                             print_header("Terminate the program.");
                             break label_whole;
@@ -1340,7 +1378,17 @@ public class JDBCExample {
             return false;
         }
     }
-
+    public static boolean cancel_judgement(String jid) throws SQLException {
+        try {
+            String sql = String.format("DELETE FROM Judgement where JID = \"%s\";", jid);
+            System.out.print(sql.concat("\n"));
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public static String get_payment() throws SQLException {
         String result = null;
         try {
@@ -1395,6 +1443,118 @@ public class JDBCExample {
         }
     }
 
+	public static boolean create_renter_rate(String rentername, String hostname, String rate, String text) throws SQLException{
+		try{
+
+				String sql = String.format("SELECT Owns.username FROM Book Join Owns where Book.lid = Owns.lid and cancellation = 0 and Book.username = '%s';", rentername);
+				ResultSet rs = stmt.executeQuery(sql);
+				while(rs.next()){
+					String host = rs.getString("username");
+					if(host.equals(hostname)){
+						String sql3 = String.format("SELECT * FROM Judgement where renter_username = '%s' and host_username = '%s' and direction = 0;", rentername, hostname);
+						ResultSet rs3 = stmt.executeQuery(sql3);
+						if(rs3.next()){
+							System.out.println("Since you have already rated this host, we delete the previous one and create new rating.");
+							String JID =rs3.getString("JID");
+							String sql4 = String.format("DELETE FROM Judgement where JID = '%s';", JID);
+							stmt.executeUpdate(sql4);
+						}
+						String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname,rentername,"0",rate);
+						System.out.print(sql2.concat("Rating added."));
+						stmt.executeUpdate(sql2);
+						return true;
+					}
+					
+				}
+				print_header("You can't judge this host since you haven't book any from this host.");
+				return false;
+	
+		}catch(SQLException e){
+			System.err.println("You can't judge this host since you haven't book any from this host.");
+			return false;
+		}
+	}
+   /*show how the renter is being judged*/
+	public static boolean show_renter_s_judgement(String rentername) throws SQLException{
+		try{
+				boolean result = false;
+				String sql = String.format("SELECT * FROM Judgement where renter_username = '%s';", rentername);
+				ResultSet rs = stmt.executeQuery(sql);
+				while(rs.next()){
+					String JID = rs.getString("JID");
+					String likes = rs.getString("likes");
+					String words = rs.getString("words");
+					String direction = rs.getString("direction");
+					String host_username = rs.getString("host_username");
+
+					if(direction.equals("1")){
+						String sql2 = String.format("JID = '%s', Host: '%s', Likes = '%s', Comment: '%s';", JID, host_username,likes,words);
+						System.out.print(sql2.concat("\n"));
+						//stmt.executeUpdate(sql2);
+						result = true;
+					}
+				}
+				return result;
+	
+		}catch(SQLException e){
+			System.err.println("Something went wrong with judgement showing.");
+			return false;
+		}
+	}
+	/*Show what renter have rated*/
+	public static boolean show_renter_s_rate(String rentername) throws SQLException{
+		try{
+				boolean result = false;
+				String sql = String.format("SELECT * FROM Judgement where renter_username = '%s';", rentername);
+				ResultSet rs = stmt.executeQuery(sql);
+				while(rs.next()){
+					String JID = rs.getString("JID");
+					String likes = rs.getString("likes");
+					String words = rs.getString("words");
+					String direction = rs.getString("direction");
+					String host_username = rs.getString("host_username");
+
+					if(direction.equals("0")){
+						String sql2 = String.format("JID = '%s', Host: '%s', Likes = '%s', Comment: '%s';", JID, host_username,likes,words);
+						System.out.print(sql2.concat("\n"));
+						//stmt.executeUpdate(sql2);
+						result = true;
+					}
+				}
+				return result;
+	
+		}catch(SQLException e){
+			System.err.println("Something went wrong with judgement showing.");
+			return false;
+		}
+	}
+   /*show how the host is being judged*/
+   public static boolean show_owner_s_judgement(String host_username) throws SQLException{
+	try{
+			boolean result = false;
+			String sql = String.format("SELECT * FROM Judgement where host_username = '%s';", host_username);
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()){
+				String JID = rs.getString("JID");
+				String likes = rs.getString("likes");
+				String words = rs.getString("words");
+				String direction = rs.getString("direction");
+				String renter_username = rs.getString("renter_username");
+
+				if(direction.equals("0")){
+					String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
+					System.out.print(sql2.concat("\n"));
+					//stmt.executeUpdate(sql2);
+					result = true;
+				}
+			}
+			return result;
+
+	}catch(SQLException e){
+		System.err.println("Something went wrong with judgement showing.");
+		return false;
+	}
+}
     // my helper function
     public static String validate(Scanner sc) {
         String input;

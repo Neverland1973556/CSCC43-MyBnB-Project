@@ -23,6 +23,7 @@ INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALU
 INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"Jonathan");
 INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it", 3,"Felix");
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
+INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The host doesn't repair the air-conditioner!", "Jonathan", "Jonathan",0);
 INSERT INTO Available (price, date, lid) VALUES ("30", "2022-08-19","2");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A2", "1367", "Jonathan");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A3", "1367", "test");
