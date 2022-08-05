@@ -31,8 +31,8 @@ public class JDBCExample {
     private static String username;
 
     // some strings
-    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rating, 9: logout";
-    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 5: Rating, 9: logout";
+    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
+    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
     private static final String a_line = "--------------------------------------------------------------------------------";
     private static final String half_line = "-----------------------------------";
 
@@ -558,7 +558,7 @@ public class JDBCExample {
                                 print_header("you don't have any booking");
                             }
                         } else if (input.equals("5")) {
-                            System.out.println("Rating and Comment");
+                            System.out.println("Rate User");
 
 							System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
@@ -724,7 +724,7 @@ public class JDBCExample {
                                 continue;
                             }
                         } else if (input.equals("5")) {
-                            print_header("Rating and Comment");
+                            print_header("Rate User");
 							
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
@@ -763,7 +763,48 @@ public class JDBCExample {
                             } else if (booking_decide.equals("5")) {
                                 //go back
                             }
-                        } else if (input.equals("8")) {
+                        } else if (input.equals("4")) {
+									// comment
+							print_header("Comment Listing");
+							
+                            System.out.println("Press the Corresponding number to continue");
+                            System.out.println("1: Show my comments, 2: Comment a lising, 3: Delete a comment, 5: Go Back.");
+                            String booking_decide = sc.nextLine();
+                            if (booking_decide.equals("1")) {
+                                print_header("Show what I have commented");
+                                if (!show_renter_comment(username)) {
+                                    print_header("You haven't comment any listing so far.");
+                                }
+                            } else if (booking_decide.equals("2")) {
+                                print_header("Comment a Listing");
+								if (!show_renter_booked_listing(username)) {
+                                    print_header("You haven't book any listing so far.");
+                                }
+                                System.out.println("Please input the ListingID that you want to rate");
+                                String lid = validate_int(sc, 0, 9999);
+                                System.out.println("Please input how much you like this listing from 1-5");
+                                String rate = validate_int(sc, 1, 5);
+								System.out.println("Please make any comment (250 words limit):");
+                                String text = validate(sc);
+
+								create_renter_listing_comment(username, lid, rate, text);
+
+                            } else if (booking_decide.equals("3")) {
+                                // cannot change a book
+                                print_header("Delete a rating");
+                                System.out.println("Input the LID of that comment that you want to delete.");
+                                if (!show_renter_comment(username)) {
+                                    print_header("you don't have any comment");
+                                }
+                                String lid = validate_int(sc, 1, 9999);
+                                if(!delete_renter_listing_comment(username, lid)){
+                                    print_error("Cannot cancel the comment of this Listing");
+                                }
+                            } else if (booking_decide.equals("5")) {
+                                //go back
+                            }
+
+						} else if (input.equals("8")) {
                             print_header("Terminate the program.");
                             break label_whole;
                         } else if (input.equals("9")) {
@@ -1039,6 +1080,87 @@ public class JDBCExample {
             return false;
         }
     }
+	public static boolean show_renter_booked_listing(String rentername) throws SQLException {
+        boolean result = false;
+        try {
+            String sql = String.format("SELECT lid, lon, lat, type, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address where book.username = '%s' and cancellation = 0 group by lid;", rentername);
+            //System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            // STEP 5: Extract data from result set
+            while (rs.next()) {
+                String lid = rs.getString("lid");
+                System.out.print("ListingID: " + lid);
+                String lon = rs.getString("lon");
+                System.out.print(", Longitude: " + lon);
+                String lat = rs.getString("lat");
+                System.out.print(", Latitude: " + lat);
+                String type = rs.getString("type");
+                System.out.print(", Type: " + type);
+                String unit = rs.getString("unit");
+                System.out.print(", unit: " + unit);
+                String postal_code = rs.getString("postal_code");
+                System.out.print(", postal_code: " + postal_code);
+                String city = rs.getString("city");
+                System.out.print(", City: " + city);
+                String country = rs.getString("country");
+                System.out.println(", Country: " + country);
+   
+                result = true;
+            }
+            rs.close();
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+	public static boolean create_renter_listing_comment(String rentername, String lid, String rate, String text) throws SQLException{
+		try{
+				String sql = String.format("SELECT lid, lon, lat, type, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address where book.username = '%s' and cancellation = 0 and lid = '%s' group by lid;", rentername, lid);
+				ResultSet rs = stmt.executeQuery(sql);
+				if(rs.next()){
+						String sql3 = String.format("SELECT * FROM Comment where username = '%s' and lid = '%s';", rentername, lid);
+						ResultSet rs3 = stmt.executeQuery(sql3);
+						if(rs3.next()){
+							System.out.println("Since you have already comment this listing, we delete the previous one and create new comment.");
+							String CID = rs3.getString("CID");
+							String sql4 = String.format("DELETE FROM Comment where CID = '%s';", CID);
+							stmt.executeUpdate(sql4);
+						}
+						String sql2 = String.format("INSERT INTO Comment (text, lid, username, rate) VALUES ('%s', '%s', '%s', '%s');", text, lid,rentername,rate);
+						print_header("Comment added.");
+						stmt.executeUpdate(sql2);
+						return true;
+					
+				}
+				print_header("You can't comment this lising since you haven't book this listing or cancelled.");
+				return false;
+	
+		}catch(SQLException e){
+			System.err.println("You can't comment this lising since you haven't book this listing or cancelled.");
+			return false;
+		}
+	}
+	public static boolean delete_renter_listing_comment(String rentername, String lid) throws SQLException{
+		try{
+				String sql = String.format("SELECT * FROM Comment where username = '%s' and lid = '%s' ", rentername, lid);
+				ResultSet rs = stmt.executeQuery(sql);
+				if(rs.next()){
+					String CID = rs.getString("CID");
+					String sql4 = String.format("DELETE FROM Comment where CID = '%s';", CID);
+					stmt.executeUpdate(sql4);
+					print_header("Comment deleted success.");
+					return true;
+				}
+				print_header("You can't delete you comment of this lising since you haven't comment this listing.");
+				return false;
+	
+		}catch(SQLException e){
+			System.err.println("You can't delete you comment of this lising since you haven't comment this listing.");
+			return false;
+		}
+	}
+	
     public static boolean show_owner_books(String username) throws SQLException {
         boolean result = false;
         try {
@@ -1713,7 +1835,32 @@ public class JDBCExample {
 		System.err.println("Something went wrong with judgement showing.");
 		return false;
 	}
-}
+	}
+	  /*show how the renter is being judged*/
+	  public static boolean show_renter_comment(String rentername) throws SQLException{
+		try{
+				boolean result = false;
+				String sql = String.format("SELECT * FROM Comment where username = '%s';", rentername);
+				ResultSet rs = stmt.executeQuery(sql);
+				while(rs.next()){
+					String CID = rs.getString("CID");
+					String rate = rs.getString("rate");
+					String lid = rs.getString("lid");
+					String text = rs.getString("text");
+					String sql2 = String.format("LID = '%s', cid: '%s' Rate: '%s', Comment = '%s';", lid, CID, rate, text);
+					System.out.print(sql2.concat("\n"));
+					//stmt.executeUpdate(sql2);
+					result = true;
+					
+				}
+				return result;
+	
+		}catch(SQLException e){
+			System.err.println("Something went wrong with comment showing.");
+			return false;
+		}
+	}
+
     // my helper function
     public static String validate(Scanner sc) {
         String input;

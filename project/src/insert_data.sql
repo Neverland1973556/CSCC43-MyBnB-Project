@@ -15,12 +15,12 @@ INSERT INTO Listing (lon, lat, type) VALUES ( "30.22", "18.99", "full house");
 INSERT INTO Listing (lon, lat, type) VALUES ( "3.22", "19", "apartment");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.62", "1.99", "room");
 
-
+INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-07-10", "2022-07-20","450", "4510199974972547", "3" , "Jonathan", "1");
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan", "3");
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-03-01", "2022-03-08","88", "4510199974972547", "2" , "test", "3");
 /*In Java, create all dates in a year*/
 /*INSERT INTO Calendar (date) VALUES("2022-08-19")*/
-INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"Jonathan");
+INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",1,"Jonathan");
 INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it", 3,"Felix");
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The host doesn't repair the air-conditioner!", "Jonathan", "Jonathan",0);
