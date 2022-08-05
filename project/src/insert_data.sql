@@ -3,7 +3,7 @@ INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto"
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/
-INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("777777", "test real name", "test", "1999", "teacher", "test"); /*Do we need to parse sin*/
+INSERT INTO User (SIN, name, password, birth, occupation, username, payment) VALUES ("777777", "test real name", "test", "1999", "teacher", "test", "1234567891234567"); /*Do we need to parse sin*/
 INSERT INTO Host (username) VALUES ("Jonathan");
 INSERT INTO Host (username) VALUES ("test");
 INSERT INTO Host (username) VALUES ("Felix");

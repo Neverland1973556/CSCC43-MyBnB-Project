@@ -138,14 +138,12 @@ public class JDBCExample {
                             String password = validate(sc);
                             System.out.println("REGISTER - Please input your real name.");
                             String real_name = validate(sc);
-                            System.out.println("REGISTER - Please input your occupation.");
-                            String occupation = validate(sc);
                             System.out.println("REGISTER - Please input your birth year.");
                             String birth_year = validate_int(sc, 1800, 2022);
                             System.out.println("REGISTER - Please input your SIN.");
                             String sin = validate_int(sc, 0, 0);
 
-                            String reg = "Name:" + real_name + ", Password:" + password + ", Occupation:" + occupation + ", SIN:" + sin + ", Birth:" + birth_year + ", UserName:" + username;
+                            String reg = "Name:" + real_name + ", Password:" + password + ", SIN:" + sin + ", Birth:" + birth_year + ", UserName:" + username;
                             System.out.println(reg);
                             boolean success = register(reg);
                             if (!success) {
@@ -650,15 +648,13 @@ public class JDBCExample {
                                     continue;
                                 }
                                 // get the total_price, get payment method
-                                String payment = "123";
-
-                                // String payment = get_payment();
-                                // if(payment == 0){
-                                //     print_header("Didn't detect credit card payment, Please input new card.");
-                                //     payment = validate(sc);
-                                // }else{
-                                //     print_header("Get stored credit card: %s", payment);
-                                // }
+                                String payment = get_payment();
+                                if(payment == null){
+                                    print_header("Didn't detect credit card payment, Please input new card.");
+                                    payment = validate(sc);
+                                }else{
+                                    print_header("Get stored credit card number: " + payment);
+                                }
                                 System.out.println("Ready to book the listing? 1 to continue.");
                                 String ready = validate(sc);
                                 if (!ready.equals("1")) {
@@ -740,17 +736,16 @@ public class JDBCExample {
     // register function, register a user to the database
     public static boolean register(String input) throws SQLException {
         try {
-            String reg = "Name:(?<name>.*), Password:(?<password>.*), Occupation:(?<occupation>.*), SIN:(?<sin>.*), Birth:(?<birth>.*), UserName:(?<username>.*)";
+            String reg = "Name:(?<name>.*), Password:(?<password>.*), SIN:(?<sin>.*), Birth:(?<birth>.*), UserName:(?<username>.*)";
             Pattern pattern = Pattern.compile(reg);
             Matcher matcher = pattern.matcher(input);
             if (matcher.find()) {
                 String name = matcher.group("name");
                 String password = matcher.group("password");
-                String occupation = matcher.group("occupation");
                 String sin = matcher.group("sin");
                 String birth = matcher.group("birth");
                 String username = matcher.group("username");
-                String sql = String.format("INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", sin, name, password, birth, occupation, username);
+                String sql = String.format("INSERT INTO User (SIN, name, password, birth, username) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", sin, name, password, birth, username);
                 System.out.print(sql.concat("\n"));
                 stmt.executeUpdate(sql);
                 sql = String.format("INSERT INTO Host (username) VALUES (\"%s\");", username);
@@ -845,13 +840,21 @@ public class JDBCExample {
                 String occupation = rs.getString("occupation");
                 int birth = rs.getInt("birth");
                 String password = rs.getString("password");
+                String credit_card = rs.getString("payment");
                 // Display values
-                System.out.print("SIN: " + sid);
-                System.out.print(", Username: " + username);
+                System.out.print("My Information --- Username: " + username);
                 System.out.print(", Password: " + password);
                 System.out.print(", Real Name: " + name);
+                System.out.print(", SIN: " + sid);
                 System.out.print(", birth: " + birth);
-                System.out.println(", Occupation: " + occupation);
+
+                if (occupation != null) {
+                    System.out.print(", Occupation: " + occupation);
+                }
+                if (credit_card != null) {
+                    System.out.print(", Credit Card: " + credit_card);
+                }
+                System.out.println("");
             }
             rs.close();
             String sql2 = String.format("select * from Lives NATURAL JOIN Address where username = '%s';", username);
@@ -887,6 +890,8 @@ public class JDBCExample {
                 type = "password";
             } else if (int_type == 4) {
                 type = "occupation";
+            } else if (int_type == 5) {
+                type = "payment";
             } else {
                 return false;
             }
@@ -1264,6 +1269,21 @@ public class JDBCExample {
             return false;
         }
     }
+    public static String get_payment() throws SQLException {
+        String result = null;
+        try {
+            String sql = String.format("select * from User where username = '%s';", username);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            if(rs.next()){
+                result = rs.getString("payment");
+            }
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static boolean handle_delete_listing(String username, String lid) throws SQLException {
         try {
@@ -1415,12 +1435,12 @@ public class JDBCExample {
                 print_header("Change My Profile");
                 // select what your want to change
                 System.out.println("Select the profile you want to change");
-                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Address, 6: Go Back.");
-                String change_profile_decide = validate_int(sc, 1, 6);
+                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
+                String change_profile_decide = validate_int(sc, 1, 7);
                 int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-                if (change_profile_decide_int == 6) {
+                if (change_profile_decide_int == 7) {
                     // do nothing
-                } else if (change_profile_decide_int == 5) {
+                } else if (change_profile_decide_int == 6) {
                     // change address
                     print_header("Change Address");
                     System.out.println("Change Address - Please input your postal code.");
