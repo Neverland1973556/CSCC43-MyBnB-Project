@@ -401,7 +401,7 @@ public class JDBCExample {
                                 System.out.println("Please type the lid your want to check");
                                 String lid = validate_int(sc, 0, 9999);
                                 if (!show_available(lid)) {
-                                    print_error("Cannot find availability for giving lid.");
+                                    print_error("Cannot find availability for the given lid.");
                                 }
 
                             } else if (avail.equals("2")) {
@@ -558,46 +558,51 @@ public class JDBCExample {
                                 print_header("you don't have any booking");
                             }
                         } else if (input.equals("5")) {
-                            System.out.println("Rate User");
+                            print_header("Rate User");
 
 							System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
-                            String booking_decide = sc.nextLine();
-                            if (booking_decide.equals("1")) {
-                                print_header("Show how I was being rated");
-                                if (!show_host_s_judgement(username)) {
-                                    print_header("No renter has rated you so far.");
-                                }
-                            } else if (booking_decide.equals("2")){
-								print_header("Show what I've rated");
-								if (!show_host_s_rate(username)) {
-                                    print_header("You haven't rate anyone yet.");
-                                }
-							} else if (booking_decide.equals("3")) {
-                                print_header("Rate a renter");
-                                System.out.println("Please input the renter's username that you want to rate");
-                                String renter_username = validate(sc);
-                                System.out.println("Please input how much you like this renter from 1-5");
-                                String likes = validate_int(sc, 1, 5);
-								System.out.println("Please make any comment (100 words limit):");
-                                String words = validate(sc);
+							while (sc.hasNextLine()){
+								String booking_decide = sc.nextLine();
+								if (booking_decide.equals("1")) {
+									print_header("Show how I was being rated");
+									if (!show_host_s_judgement(username)) {
+										print_header("No renter has rated you so far.");
+									}
+								} else if (booking_decide.equals("2")){
+									print_header("Show what I've rated");
+									if (!show_host_s_rate(username)) {
+										print_header("You haven't rate anyone yet.");
+									}
+								} else if (booking_decide.equals("3")) {
+									print_header("Rate a renter");
+									System.out.println("Please input the renter's username that you want to rate");
+									String renter_username = validate(sc);
+									System.out.println("Please input how much you like this renter from 1-5");
+									String likes = validate_int(sc, 1, 5);
+									System.out.println("Please make any comment (100 words limit):");
+									String words = validate(sc);
 
-								create_host_rate(renter_username, username, likes, words);
-                            } else if (booking_decide.equals("4")) {
-                                // cannot change a book
-                                print_header("Delete a rating");
-                                System.out.println("Input the JID that you want to cancel");
-                                if (!show_host_s_rate(username)) {
-                                    print_header("you haven't rate anyone");
-                                }
-                                String jid = validate_int(sc, 1, 9999);
-                                if(!cancel_judgement_host(jid, username)){
-                                    print_error("Cannot cancel the rate");
-                                }
-                            } else if (booking_decide.equals("5")) {
-                                //go back
-                            }
-
+									create_host_rate(renter_username, username, likes, words);
+								} else if (booking_decide.equals("4")) {
+									// cannot change a book
+									print_header("Delete a rating");
+									System.out.println("Input the JID that you want to cancel (If you don't want to delete, just input any other integer)");
+									if (!show_host_s_rate(username)) {
+										print_header("you haven't rate anyone");
+									}
+									String jid = validate_int(sc, 1, 9999);
+									if(!cancel_judgement_host(jid, username)){
+										print_error("Cannot cancel the rate");
+									}
+								} else if (booking_decide.equals("5")) {
+									//go back
+									break;
+								}
+								print_header("Rate User");
+								System.out.println("Press the Corresponding number to continue");
+                            	System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
+							}
 
 
                         } else if (input.equals("8")) {
@@ -724,85 +729,98 @@ public class JDBCExample {
                                 continue;
                             }
                         } else if (input.equals("5")) {
-                            print_header("Rate User");
+								print_header("Rate User");
 							
-                            System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
-                            String booking_decide = sc.nextLine();
-                            if (booking_decide.equals("1")) {
-                                print_header("Show how I was being rated");
-                                if (!show_renter_s_judgement(username)) {
-                                    print_header("No host has rated you so far.");
-                                }
-                            } else if (booking_decide.equals("2")){
-								print_header("Show what I've rated");
-								if (!show_renter_s_rate(username)) {
-                                    print_header("You haven't rate anyone yet.");
-                                }
-							} else if (booking_decide.equals("3")) {
-                                print_header("Rate a host");
-                                System.out.println("Please input the host's username that you want to rate");
-                                String host_username = validate(sc);
-                                System.out.println("Please input how much you like this host from 1-5");
-                                String likes = validate_int(sc, 1, 5);
-								System.out.println("Please make any comment (100 words limit):");
-                                String words = validate(sc);
+								System.out.println("Press the Corresponding number to continue");
+								System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
+								
+							while (sc.hasNextLine()){
+								String booking_decide = sc.nextLine();
+								if (booking_decide.equals("1")) {
+									print_header("Show how I was being rated");
+									if (!show_renter_s_judgement(username)) {
+										print_header("No host has rated you so far.");
+									}
+								} else if (booking_decide.equals("2")){
+									print_header("Show what I've rated");
+									if (!show_renter_s_rate(username)) {
+										print_header("You haven't rate anyone yet.");
+									}
+								} else if (booking_decide.equals("3")) {
+									print_header("Rate a host");
+									System.out.println("Please input the host's username that you want to rate");
+									String host_username = validate(sc);
+									System.out.println("Please input how much you like this host from 1-5");
+									String likes = validate_int(sc, 1, 5);
+									System.out.println("Please make any comment (100 words limit):");
+									String words = validate(sc);
 
-								create_renter_rate(username, host_username, likes, words);
-                            } else if (booking_decide.equals("4")) {
-                                // cannot change a book
-                                print_header("Delete a rating");
-                                System.out.println("Input the JID that you want to cancel");
-                                if (!show_renter_s_rate(username)) {
-                                    print_header("you don't have any booking");
-                                }
-                                String jid = validate_int(sc, 1, 9999);
-                                if(!cancel_judgement_renter(jid, username)){
-                                    print_error("Cannot cancel the rate");
-                                }
-                            } else if (booking_decide.equals("5")) {
-                                //go back
-                            }
+									create_renter_rate(username, host_username, likes, words);
+								} else if (booking_decide.equals("4")) {
+									// cannot change a book
+									print_header("Delete a rating");
+									System.out.println("Input the JID that you want to cancel (If you don't want to delete, just input any other integer)");
+									if (!show_renter_s_rate(username)) {
+										print_header("you don't have any booking");
+									}
+									String jid = validate_int(sc, 1, 9999);
+									if(!cancel_judgement_renter(jid, username)){
+										print_error("Cannot cancel the rate");
+									}
+								} else if (booking_decide.equals("5")) {
+									break;
+								}
+								print_header("Rate User");
+								System.out.println("Press the Corresponding number to continue");
+								System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
+								
+							}
                         } else if (input.equals("4")) {
 									// comment
 							print_header("Comment Listing");
 							
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show my comments, 2: Comment a lising, 3: Delete a comment, 5: Go Back.");
-                            String booking_decide = sc.nextLine();
-                            if (booking_decide.equals("1")) {
-                                print_header("Show what I have commented");
-                                if (!show_renter_comment(username)) {
-                                    print_header("You haven't comment any listing so far.");
-                                }
-                            } else if (booking_decide.equals("2")) {
-                                print_header("Comment a Listing");
-								if (!show_renter_booked_listing(username)) {
-                                    print_header("You haven't book any listing so far.");
-                                }
-                                System.out.println("Please input the ListingID that you want to rate");
-                                String lid = validate_int(sc, 0, 9999);
-                                System.out.println("Please input how much you like this listing from 1-5");
-                                String rate = validate_int(sc, 1, 5);
-								System.out.println("Please make any comment (250 words limit):");
-                                String text = validate(sc);
+							while(sc.hasNextLine()){
+								String booking_decide = sc.nextLine();
+								if (booking_decide.equals("1")) {
+									print_header("Show what I have commented");
+									if (!show_renter_comment(username)) {
+										print_header("You haven't comment any listing so far.");
+									}
+								} else if (booking_decide.equals("2")) {
+									print_header("Comment a Listing");
+									if (!show_renter_booked_listing(username)) {
+										print_header("You haven't book any listing so far.");
+									}
+									System.out.println("Please input the ListingID that you want to rate");
+									String lid = validate_int(sc, 0, 9999);
+									System.out.println("Please input how much you like this listing from 1-5");
+									String rate = validate_int(sc, 1, 5);
+									System.out.println("Please make any comment (250 words limit):");
+									String text = validate(sc);
 
-								create_renter_listing_comment(username, lid, rate, text);
+									create_renter_listing_comment(username, lid, rate, text);
 
-                            } else if (booking_decide.equals("3")) {
-                                // cannot change a book
-                                print_header("Delete a rating");
-                                System.out.println("Input the LID of that comment that you want to delete.");
-                                if (!show_renter_comment(username)) {
-                                    print_header("you don't have any comment");
-                                }
-                                String lid = validate_int(sc, 1, 9999);
-                                if(!delete_renter_listing_comment(username, lid)){
-                                    print_error("Cannot cancel the comment of this Listing");
-                                }
-                            } else if (booking_decide.equals("5")) {
-                                //go back
-                            }
+								} else if (booking_decide.equals("3")) {
+									// cannot change a book
+									print_header("Delete a rating");
+									System.out.println("Input the LID of that comment that you want to delete (If you don't want to delete, just input any other integer)");
+									if (!show_renter_comment(username)) {
+										print_header("you don't have any comment");
+									}
+									String lid = validate_int(sc, 1, 9999);
+									if(!delete_renter_listing_comment(username, lid)){
+										print_error("Cannot cancel the comment of this Listing");
+									}
+								} else if (booking_decide.equals("5")) {
+									//go back
+									break;
+								}
+								print_header("Comment Listing");
+								System.out.println("Press the Corresponding number to continue");
+                            	System.out.println("1: Show my comments, 2: Comment a lising, 3: Delete a comment, 5: Go Back.");
+							}
 
 						} else if (input.equals("8")) {
                             print_header("Terminate the program.");
