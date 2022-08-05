@@ -626,7 +626,88 @@ public class JDBCExample {
                     while (sc.hasNextLine()) {
                         String input = validate_int(sc, 1, 9);
                         if (input.equals("1")) {
-                            select_profile(sc);
+                            //select_profile(sc);
+
+							
+								System.out.println(half_line + "Update Information" + half_line);
+								System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
+								while (sc.hasNextLine()){
+									String profile_decide = validate_int(sc, 1, 4);
+									if (profile_decide.equals("1")) {
+										print_header("Check My Profile");
+										boolean success = get_profile(username);
+										if (!success) {
+											print_error("Cannot show my profile");
+										}
+									} else if (profile_decide.equals("2")) {
+										print_header("Change My Profile");
+										// select what your want to change
+										System.out.println("Select the profile you want to change");
+										System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
+										String change_profile_decide = validate_int(sc, 1, 7);
+										int change_profile_decide_int = Integer.parseInt(change_profile_decide);
+										if (change_profile_decide_int == 7) {
+											// do nothing
+										} else if (change_profile_decide_int == 6) {
+											// change address
+											print_header("Change Address");
+											System.out.println("Change Address - Please input your postal code.");
+											// error checking of postal code
+											String postal_code = validate_postal_code(sc);
+											System.out.println("Change Address - Please input your unit.");
+											String unit = validate_int(sc, 0, 9999);
+											System.out.println("Change Address - Please input your city.");
+											String city = validate(sc);
+											System.out.println("Change Address - Please input your country.");
+											String country = validate(sc);
+											if (change_address(username, postal_code, unit, city, country)) {
+												print_header("Successfully change address");
+											} else {
+												print_error("Cannot change address");
+											}
+										} else {
+											System.out.println("What do you want to change to?");
+											String to_change;
+											if (change_profile_decide_int == 2) {
+												to_change = validate_int(sc, 1800, 2022);
+											} else {
+												to_change = validate(sc);
+											}
+											if (change_profile(username, to_change, change_profile_decide_int)) {
+												System.out.println("Successfully change profile");
+											} else {
+												print_error("Cannot change profile");
+											}
+										}
+									} else if (profile_decide.equals("3")) {
+										print_header("Delete My Account");
+										System.out.println("Are you sure you want to delete your user?");
+										System.out.println("Press 1 to continue");
+										String delete_decide = sc.nextLine();
+										if (delete_decide.equals("1")) {
+											if (delete_user(username)) {
+												print_header("delete_success");
+												// set log out
+												is_login = 0;
+												is_owner = -1;
+												// todo: break
+												continue label_whole;
+											} else {
+												print_error("delete error");
+											}
+											
+										} else {
+											// don't delete
+											
+										}
+									} else if (profile_decide.equals("4")) {
+										// not valid
+										// go back
+										break;
+									}
+									System.out.println(half_line + "Update Information" + half_line);
+									System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
+								}
                             if (is_owner == -1) {
                                 continue label_whole;
                             }
@@ -634,100 +715,97 @@ public class JDBCExample {
                             print_header("Booking a list");
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking, 4: Go Back.");
-                            String booking_decide = sc.nextLine();
-                            if (booking_decide.equals("1")) {
-                                print_header("Show my bookings");
-                                if (!show_user_books(username)) {
-                                    print_header("you don't have any booking");
-                                }
-                            } else if (booking_decide.equals("2")) {
-                                print_header("Book a listing");
-                                // vague search
-                                // price limit
+							while (sc.hasNextLine()){
+								String booking_decide = sc.nextLine();
+								if (booking_decide.equals("1")) {
+									print_header("Show my bookings");
+									if (!show_user_books(username)) {
+										print_header("you don't have any booking");
+									}
+								} else if (booking_decide.equals("2")) {
+									print_header("Book a listing");
+									// vague search
+									// price limit
 
-                                // right now is specific search
-                                // first, get all books that is available
-                                // get the date you want a book
-                                System.out.println("Please input the start booking date in this format: yyyy-mm-dd");
-                                String start_time = validate_time(sc);
-                                System.out.println("Please input the end booking date in this format: yyyy-mm-dd");
-                                String end_time = validate_time(sc);
-                                LocalDate d1;
-                                LocalDate d2;
-                                try {
-                                    d1 = LocalDate.parse(start_time);
-                                    d2 = LocalDate.parse(end_time);
-                                } catch (Exception e) {
-                                    print_error("input date is not valid");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                LocalDate d3 = LocalDate.parse("2022-01-01");
-                                LocalDate d4 = LocalDate.parse("2024-01-01");
-                                if (d1.isAfter(d2)) {
-                                    print_error("End date is before start date.");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                if (d3.isAfter(d1)) {
-                                    print_error("Start date is too early");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                if (d2.isAfter(d4)) {
-                                    print_error("End date is too late");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                // get all available in that period
-                                if (!get_available(d1, d2)) {
-                                    print_header("No listing qualified");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                // something qualifies
-                                System.out.println("Please select the lid of the listings you want to book");
-                                String lid = validate_int(sc, 1, 9999);
-                                // get the price and payment method
-                                int total_price = get_price_book(lid, start_time, end_time);
-                                if (total_price == 0) {
-                                    print_error("Input lid is not valid");
-                                    end_of_renter();
-                                    continue;
-                                }
-                                // get the total_price, get payment method
-                                String payment = get_payment();
-                                if (payment == null) {
-                                    print_header("Didn't detect credit card payment, Please input new card.");
-                                    payment = validate(sc);
-                                } else {
-                                    System.out.println("Get stored credit card number: " + payment);
-                                }
-                                System.out.println("Ready to book the listing? 1 to continue.");
-                                String ready = validate(sc);
-                                if (!ready.equals("1")) {
-                                    print_header("Not ready");
-                                    end_of_renter();
-                                    continue;
-                                } else {
-                                    // == 1
-                                    create_book(payment, total_price, start_time, end_time, lid);
-                                }
-                            } else if (booking_decide.equals("3")) {
-                                // cannot change a book
-                                print_header("Cancel a booking");
-                                System.out.println("Input the bid that you want to cancel");
-                                if (!show_user_books(username)) {
-                                    print_header("you don't have any booking");
-                                }
-                                String bid = validate_int(sc, 1, 9999);
-                                if(!cancel_book(bid)){
-                                    print_error("Cannot cancel book");
-                                }
-                            } else if (booking_decide.equals("4")) {
-                                end_of_renter();
-                                continue;
-                            }
+									// right now is specific search
+									// first, get all books that is available
+									// get the date you want a book
+									System.out.println("Please input the start booking date in this format: yyyy-mm-dd");
+									String start_time = validate_time(sc);
+									System.out.println("Please input the end booking date in this format: yyyy-mm-dd");
+									String end_time = validate_time(sc);
+									LocalDate d1;
+									LocalDate d2;
+									try {
+										d1 = LocalDate.parse(start_time);
+										d2 = LocalDate.parse(end_time);
+									} catch (Exception e) {
+										print_error("input date is not valid");
+										break;
+									}
+									LocalDate d3 = LocalDate.parse("2022-01-01");
+									LocalDate d4 = LocalDate.parse("2024-01-01");
+									if (d1.isAfter(d2)) {
+										print_error("End date is before start date.");
+										break;
+									}
+									if (d3.isAfter(d1)) {
+										print_error("Start date is too early");
+										break;
+									}
+									if (d2.isAfter(d4)) {
+										print_error("End date is too late");
+										break;
+									}
+									// get all available in that period
+									if (!get_available(d1, d2)) {
+										print_header("No listing qualified");
+										break;
+									}
+									// something qualifies
+									System.out.println("Please select the lid of the listings you want to book");
+									String lid = validate_int(sc, 1, 9999);
+									// get the price and payment method
+									int total_price = get_price_book(lid, start_time, end_time);
+									if (total_price == 0) {
+										print_error("Input lid is not valid");
+										break;
+									}
+									// get the total_price, get payment method
+									String payment = get_payment();
+									if (payment == null) {
+										print_header("Didn't detect credit card payment, Please input new card.");
+										payment = validate(sc);
+									} else {
+										System.out.println("Get stored credit card number: " + payment);
+									}
+									System.out.println("Ready to book the listing? 1 to continue.");
+									String ready = validate(sc);
+									if (!ready.equals("1")) {
+										print_header("Not ready");
+										break;
+									} else {
+										// == 1
+										create_book(payment, total_price, start_time, end_time, lid);
+									}
+								} else if (booking_decide.equals("3")) {
+									// cannot change a book
+									print_header("Cancel a booking");
+									System.out.println("Input the bid that you want to cancel");
+									if (!show_user_books(username)) {
+										print_header("you don't have any booking");
+									}
+									String bid = validate_int(sc, 1, 9999);
+									if(!cancel_book(bid)){
+										print_error("Cannot cancel book");
+									}
+								} else if (booking_decide.equals("4")) {
+									break;
+								}
+								print_header("Booking a list");
+                           	 	System.out.println("Press the Corresponding number to continue");
+                           		System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking, 4: Go Back.");
+							}
                         } else if (input.equals("5")) {
 								print_header("Rate User");
 							
@@ -1005,7 +1083,7 @@ public class JDBCExample {
             rs.close();
             String sql2 = String.format("select * from Lives NATURAL JOIN Address where username = '%s';", username);
             ResultSet rs2 = stmt.executeQuery(sql2);
-            System.out.println(sql + "\n" + sql2);
+            //System.out.println(sql + "\n" + sql2);
             while (rs2.next()) {
                 int unit = rs2.getInt("unit");
                 String postal_code = rs2.getString("postal_code");
