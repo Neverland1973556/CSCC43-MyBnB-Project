@@ -16,7 +16,8 @@ INSERT INTO Listing (lon, lat, type) VALUES ( "3.22", "19", "apartment");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.62", "1.99", "room");
 
 
-INSERT INTO Book (start_date, end_date, price, payment, BID, username) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan");
+INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan", "3");
+INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-03-01", "2022-03-08","88", "4510199974972547", "2" , "test", "3");
 /*In Java, create all dates in a year*/
 /*INSERT INTO Calendar (date) VALUES("2022-08-19")*/
 INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"Jonathan");
@@ -26,6 +27,25 @@ INSERT INTO Available (price, date, lid) VALUES ("30", "2022-08-19","2");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A2", "1367", "Jonathan");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A3", "1367", "test");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A2", "1367", "1");
+INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A3", "1367", "3");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "2");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-02-25", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-02-26", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-02-27", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-02-28", "3");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-01", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-02", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-03", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-04", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-05", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-06", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-07", "3", "2");
+INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-08", "3", "2");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-09", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-10", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-11", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-12", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-13", "3");
+INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-14", "3");

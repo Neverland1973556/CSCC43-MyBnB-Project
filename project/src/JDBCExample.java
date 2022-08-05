@@ -553,6 +553,10 @@ public class JDBCExample {
                             }
                         } else if (input.equals("4")) {
                             System.out.println("Check Booking");
+                            print_header("Show My Bookings - Owner");
+                            if (!show_owner_books(username)) {
+                                print_header("you don't have any booking");
+                            }
                         } else if (input.equals("5")) {
                             System.out.println("Rating and Comment");
                         } else if (input.equals("8")) {
@@ -583,15 +587,13 @@ public class JDBCExample {
                         } else if (input.equals("2")) {
                             print_header("Booking a list");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking.");
+                            System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking, 4: Go Back.");
                             String booking_decide = sc.nextLine();
                             if (booking_decide.equals("1")) {
                                 print_header("Show my bookings");
                                 if (!show_user_books(username)) {
                                     print_header("you don't have any booking");
                                 }
-                                // get all my listings
-                                // show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
                                 // vague search
@@ -649,11 +651,11 @@ public class JDBCExample {
                                 }
                                 // get the total_price, get payment method
                                 String payment = get_payment();
-                                if(payment == null){
+                                if (payment == null) {
                                     print_header("Didn't detect credit card payment, Please input new card.");
                                     payment = validate(sc);
-                                }else{
-                                    print_header("Get stored credit card number: " + payment);
+                                } else {
+                                    System.out.println("Get stored credit card number: " + payment);
                                 }
                                 System.out.println("Ready to book the listing? 1 to continue.");
                                 String ready = validate(sc);
@@ -666,13 +668,19 @@ public class JDBCExample {
                                     create_book(payment, total_price, start_time, end_time, lid);
                                 }
                             } else if (booking_decide.equals("3")) {
+                                // cannot change a book
                                 print_header("Cancel a booking");
-                                // get all my listings
-                                // show_user_booking(username);
-                                // choose the one you want to cancel
-                                // cancel by aid
-                            } else {
-                                print_error("Not Valid input!");
+                                System.out.println("Input the bid that you want to cancel");
+                                if (!show_user_books(username)) {
+                                    print_header("you don't have any booking");
+                                }
+                                String bid = validate_int(sc, 1, 9999);
+                                if(!cancel_book(bid)){
+                                    print_error("Cannot cancel book");
+                                }
+                            } else if (booking_decide.equals("4")) {
+                                end_of_renter();
+                                continue;
                             }
                         } else if (input.equals("5")) {
                             print_header("Rating and Comment");
@@ -907,13 +915,16 @@ public class JDBCExample {
     public static boolean show_user_books(String username) throws SQLException {
         boolean result = false;
         try {
-            String sql = String.format("SELECT * FROM Books Natural Join Available Natural Join Listing where username = '%s';", username);
+            String sql = String.format("SELECT distinct cancellation, owns.username as owner_name, book.bid, book.lid, lon, lat, type, start_date, end_date, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address inner join owns where book.lid = listing.lid and listing.lid = located_at.lid and owns.lid = located_at.lid and book.username = '%s'", username);
+            System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             // STEP 5: Extract data from result set
             while (rs.next()) {
                 // Retrieve by column name
                 String bid = rs.getString("BID");
                 System.out.print("BID: " + bid);
+                String owner_name = rs.getString("owner_name");
+                System.out.print(", Owner Name: " + owner_name);
                 String lid = rs.getString("lid");
                 System.out.print(", ListingID: " + lid);
                 String lon = rs.getString("lon");
@@ -922,10 +933,62 @@ public class JDBCExample {
                 System.out.print(", Latitude: " + lat);
                 String type = rs.getString("type");
                 System.out.print(", Type: " + type);
-                String month = rs.getString("month");
-                System.out.print(", Month: " + month);
-                String day = rs.getString("day");
-                System.out.print(", Day: " + day);
+                String unit = rs.getString("unit");
+                System.out.print(", unit: " + unit);
+                String postal_code = rs.getString("postal_code");
+                System.out.print(", postal_code: " + postal_code);
+                String city = rs.getString("city");
+                System.out.print(", City: " + city);
+                String country = rs.getString("country");
+                System.out.print(", Country: " + country);
+                String start_date = rs.getString("start_date");
+                System.out.print(", start date: " + start_date);
+                String end_date = rs.getString("end_date");
+                System.out.print(", end date: " + end_date);
+                String cancellation = rs.getString("cancellation");
+                if(cancellation.equals("0")){
+                    System.out.println(", Not cancelled.");
+                }else{
+                    System.out.println(", Cancelled.");
+                }
+                result = true;
+            }
+            rs.close();
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public static boolean show_owner_books(String username) throws SQLException {
+        boolean result = false;
+        try {
+            String sql = String.format("select distinct cancellation, book.username as renter_name, book.bid as bid, start_date, end_date, payment, book.price, book.lid as lid, located_at.unit as unit, located_at.postal_code as postal_code from book inner join located_at inner join owns where book.lid = located_at.lid and located_at.lid = owns.lid and owns.username = '%s'", username);
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            // STEP 5: Extract data from result set
+            while (rs.next()) {
+                String bid = rs.getString("bid");
+                System.out.print("BID: " + bid);
+                String renter_name = rs.getString("renter_name");
+                System.out.print(", Renter Name: " + renter_name);
+                String lid = rs.getString("lid");
+                System.out.print(", ListingID: " + lid);
+                String unit = rs.getString("unit");
+                System.out.print(", unit: " + unit);
+                String postal_code = rs.getString("postal_code");
+                System.out.print(", postal_code: " + postal_code);
+                String start_date = rs.getString("start_date");
+                System.out.print(", start date: " + start_date);
+                String end_date = rs.getString("end_date");
+                System.out.print(", end date: " + end_date);
+                String cancellation = rs.getString("cancellation");
+                // todo: cancelled by who?
+                if(cancellation.equals("0")){
+                    System.out.println(", Not cancelled.");
+                }else{
+                    System.out.println(", Cancelled.");
+                }
                 result = true;
             }
             rs.close();
@@ -1067,12 +1130,6 @@ public class JDBCExample {
 
     public static boolean create_book(String payment, int price, String start_date, String end_date, String lid) throws SQLException {
         try {
-            // INSERT INTO Book (start_date, end_date, price, payment, BID, username) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan");
-            // start_date, end_date, price, payment, username
-            // first, get bid and insert
-            // first, update the available with bid
-            //
-
             String sql = String.format("INSERT INTO Book (start_date, end_date, price, payment, username) VALUES ('%s','%s','%d','%s','%s');", start_date, end_date, price, payment, username);
             System.out.println(sql);
             stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -1092,7 +1149,21 @@ public class JDBCExample {
             return false;
         }
     }
-
+    public static boolean cancel_book(String bid) throws SQLException {
+        try {
+            String sql = String.format("Update book set cancellation = 1 where bid = '%s';", bid);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            // update the available
+            String avail_sql = String.format("Update available set bid = NULL where bid = '%s'", bid);
+            System.out.println(avail_sql);
+            stmt.executeUpdate(avail_sql);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Something went wrong with creating Book");
+            return false;
+        }
+    }
 
     public static boolean handle_modify_listing(String lid, int int_type, String to_change) throws SQLException {
         try {
@@ -1269,13 +1340,14 @@ public class JDBCExample {
             return false;
         }
     }
+
     public static String get_payment() throws SQLException {
         String result = null;
         try {
             String sql = String.format("select * from User where username = '%s';", username);
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 result = rs.getString("payment");
             }
             return result;

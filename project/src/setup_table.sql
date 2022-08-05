@@ -87,9 +87,11 @@ create table IF NOT EXISTS Book (
     end_date DATE NOT NULL,
     price int(50) NOT NULL,
     payment BIGINT NOT NULL,
-    cancellation Boolean DEFAULT false,
+    cancellation tinyint default 0,
     username varchar(100) NOT NULL,
-    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE
+    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE,
+    lid int(50) NOT NULL,
+    foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 create table IF NOT EXISTS Comment (
