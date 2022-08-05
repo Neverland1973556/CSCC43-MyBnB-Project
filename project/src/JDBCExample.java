@@ -3,6 +3,7 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +57,7 @@ public class JDBCExample {
             set.useDelimiter(";");
             while (set.hasNext()) {
                 String data = set.next();
+                // System.out.println(data);
                 stmt.execute(data);
             }
             set.close();
@@ -84,6 +86,7 @@ public class JDBCExample {
             set.useDelimiter(";");
             while (set.hasNext()) {
                 String data = set.next();
+                // System.out.println(data);
                 stmt.execute(data);
             }
             set.close();
@@ -593,14 +596,79 @@ public class JDBCExample {
                                 // show_user_booking(username);
                             } else if (booking_decide.equals("2")) {
                                 print_header("Book a listing");
+                                // vague search
+                                // price limit
 
-                                String reg = "";
-                                // create_book(username, payment, month, day, lid);
-                                // get_all listings that is available
-                                // search?
-                                // choose the one you want to book
-                                // book_by_aid
+                                // right now is specific search
+                                // first, get all books that is available
+                                // get the date you want a book
+                                System.out.println("Please input the start booking date in this format: yyyy-mm-dd");
+                                String start_time = validate_time(sc);
+                                System.out.println("Please input the end booking date in this format: yyyy-mm-dd");
+                                String end_time = validate_time(sc);
+                                LocalDate d1;
+                                LocalDate d2;
+                                try {
+                                    d1 = LocalDate.parse(start_time);
+                                    d2 = LocalDate.parse(end_time);
+                                } catch (Exception e) {
+                                    print_error("input date is not valid");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                LocalDate d3 = LocalDate.parse("2022-01-01");
+                                LocalDate d4 = LocalDate.parse("2024-01-01");
+                                if (d1.isAfter(d2)) {
+                                    print_error("End date is before start date.");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                if (d3.isAfter(d1)) {
+                                    print_error("Start date is too early");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                if (d2.isAfter(d4)) {
+                                    print_error("End date is too late");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                // get all available in that period
+                                if (!get_available(d1, d2)) {
+                                    print_header("No listing qualified");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                // something qualifies
+                                System.out.println("Please select the lid of the listings you want to book");
+                                String lid = validate_int(sc, 1, 9999);
+                                // get the price and payment method
+                                int total_price = get_price_book(lid, start_time, end_time);
+                                if (total_price == 0) {
+                                    print_error("Input lid is not valid");
+                                    end_of_renter();
+                                    continue;
+                                }
+                                // get the total_price, get payment method
+                                String payment = "123";
 
+                                // String payment = get_payment();
+                                // if(payment == 0){
+                                //     print_header("Didn't detect credit card payment, Please input new card.");
+                                //     payment = validate(sc);
+                                // }else{
+                                //     print_header("Get stored credit card: %s", payment);
+                                // }
+                                System.out.println("Ready to book the listing? 1 to continue.");
+                                String ready = validate(sc);
+                                if (!ready.equals("1")) {
+                                    print_header("Not ready");
+                                    end_of_renter();
+                                    continue;
+                                } else {
+                                    // == 1
+                                    create_book(payment, total_price, start_time, end_time, lid);
+                                }
                             } else if (booking_decide.equals("3")) {
                                 print_header("Cancel a booking");
                                 // get all my listings
@@ -636,51 +704,6 @@ public class JDBCExample {
         conn.close();
         System.out.println("Closing success!");
     }
-
-    // sql functions
-    // public static void create_calendar() throws SQLException {
-    //     try {
-    //         String month = "1";
-    //         String day = "1";
-    //
-    //         for (int j = 1; j < 13; j++) {
-    //             month = String.format("%d", j);
-    //             for (int i = 1; i < 32; i++) {
-    //                 if (!(i == 23 && j == 3)) { // Avoid deleting the available related
-    //                     day = String.format("%d", i);
-    //                     String sql = String.format("INSERT INTO Calendar (month, day) VALUES (\"%s\", \"%s\");", month, day);
-    //                     // System.out.print(sql.concat("\n"));
-    //                     stmt.executeUpdate(sql);
-    //                 }
-    //             }
-    //         }
-    //         String sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "31");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "30");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "2", "29");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "4", "31");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "6", "31");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "9", "31");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         sql = String.format("DELETE FROM Calendar where month = \"%s\" and day = \"%s\";", "11", "31");
-    //         // System.out.print(sql.concat("\n"));
-    //         stmt.executeUpdate(sql);
-    //         System.out.print("Calendar created!");
-    //
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 
     // login function, check if the user exists in the database and if the password matches
     public static boolean login(String string) throws SQLException {
@@ -930,12 +953,66 @@ public class JDBCExample {
         }
     }
 
+    // renter use
+    public static boolean get_available(LocalDate start_time, LocalDate end_time) throws SQLException {
+        try {
+            boolean result = false;
+            long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
+            System.out.println(date_between);
+            // get all listing that satisfy start time and end time
+            // find all that not qualified
+            String count_query = String.format("select lid, count(date) as count from available where date >= '%s' and date <= '%s' group by lid;", start_time, end_time);
+            ResultSet rs = stmt.executeQuery(count_query);
+            while (rs.next()) {
+                long count = rs.getInt("count");
+                System.out.println(count);
+                String lid = rs.getString("lid");
+                if (count == date_between) {
+                    // this one is qualified
+                    System.out.println("lid: " + lid);
+                    result = true;
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static int get_price_book(String lid, String start_time, String end_time) throws SQLException {
+        try {
+            int result = 0;
+            String query = String.format("select sum(price) as price from available where date >= '%s' and date <= '%s' and lid = '%s';", start_time, end_time, lid);
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                result = rs.getInt("price");
+                System.out.println("Total cost is: " + result);
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+
     public static boolean add_available(LocalDate start_time, LocalDate end_time, String price, String lid, boolean hard) throws SQLException {
         try {
             // start time, end time, price, lid is valid
             LocalDate temp = start_time;
             String sql;
             if (hard) {
+                // todo: need to check if the available is has a book or not
+                String check_avail = String.format("select * from available where lid = '%s' and date >= '%s' and date <= '%s' and BID is not NULL;", lid, start_time, end_time);
+                ResultSet rs = stmt.executeQuery(check_avail);
+                if (rs.next()) {
+                    print_error("The period cannot be change.");
+                    return false;
+                }
+
                 // delete the corresponding date first
                 while (temp.isBefore(end_time)) {
                     sql = String.format("delete from Available where lid = '%s' and date = '%s';", lid, temp);
@@ -983,58 +1060,28 @@ public class JDBCExample {
         }
     }
 
-    /*
-    public static boolean create_available(String input) throws SQLException {
+    public static boolean create_book(String payment, int price, String start_date, String end_date, String lid) throws SQLException {
         try {
-            String reg = "Price:(?<price>.*), Month:(?<month>.*), Day:(?<day>.*), Lid:(?<lid>.*)";
-            Pattern pattern = Pattern.compile(reg);
-            Matcher matcher = pattern.matcher(input);
-            if (matcher.find()) {
-                String price = matcher.group("price").toString();
-                String month = matcher.group("month").toString();
-                String day = matcher.group("day").toString();
-                String lid = matcher.group("lid").toString();
-                String sql = String.format("INSERT INTO Available (price, month, day, lid) VALUES ( \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid);
-                System.out.print(sql.concat("\n"));
-                stmt.executeUpdate(sql);
-                return true;
-            } else {
-                System.out.println("Invalid Listing.");
-                return false;
-            }
-        } catch (SQLException e) {
-            System.err.println("Something went wrong with creating Available");
-            return false;
-        }
-    }
+            // INSERT INTO Book (start_date, end_date, price, payment, BID, username) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan");
+            // start_date, end_date, price, payment, username
+            // first, get bid and insert
+            // first, update the available with bid
+            //
 
-    public static boolean create_book(String username, String payment, String month, String day, String lid) throws SQLException {
-        try {
-            String sql = String.format("SELECT * FROM Available where month = \"%s\" and day = \"%s\" and lid = \"%s\";", month, day, lid);
+            String sql = String.format("INSERT INTO Book (start_date, end_date, price, payment, username) VALUES ('%s','%s','%d','%s','%s');", start_date, end_date, price, payment, username);
             System.out.println(sql);
-            ResultSet rs = stmt.executeQuery(sql);
+            stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+            String bid = "";
+            ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
-                String price = rs.getString("price");
-                sql = String.format("DELETE FROM Available where month = \"%s\" and day = \"%s\" and lid = \"%s\";", month, day, lid);
-                System.out.print(sql.concat("\n"));
-                stmt.executeUpdate(sql);
-
-                bookid++;
-                sql = String.format("INSERT INTO Book (payment, BID) VALUES (\"%s\", \"%s\");", payment, bookid);
-                System.out.print(sql.concat("\n"));
-                stmt.executeUpdate(sql);
-
-                sql = String.format("INSERT INTO Available (price, month, day, lid, BID) VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", price, month, day, lid, bookid);
-                System.out.print(sql.concat("\n"));
-                stmt.executeUpdate(sql);
-
-                sql = String.format("INSERT INTO Books (BID, username) VALUES (\"%s\", \"%s\");", bookid, username);
-                System.out.print(sql.concat("\n"));
-                stmt.executeUpdate(sql);
-                return true;
+                bid = rs.getString(1);
             }
-            System.out.println("The booking is not available.");
-            return false;
+
+            sql = String.format("update Available set bid = '%s' where date >= '%s' and date <= '%s' and lid = '%s';", bid, start_date, end_date, lid);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            return true;
+
         } catch (SQLException e) {
             System.err.println("Something went wrong with creating Book");
             return false;
@@ -1042,7 +1089,6 @@ public class JDBCExample {
     }
 
 
-     */
     public static boolean handle_modify_listing(String lid, int int_type, String to_change) throws SQLException {
         try {
             String type;

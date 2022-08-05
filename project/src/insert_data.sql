@@ -16,7 +16,7 @@ INSERT INTO Listing (lon, lat, type) VALUES ( "3.22", "19", "apartment");
 INSERT INTO Listing (lon, lat, type) VALUES ( "30.62", "1.99", "room");
 
 
-INSERT INTO Book (payment, BID) VALUES ( "130.22", "18");
+INSERT INTO Book (start_date, end_date, price, payment, BID, username) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan");
 /*In Java, create all dates in a year*/
 /*INSERT INTO Calendar (date) VALUES("2022-08-19")*/
 INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy--it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",2,"Jonathan");
@@ -29,4 +29,3 @@ INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A2", "1367", "1")
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "1");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "2");
 INSERT INTO Owns (username, lid) VALUES ( "Jonathan", "3");
-INSERT INTO Books (BID, username) VALUES ( "18", "Jonathan");

@@ -10,11 +10,12 @@ Drop TABLE IF EXISTS Located_At;
 Drop TABLE IF EXISTS Lives;
 Drop TABLE IF EXISTS Comment;
 Drop TABLE IF EXISTS Address;
+Drop TABLE IF EXISTS Book;
+
 Drop TABLE IF EXISTS Renter;
 Drop TABLE IF EXISTS Host;
 Drop TABLE IF EXISTS User;
 Drop TABLE IF EXISTS Listing;
-Drop TABLE IF EXISTS Book;
 Drop TABLE IF EXISTS Calendar;
 -- Create new tables and their schema
 
@@ -81,16 +82,13 @@ create table IF NOT EXISTS Owns (
 
 create table IF NOT EXISTS Book (
     BID int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    payment float(10,2) NOT NULL,
-    cancellation TINYINT DEFAULT 0
-    );
-
-create table IF NOT EXISTS Books (
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    price int(50) NOT NULL,
+    payment BIGINT NOT NULL,
+    cancellation Boolean DEFAULT false,
     username varchar(100) NOT NULL,
-    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE,
-    BID int(50) NOT NULL,
-    foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE (BID)
+    foreign key (username) references Renter(username) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 create table IF NOT EXISTS Comment (
@@ -131,8 +129,8 @@ create table IF NOT EXISTS Available (
     foreign key (lid) references Listing(lid) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (lid, date),
     BID int(50) ,
-    foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE (BID)   /*to-One book*/
+    foreign key (BID) references Book(BID) ON DELETE CASCADE ON UPDATE CASCADE
+    /*UNIQUE (BID)   to-One book*/
     );
 -- Add data
 
