@@ -52,6 +52,16 @@ INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-13", "3");
 INSERT INTO Available (price, date, lid) VALUES ("11", "2022-03-14", "3");
 
 
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-01', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-02', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-03', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-04', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-05', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-06', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-07', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-08', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-09', '3');
+INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-10', '3');
 
 INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-01', '1');
 INSERT INTO Available (price, date, lid) VALUES ('12', '2023-01-02', '1');

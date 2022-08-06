@@ -61,16 +61,16 @@ public class JDBCExample {
             String calendar_sql = "DROP PROCEDURE IF EXISTS insert_year_dates;";
             stmt.execute(calendar_sql);
             calendar_sql = "create PROCEDURE insert_year_dates()\n" +
-                           "BEGIN\n" +
-                           // "    SET @t_current = DATE(NOW());\n" +
-                           // "    SET @t_end = DATE(DATE_ADD(NOW(), INTERVAL 1 YEAR));\n" +
-                           "    SET @t_current = DATE('" + start_date + "');\n" +
-                           "    SET @t_end = DATE('" + end_date + "');\n" +
-                           "    WHILE(@t_current< @t_end) DO\n" +
-                           "        INSERT INTO Calendar (date) VALUES (@t_current);\n" +
-                           "        SET @t_current = DATE_ADD(@t_current, INTERVAL 1 DAY);\n" +
-                           "    END WHILE;\n" +
-                           "END;";
+                    "BEGIN\n" +
+                    // "    SET @t_current = DATE(NOW());\n" +
+                    // "    SET @t_end = DATE(DATE_ADD(NOW(), INTERVAL 1 YEAR));\n" +
+                    "    SET @t_current = DATE('" + start_date + "');\n" +
+                    "    SET @t_end = DATE('" + end_date + "');\n" +
+                    "    WHILE(@t_current< @t_end) DO\n" +
+                    "        INSERT INTO Calendar (date) VALUES (@t_current);\n" +
+                    "        SET @t_current = DATE_ADD(@t_current, INTERVAL 1 DAY);\n" +
+                    "    END WHILE;\n" +
+                    "END;";
             stmt.execute(calendar_sql);
             calendar_sql = "CALL insert_year_dates();";
             stmt.execute(calendar_sql);
@@ -244,7 +244,7 @@ public class JDBCExample {
                             print_header("Manage My Listings");
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
-                            while(sc.hasNextLine()) {
+                            while (sc.hasNextLine()) {
                                 String listing_decide = validate_int(sc, 1, 4);
                                 if (listing_decide.equals("1")) {
                                     print_header("Check My Listings");
@@ -257,7 +257,7 @@ public class JDBCExample {
                                     print_header("Add a Listing");
                                     System.out.println("Do you want to add a listing? Press 1 to continue.");
                                     String add_input = validate(sc);
-                                    if(add_input.equals("1")) {
+                                    if (add_input.equals("1")) {
                                         System.out.println("Add a Listing- Please input your listing latitude.");
                                         String latitude = validate_double(sc, -90, 90);
                                         System.out.println("Add a Listing - Please input your listing longitude.");
@@ -410,7 +410,7 @@ public class JDBCExample {
                             print_header("Listing Availability");
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
-                            while(sc.hasNextLine()) {
+                            while (sc.hasNextLine()) {
                                 String avail = validate_int(sc, 1, 4);
                                 label_if_avail:
                                 if (avail.equals("1")) {
@@ -579,7 +579,7 @@ public class JDBCExample {
                             print_header("Show My Bookings - Owner");
                             if (!show_owner_books(username)) {
                                 print_header("you don't have any booking");
-                            }else {
+                            } else {
                                 System.out.println("Do you want to cancel existing booking?");
                                 System.out.println("Press 1 to cancel a booking, other to go back");
                                 String booking_input = validate(sc);
@@ -651,7 +651,7 @@ public class JDBCExample {
                                         print_error("Cannot cancel the rate");
                                     }
                                 } else if (booking_decide.equals("5")) {
-                                    //go back
+                                    // go back
                                     break;
                                 }
                                 print_header("Rate User");
@@ -691,6 +691,7 @@ public class JDBCExample {
                             System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking, 4: Go Back.");
                             while (sc.hasNextLine()) {
                                 String booking_decide = sc.nextLine();
+                                label_if_book:
                                 if (booking_decide.equals("1")) {
                                     print_header("Show my bookings");
                                     if (!show_user_books(username)) {
@@ -698,52 +699,116 @@ public class JDBCExample {
                                     }
                                 } else if (booking_decide.equals("2")) {
                                     print_header("Book a listing");
-                                    // todo: vague search
-                                    // price limit
-
-                                    // right now is specific search
-                                    // first, get all books that is available
-                                    // get the date you want a book
+                                    // have a start and end date
+                                    LocalDate d1;
+                                    LocalDate d2;
+                                    String lid = "";
                                     System.out.println("Please input the start booking date in this format: yyyy-mm-dd");
                                     String start_time = validate_time(sc);
                                     System.out.println("Please input the end booking date in this format: yyyy-mm-dd");
                                     String end_time = validate_time(sc);
-                                    LocalDate d1;
-                                    LocalDate d2;
                                     try {
                                         d1 = LocalDate.parse(start_time);
                                         d2 = LocalDate.parse(end_time);
                                     } catch (Exception e) {
                                         print_error("input date is not valid");
-                                        break;
+                                        break label_if_book;
                                     }
                                     LocalDate d3 = LocalDate.parse("2022-01-01");
                                     LocalDate d4 = LocalDate.parse("2024-01-01");
                                     if (d1.isAfter(d2)) {
                                         print_error("End date is before start date.");
-                                        break;
+                                        break label_if_book;
                                     }
                                     if (d3.isAfter(d1)) {
                                         print_error("Start date is too early");
-                                        break;
+                                        break label_if_book;
                                     }
                                     if (d2.isAfter(d4)) {
                                         print_error("End date is too late");
-                                        break;
+                                        break label_if_book;
                                     }
-                                    // get all available in that period
-                                    if (!get_available(d1, d2)) {
-                                        print_header("No listing qualified");
-                                        break;
+
+                                    // specific search or vague search
+                                    System.out.println("Do you have a specific address (unit & postal_code) want to book?");
+                                    System.out.println("1: yes, 2: No");
+                                    String address_input = validate_int(sc, 1, 2);
+                                    if (address_input.equals("1")) {
+                                        System.out.println("Please input the postal_code.");
+                                        String postal_code = validate_postal_code(sc);
+                                        System.out.println("Please input the unit.");
+                                        String unit = validate_int(sc, 0, 99999);
+                                        // need to get some information of the list
+                                        lid = search_lid(d1, d2, postal_code, unit);
+                                        if (lid.equals("")) {
+                                            // cannot find available lid
+                                            print_header("No this listing or this listing is not available;");
+                                            break label_if_book;
+                                        }
+                                    } else {
+                                        System.out.println("Do you want to search by a postal_code and it's nearby listings?");
+                                        System.out.println("1: yes, 2: No");
+                                        String vague_input_1 = validate_int(sc, 1, 2);
+                                        if (vague_input_1.equals("1")) {
+                                            System.out.println("Please Input the postal_code.");
+                                            String postal_code = validate_postal_code(sc);
+                                            // going to show all lid that's available
+                                            if (!find_lid_by_postal_code(postal_code, d1, d2)) {
+                                                print_header("No listing qualified.");
+                                                break label_if_book;
+                                            }
+                                        } else {
+                                            System.out.println("How about a lat & lon with distance between which you want to book?");
+                                            System.out.println("1: yes, 2: No");
+                                            String vague_input_2 = validate_int(sc, 1, 2);
+                                            if (vague_input_2.equals("1")) {
+                                                System.out.println("Please input your aim latitude.");
+                                                String lat = validate_double(sc, -90, 90);
+                                                System.out.println("Please input your aim longitude.");
+                                                String lon = validate_double(sc, -180, 180);
+                                                System.out.println("Please input distance between (unit: degree, max: 90).");
+                                                String distance = validate_double(sc, 0, 90);
+                                                if (!find_lid_by_location(lat, lon, d1, d2, distance)) {
+                                                    print_header("No listing qualified.");
+                                                    break label_if_book;
+                                                }
+                                            } else {
+                                                System.out.println("How about by amenities you want?");
+                                                System.out.println("1: yes, 2: No");
+                                                String vague_input_3 = validate_int(sc, 1, 2);
+                                                if (vague_input_3.equals("1")) {
+                                                    // String am = "";
+                                                    // if(!find_lid_by_am(d1, d2, am)){
+                                                    //     // find_lid_by_am
+                                                    //     print_header("No listing qualified.");
+                                                    //     break label_if_book;
+                                                    // }
+                                                    if(!get_available(d1, d2)){
+                                                        // find_lid_by_am
+                                                        print_header("No listing qualified.");
+                                                        break label_if_book;
+                                                    }
+                                                } else {
+                                                    System.out.println("Get all available with the time period.");
+                                                    if(!get_available(d1, d2)){
+                                                        // find_lid_by_am
+                                                        print_header("No listing qualified.");
+                                                        break label_if_book;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        System.out.println("Please select the lid you want to book");
+                                        lid = validate_int(sc, 1, 9999);
                                     }
-                                    // something qualifies
-                                    System.out.println("Please select the lid of the listings you want to book");
-                                    String lid = validate_int(sc, 1, 9999);
+
+                                    // todo: combined price in
+                                    // at this point, we should have d1, d2, lid, start_time, end_time
                                     // get the price and payment method
                                     int total_price = get_price_book(lid, start_time, end_time);
                                     if (total_price == 0) {
                                         print_error("Input lid is not valid");
-                                        break;
+                                        break label_if_book;
                                     }
                                     // get the total_price, get payment method
                                     String payment = get_payment();
@@ -757,7 +822,7 @@ public class JDBCExample {
                                     String ready = validate(sc);
                                     if (!ready.equals("1")) {
                                         print_header("Not ready");
-                                        break;
+                                        break label_if_book;
                                     } else {
                                         // == 1
                                         create_book(payment, total_price, start_time, end_time, lid);
@@ -884,7 +949,7 @@ public class JDBCExample {
                                         print_error("Cannot cancel the comment of this Listing");
                                     }
                                 } else if (booking_decide.equals("5")) {
-                                    //go back
+                                    // go back
                                     break;
                                 }
                                 print_header("Comment Listing");
@@ -1075,7 +1140,7 @@ public class JDBCExample {
             rs.close();
             String sql2 = String.format("select * from Lives NATURAL JOIN Address where username = '%s';", username);
             ResultSet rs2 = stmt.executeQuery(sql2);
-            //System.out.println(sql + "\n" + sql2);
+            // System.out.println(sql + "\n" + sql2);
             while (rs2.next()) {
                 int unit = rs2.getInt("unit");
                 String postal_code = rs2.getString("postal_code");
@@ -1175,7 +1240,7 @@ public class JDBCExample {
         boolean result = false;
         try {
             String sql = String.format("SELECT lid, lon, lat, type, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address where book.username = '%s' and cancellation = 0 group by lid;", rentername);
-            //System.out.println(sql);
+            // System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             // STEP 5: Extract data from result set
             while (rs.next()) {
@@ -1321,14 +1386,14 @@ public class JDBCExample {
         try {
             boolean result = false;
             long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
-            //System.out.println(date_between);
+            // System.out.println(date_between);
             // get all listing that satisfy start time and end time
             // find all that not qualified
             String count_query = String.format("select lid, count(date) as count from available where date >= '%s' and date <= '%s' group by lid;", start_time, end_time);
             ResultSet rs = stmt.executeQuery(count_query);
             while (rs.next()) {
                 long count = rs.getInt("count");
-                //System.out.println(count);
+                // System.out.println(count);
                 String lid = rs.getString("lid");
                 if (count == date_between) {
                     // this one is qualified
@@ -1341,6 +1406,82 @@ public class JDBCExample {
             print_error("Cannot get available");
             e.printStackTrace();
             return false;
+        }
+    }
+    // renter use
+    public static boolean find_lid_by_postal_code(String postal_code, LocalDate start_time, LocalDate end_time) throws SQLException {
+        try {
+            boolean result = false;
+            long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
+            // System.out.println(date_between);
+            // get all listing that satisfy start time and end time
+            // find all that not qualified
+            String count_query = String.format("select lid, count(date) as count, postal_code, unit from available natural join located_at where LEFT(postal_code,3) = LEFT('%s',3) and date >= '%s' and date <= '%s' group by lid;", postal_code, start_time, end_time);
+            ResultSet rs = stmt.executeQuery(count_query);
+            while (rs.next()) {
+                long count = rs.getInt("count");
+                // System.out.println(count);
+                String lid = rs.getString("lid");
+                if (count == date_between) {
+                    // this one is qualified
+                    System.out.println("lid: " + lid);
+                    result = true;
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    // renter use
+    public static boolean find_lid_by_location(String lat, String lon, LocalDate start_time, LocalDate end_time, String distance) throws SQLException {
+        try {
+            boolean result = false;
+            long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
+            // System.out.println(date_between);
+            // get all listing that satisfy start time and end time
+            // find all that not qualified
+            String count_query = String.format("select lid, count(date) as count, type from available natural join listing where lat = '%s' and lon = '%s' and date >= '%s' and date <= '%s' group by lid;", lat, lon, start_time, end_time);
+            ResultSet rs = stmt.executeQuery(count_query);
+            while (rs.next()) {
+                long count = rs.getInt("count");
+                // System.out.println(count);
+                String lid = rs.getString("lid");
+                if (count == date_between) {
+                    // this one is qualified
+                    System.out.println("lid: " + lid);
+                    result = true;
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public static String search_lid(LocalDate start_time, LocalDate end_time, String postal_code, String unit) throws SQLException {
+        String result = "";
+        try {
+            long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
+            String count_query = String.format("select available.lid, count(date) as count from available natural join located_at where unit = '%s' and postal_code = '%s' and date >= '%s' and date <= '%s' group by lid;", unit, postal_code, start_time, end_time);
+            ResultSet rs = stmt.executeQuery(count_query);
+            while (rs.next()) {
+                long count = rs.getInt("count");
+                // System.out.println(count);
+                String lid = rs.getString("lid");
+                if (count == date_between) {
+                    System.out.println("result of search_lid: " + lid);
+                    result = lid;
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return result;
         }
     }
 
@@ -1843,7 +1984,7 @@ public class JDBCExample {
                 if (direction.equals("1")) {
                     String sql2 = String.format("JID = '%s', Host: '%s', Likes = '%s', Comment: '%s';", JID, host_username, likes, words);
                     System.out.print(sql2.concat("\n"));
-                    //stmt.executeUpdate(sql2);
+                    // stmt.executeUpdate(sql2);
                     result = true;
                 }
             }
@@ -1871,7 +2012,7 @@ public class JDBCExample {
                 if (direction.equals("0")) {
                     String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
                     System.out.print(sql2.concat("\n"));
-                    //stmt.executeUpdate(sql2);
+                    // stmt.executeUpdate(sql2);
                     result = true;
                 }
             }
@@ -1899,7 +2040,7 @@ public class JDBCExample {
                 if (direction.equals("0")) {
                     String sql2 = String.format("JID = '%s', Host: '%s', Likes = '%s', Comment: '%s';", JID, host_username, likes, words);
                     System.out.print(sql2.concat("\n"));
-                    //stmt.executeUpdate(sql2);
+                    // stmt.executeUpdate(sql2);
                     result = true;
                 }
             }
@@ -1927,7 +2068,7 @@ public class JDBCExample {
                 if (direction.equals("1")) {
                     String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
                     System.out.print(sql2.concat("\n"));
-                    //stmt.executeUpdate(sql2);
+                    // stmt.executeUpdate(sql2);
                     result = true;
                 }
             }
@@ -1955,7 +2096,7 @@ public class JDBCExample {
                 if (direction.equals("0")) {
                     String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
                     System.out.print(sql2.concat("\n"));
-                    //stmt.executeUpdate(sql2);
+                    // stmt.executeUpdate(sql2);
                     result = true;
                 }
             }
@@ -1980,7 +2121,7 @@ public class JDBCExample {
                 String text = rs.getString("text");
                 String sql2 = String.format("LID = '%s', cid: '%s' Rate: '%s', Comment = '%s';", lid, CID, rate, text);
                 System.out.print(sql2.concat("\n"));
-                //stmt.executeUpdate(sql2);
+                // stmt.executeUpdate(sql2);
                 result = true;
 
             }
@@ -2099,7 +2240,7 @@ public class JDBCExample {
         try {
             System.out.println(half_line + "Update Information" + half_line);
             System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
-            while(sc.hasNextLine()){
+            while (sc.hasNextLine()) {
                 String profile_decide = validate_int(sc, 1, 4);
                 if (profile_decide.equals("1")) {
                     print_header("Check My Profile");
@@ -2148,14 +2289,14 @@ public class JDBCExample {
                             }
                         } else {
                             to_change = validate(sc);
-                            if(change_profile_decide_int == 5 && (!to_change.toLowerCase().equals(to_change.toUpperCase()))) {
+                            if (change_profile_decide_int == 5 && (!to_change.toLowerCase().equals(to_change.toUpperCase()))) {
                                 print_error("credit card can only have integer in it");
                                 is_valid = false;
                             }
                         }
-                        if(!is_valid){
+                        if (!is_valid) {
                             // too young
-                        }else {
+                        } else {
                             if (change_profile(username, to_change, change_profile_decide_int)) {
                                 System.out.println("Successfully change profile");
                             } else {
