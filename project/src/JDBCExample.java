@@ -1,7 +1,5 @@
 import java.io.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
@@ -12,15 +10,11 @@ public class JDBCExample {
     // database information
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
-
-    // your username and password of mysql
     private static final String USER = "root";
     private static final String PASS = "Xzt1973556";
-
     // connection
     private static Statement stmt;
     private static Connection conn;
-
     // state of the while loop
     private static int is_login = 0;
     private static int is_owner = -1;
@@ -33,8 +27,10 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String a_line = "--------------------------------------------------------------------------------";
-    private static final String half_line = "-----------------------------------";
+    private static final String report_message = "1: Report 1, 2: report 2, 3: report 3,  9: logout";
+    private static final String a_line = "--------------------------------------------------"
+            + "--------------------------------------------------";
+    private static final String half_line = "--------------------------------------------------";
 
     private static final String start_date = "2022-01-01";
     private static final String end_date = "2024-01-01";
@@ -63,7 +59,6 @@ public class JDBCExample {
             set.close();
 
             String calendar_sql = "DROP PROCEDURE IF EXISTS insert_year_dates;";
-            System.out.println(calendar_sql);
             stmt.execute(calendar_sql);
             calendar_sql = "create PROCEDURE insert_year_dates()\n" +
                            "BEGIN\n" +
@@ -98,10 +93,8 @@ public class JDBCExample {
             // the while loop start
             label_whole:
             while (true) {
-                // debug use
-                System.out.println("is_login " + is_login + " is_owner " + is_owner);
+                // didn't login
                 if (is_login == 0) {
-                    // didn't login
                     System.out.println(a_line);
                     System.out.println("Please Login or register.");
                     System.out.println("Press 1 to Login, 2 to Register, 3: Administer Mode.");
@@ -178,18 +171,27 @@ public class JDBCExample {
                     }
                 }
 
+                // output the report
                 if (is_admin) {
                     // can see report
                     System.out.println("Select a report to see!");
-                    System.out.println("1: sdfsdf, 2: dssdfsd, 9: logout");
+                    System.out.println(report_message);
+                    // todo: report
                     while (sc.hasNextLine()) {
                         String input = validate_int(sc, 1, 9);
                         if (input.equals("1")) {
-                            print_header("sdfsdf");
+                            print_header("report 1");
+                        } else if (input.equals("2")) {
+                            print_header("report 2");
+                        } else if (input.equals("3")) {
+                            print_header("report 3");
                         } else if (input.equals("9")) {
                             is_admin = false;
                             continue label_whole;
                         }
+                        System.out.println(a_line);
+                        System.out.println("Continue with Owner Account or Renter Account?");
+                        System.out.println(report_message);
                     }
                 }
 
@@ -567,18 +569,19 @@ public class JDBCExample {
                             print_header("Show My Bookings - Owner");
                             if (!show_owner_books(username)) {
                                 print_header("you don't have any booking");
-                            }
-                            System.out.println("Do you want to cancel existing booking?");
-                            System.out.println("Press 1 to cancel a booking, other to go back");
-                            String booking_input = validate(sc);
-                            if (booking_input.equals("1")) {
-                                System.out.println("Input the booking id you want to cancel.");
-                                String bid = validate_int(sc, 1, 9999);
-                                if (!cancel_book(bid, 2)) {
-                                    print_error("Cannot cancel book.");
+                            }else {
+                                System.out.println("Do you want to cancel existing booking?");
+                                System.out.println("Press 1 to cancel a booking, other to go back");
+                                String booking_input = validate(sc);
+                                if (booking_input.equals("1")) {
+                                    System.out.println("Input the booking id you want to cancel.");
+                                    String bid = validate_int(sc, 1, 9999);
+                                    if (!cancel_book(bid, 2)) {
+                                        print_error("Cannot cancel book.");
+                                    }
+                                } else {
+                                    print_header("Go Back.");
                                 }
-                            } else {
-                                print_header("Go Back.");
                             }
                         } else if (input.equals("5")) {
                             print_header("Rate User");
@@ -672,99 +675,6 @@ public class JDBCExample {
                             if (is_owner == -1) {
                                 continue label_whole;
                             }
-//                            System.out.println(half_line + "Update Information" + half_line);
-//                            System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
-//                            while (sc.hasNextLine()) {
-//                                String profile_decide = validate_int(sc, 1, 4);
-//                                if (profile_decide.equals("1")) {
-//                                    print_header("Check My Profile");
-//                                    boolean success = get_profile(username);
-//                                    if (!success) {
-//                                        print_error("Cannot show my profile");
-//                                    }
-//                                } else if (profile_decide.equals("2")) {
-//                                    print_header("Change My Profile");
-//                                    // select what your want to change
-//                                    System.out.println("Select the profile you want to change");
-//                                    System.out.println("1: Real Name, 2: Birth Day, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
-//                                    String change_profile_decide = validate_int(sc, 1, 7);
-//                                    int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-//                                    if (change_profile_decide_int == 7) {
-//                                        // do nothing
-//                                    } else if (change_profile_decide_int == 6) {
-//                                        // change address
-//                                        print_header("Change Address");
-//                                        System.out.println("Change Address - Please input your postal code.");
-//                                        // error checking of postal code
-//                                        String postal_code = validate_postal_code(sc);
-//                                        System.out.println("Change Address - Please input your unit.");
-//                                        String unit = validate_int(sc, 0, 9999);
-//                                        System.out.println("Change Address - Please input your city.");
-//                                        String city = validate(sc);
-//                                        System.out.println("Change Address - Please input your country.");
-//                                        String country = validate(sc);
-//                                        if (change_address(username, postal_code, unit, city, country)) {
-//                                            print_header("Successfully change address");
-//                                        } else {
-//                                            print_error("Cannot change address");
-//                                        }
-//                                    } else {
-//                                        boolean is_valid = true;
-//                                        System.out.println("What do you want to change to?");
-//                                        String to_change;
-//                                        if (change_profile_decide_int == 2) {
-//                                            to_change = validate_time(sc);
-//                                            LocalDate d1 = LocalDate.parse(to_change);
-//                                            LocalDate d3 = LocalDate.parse("2004-01-01");
-//                                            if (d1.isAfter(d3)) {
-//                                                print_header("To young to register, should over 18.");
-//                                                is_valid = false;
-//                                            }
-//                                        } else {
-//                                            to_change = validate(sc);
-//                                        }
-//                                        if(!is_valid){
-//                                            // too young
-//                                        }else {
-//                                            if (change_profile(username, to_change, change_profile_decide_int)) {
-//                                                System.out.println("Successfully change profile");
-//                                            } else {
-//                                                print_error("Cannot change profile");
-//                                            }
-//                                        }
-//                                    }
-//                                } else if (profile_decide.equals("3")) {
-//                                    print_header("Delete My Account");
-//                                    System.out.println("Are you sure you want to delete your user?");
-//                                    System.out.println("Press 1 to continue");
-//                                    String delete_decide = sc.nextLine();
-//                                    if (delete_decide.equals("1")) {
-//                                        if (delete_user(username)) {
-//                                            print_header("delete_success");
-//                                            // set log out
-//                                            is_login = 0;
-//                                            is_owner = -1;
-//                                            // todo: break
-//                                            continue label_whole;
-//                                        } else {
-//                                            print_error("delete error");
-//                                        }
-//
-//                                    } else {
-//                                        // don't delete
-//
-//                                    }
-//                                } else if (profile_decide.equals("4")) {
-//                                    // not valid
-//                                    // go back
-//                                    break;
-//                                }
-//                                System.out.println(half_line + "Update Information" + half_line);
-//                                System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
-//                            }
-//                            if (is_owner == -1) {
-//                                continue label_whole;
-//                            }
                         } else if (input.equals("2")) {
                             print_header("Booking a list");
                             System.out.println("Press the Corresponding number to continue");
@@ -778,7 +688,7 @@ public class JDBCExample {
                                     }
                                 } else if (booking_decide.equals("2")) {
                                     print_header("Book a listing");
-                                    // vague search
+                                    // todo: vague search
                                     // price limit
 
                                     // right now is specific search
@@ -1466,7 +1376,6 @@ public class JDBCExample {
             LocalDate temp = start_time;
             String sql;
             if (hard) {
-                // todo: need to check if the available is has a book or not
                 String check_avail = String.format("select * from available where lid = '%s' and date >= '%s' and date <= '%s' and BID is not NULL;", lid, start_time, end_time);
                 ResultSet rs = stmt.executeQuery(check_avail);
                 if (rs.next()) {
@@ -2112,13 +2021,13 @@ public class JDBCExample {
 
             Matcher matcher = pattern.matcher(input);
             if (!matcher.matches()) {
-                print_error("Input time is not valid!");
+                print_error("Input date is not valid!");
             } else {
                 try {
                     LocalDate.parse(input);
                     break;
                 } catch (Exception e) {
-                    print_error("Input time is not valid!");
+                    print_error("Input date is not valid!");
                 }
             }
         }
@@ -2214,7 +2123,7 @@ public class JDBCExample {
                         print_error("Cannot change address");
                     }
                 } else {
-                    System.out.println("What do you want to change to?");
+                    System.out.println("What date do you want to change to? (Format: yyyy-mm-dd) ");
                     boolean is_valid = true;
                     String to_change;
                     if (change_profile_decide_int == 2) {
@@ -2249,8 +2158,6 @@ public class JDBCExample {
                         // set log out
                         is_login = 0;
                         is_owner = -1;
-                        // todo: break
-                        // continue label_whole;
                     } else {
                         print_error("delete error");
                     }
