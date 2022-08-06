@@ -576,6 +576,25 @@ public class JDBCExample {
 									}
 								} else if (booking_decide.equals("3")) {
 									print_header("Rate a renter");
+									String sql = String.format("SELECT distinct Book.username as rentername, BID, Owns.lid as llid, postal_code, unit FROM Book Join Owns join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Owns.username = '%s';", username);
+									ResultSet rs = stmt.executeQuery(sql);
+									int count = 0;
+									while(rs.next()){
+										count++;
+										String bid = rs.getString("BID");
+										String renter = rs.getString("rentername");
+										String lid = rs.getString("llid");
+										String postal_code = rs.getString("postal_code");
+										String unit = rs.getString("unit");
+										System.out.format("Renter: %s, BID: %s, Lid: %s, Postal Code: %s, Unit: %s\n", renter, bid, lid, postal_code, unit);
+									}
+									if (count == 0) {
+										System.out.println("You can't comment any renter yet, no one booked your house!");
+										print_header("Rate User");
+										System.out.println("Press the Corresponding number to continue");
+                            			System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
+										continue;
+									}
 									System.out.println("Please input the renter's username that you want to rate");
 									String renter_username = validate(sc);
 									System.out.println("Please input how much you like this renter from 1-5");
@@ -826,6 +845,24 @@ public class JDBCExample {
 									}
 								} else if (booking_decide.equals("3")) {
 									print_header("Rate a host");
+									String sql = String.format("SELECT distinct Owns.username as hostname, Owns.lid as llid, postal_code, unit FROM Book Join Owns join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Book.username = '%s';", username);
+									ResultSet rs = stmt.executeQuery(sql);
+									int count = 0;
+									while(rs.next()){
+										count++;
+										String host = rs.getString("hostname");
+										String lid = rs.getString("llid");
+										String postal_code = rs.getString("postal_code");
+										String unit = rs.getString("unit");
+										System.out.format("Host: %s, Lid: %s, Postal Code: %s, Unit: %s\n", host, lid, postal_code, unit);
+									}
+									if (count == 0) {
+										System.out.println("You can't comment any host yet, you should book first!");
+										print_header("Rate User");
+										System.out.println("Press the Corresponding number to continue");
+                            			System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
+										continue;
+									}
 									System.out.println("Please input the host's username that you want to rate");
 									String host_username = validate(sc);
 									System.out.println("Please input how much you like this host from 1-5");
