@@ -24,7 +24,7 @@ create table IF NOT EXISTS User (
     name varchar(100) NOT NULL,
     password varchar(100) NOT NULL,
     occupation varchar(100),
-    birth int(5) NOT NULL,
+    birth DATE NOT NULL,
     payment BIGINT,
     username varchar(100) NOT NULL PRIMARY KEY
     );
