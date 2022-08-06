@@ -332,9 +332,9 @@ public class JDBCExample {
                         } else if (input.equals("2")) {
 							print_header("Manage My Listings");
 							System.out.println("Press the Corresponding number to continue");
-							System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
+							System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comments of my Listings, 5: Go Back.");
 							while (sc.hasNextLine()){
-								String listing_decide = validate_int(sc, 1, 4);
+								String listing_decide = validate_int(sc, 1, 5);
 								if (listing_decide.equals("1")) {
 									print_header("Check My Listings");
 									// get all my listings
@@ -485,14 +485,30 @@ public class JDBCExample {
 									} else {
 										print_error("Not Valid input when change a Listing!");
 									}
-								} else if (listing_decide.equals("4")) {
+								} else if (listing_decide.equals("5")) {
 									// not valid
 									// continue;
 									break;
+								}else if (listing_decide.equals("4")) {
+									print_header("Comment of my Listing");
+									if(!show_user_owns(username)){
+										print_error("You don't have any listings so far.");
+										continue;
+									}
+									System.out.println("Select the listing's LID which you want to look at: (input any other number to go back)");
+									//boolean indicator = false;
+									
+									while (sc.hasNextLine()){
+										String lid = validate_int(sc, 0, 99999);
+										if(!show_listing_comment(lid, username)){
+											break;
+										}
+										System.out.println("Select the listing's LID which you want to look at:(input any other number to go back)");
+									}
 								}
 								print_header("Manage My Listings");
 								System.out.println("Press the Corresponding number to continue");
-								System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
+								System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comments of my Listings, 5: Go Back.");
 							}
                         } else if (input.equals("3")) {
                             print_header("Listing Availability");
@@ -1191,7 +1207,45 @@ public class JDBCExample {
             return result;
         }
     }
-
+	
+    public static boolean show_listing_comment(String lid, String username) throws SQLException {
+        boolean result = false;
+        try {
+            String sql = String.format("SELECT * FROM Owns Natural Join Listing where username = '%s' and Listing.lid = '%s';", username, lid);
+            ResultSet rs = stmt.executeQuery(sql);
+			int count = 0;
+            // STEP 5: Extract data from result set
+            if (rs.next()) {
+                result = true;
+				
+                // Retrieve by column name
+				String sqll = String.format("SELECT * FROM Comment Natural Join Listing where Listing.lid = '%s';", lid);
+				ResultSet rss = stmt.executeQuery(sqll);
+				while(rss.next()){
+					count++;
+					//System.out.print("Lid: " + lid);
+					String renter = rss.getString("username");
+					System.out.print("Renter: " + renter);
+					String rate = rss.getString("rate");
+					System.out.print(", Rate: " + rate);
+					String text = rss.getString("text");
+					System.out.println(", Comment: " + text);
+				}
+				
+				rss.close();
+				if(count == 0){
+					System.out.println("No one comment yet.");
+				}
+				System.out.println(a_line);
+            }
+			
+            rs.close();
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return result;
+        }
+    }
     public static String create_listing(String input, String postal_code, String unit, String city, String country) throws SQLException {
         String result;
         try {
