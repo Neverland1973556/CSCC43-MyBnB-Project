@@ -800,14 +800,12 @@ public class JDBCExample {
                                                     //     break label_if_book;
                                                     // }
                                                     if(!get_available(d1, d2)){
-                                                        // find_lid_by_am
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
                                                 } else {
                                                     System.out.println("Get all available with the time period.");
                                                     if(!get_available(d1, d2)){
-                                                        // find_lid_by_am
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
@@ -1454,12 +1452,17 @@ public class JDBCExample {
     // renter use
     public static boolean find_lid_by_location(String lat, String lon, LocalDate start_time, LocalDate end_time, String distance) throws SQLException {
         try {
+            double lat_double = Double.parseDouble(lat);
+            double lon_double = Double.parseDouble(lon);
+            double distance_double = Double.parseDouble(distance);
+            double lat_min = lat_double - distance_double;
+            double lat_max = lat_double + distance_double;
+            double lon_min = lon_double - distance_double;
+            double lon_max = lon_double + distance_double;
             boolean result = false;
             long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
-            // System.out.println(date_between);
-            // get all listing that satisfy start time and end time
-            // find all that not qualified
-            String count_query = String.format("select lid, count(date) as count, type from available natural join listing where lat = '%s' and lon = '%s' and date >= '%s' and date <= '%s' group by lid;", lat, lon, start_time, end_time);
+            String count_query = String.format("select lid, count(date) as count, type from available natural join listing where lat >= '%s' and lat <= '%s' and lon >= '%s' and lon <= '%s' and date >= '%s' and date <= '%s' group by lid;", lat_min, lat_max, lon_min, lon_max, start_time, end_time);
+            System.out.println(count_query);
             ResultSet rs = stmt.executeQuery(count_query);
             while (rs.next()) {
                 long count = rs.getInt("count");
