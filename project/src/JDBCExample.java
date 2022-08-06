@@ -244,239 +244,197 @@ public class JDBCExample {
                             print_header("Manage My Listings");
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
-                            String listing_decide = validate_int(sc, 1, 4);
-                            if (listing_decide.equals("1")) {
-                                print_header("Check My Listings");
-                                // get all my listings
-                                if (!show_user_owns(username)) {
-                                    print_header("Currently you don't have a listing.");
-                                }
-                            } else if (listing_decide.equals("2")) {
-                                // add a listing to database
-                                print_header("Add a Listing");
-                                System.out.println("Add a Listing- Please input your listing latitude.");
-                                String latitude = validate_double(sc, -90, 90);
-                                System.out.println("Add a Listing - Please input your listing longitude.");
-                                String longitude = validate_double(sc, -180, 180);
-                                System.out.println("Add a Listing - Please input your listing type");
-                                System.out.println("              - 1: full house, 2: apartment, 3: room");
-                                String listing_type = validate_int(sc, 1, 3);
-                                int listing_type_int = Integer.parseInt(listing_type);
-                                if (listing_type_int == 1) {
-                                    listing_type = "full house";
-                                } else if (listing_type_int == 2) {
-                                    listing_type = "apartment";
-                                } else {
-                                    listing_type = "room";
-                                }
-                                System.out.println("Add Listing Address - Please input your postal code.");
-                                String postal_code = validate_postal_code(sc);
-                                System.out.println("Add Listing Address - Please input your unit.");
-                                String unit = validate_int(sc, 0, 9999);
-                                System.out.println("Add Listing Address - Please input your city.");
-                                String city = validate(sc);
-                                System.out.println("Add Listing Address - Please input your country.");
-                                String country = validate(sc);
-                                if (check_address_owner(postal_code, unit, city, country)) {
-                                    System.out.println("Address is valid");
-                                    String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
-                                    System.out.println(reg);
-                                    String success = create_listing(reg, postal_code, unit, city, country);
-                                    if (success.equals("false")) {
-                                        print_error("Cannot add, please try again");
-                                    } else {
-                                        // success, can continue
-                                        System.out.println("Add success!");
-                                    }
-                                }
-
-                            } else if (listing_decide.equals("3")) {
-                                print_header("Change a Listing Information");
-                                System.out.println("Press the Corresponding number to continue.");
-                                System.out.println("1: Modify a Listing, 2: Delete a Listing, 3: Go Back.");
-                                String change_listing_decide = sc.nextLine();
-                                label_listing:
-                                if (change_listing_decide.equals("1")) {
-                                    print_header("Modify a Listing");
+                            while(sc.hasNextLine()) {
+                                String listing_decide = validate_int(sc, 1, 4);
+                                if (listing_decide.equals("1")) {
+                                    print_header("Check My Listings");
+                                    // get all my listings
                                     if (!show_user_owns(username)) {
                                         print_header("Currently you don't have a listing.");
-                                        break label_listing;
                                     }
-                                    System.out.println("Type the lid of the list your want to modify.");
-                                    String lid = validate(sc);
-                                    if (!check_lid_in_book(lid)) {
-                                        // it's in book where cancel == 0
-                                        print_error("It's in a book, you cannot change the listing information.");
-                                        break label_listing;
-                                    }
-                                    System.out.println("Choose the property of the listing you want to modify.");
-                                    System.out.println("1: latitude, 2: longitude, 3: type, 4: address");
-                                    String modify_listing_decide = sc.nextLine();
-                                    String to_change;
-                                    int type;
-                                    if (modify_listing_decide.equals("1")) {
-                                        print_header("Modify listing - latitude");
-                                        System.out.println("Type the latitude your want to change to.");
-                                        to_change = validate_double(sc, -90, 90);
-                                        type = 1;
-                                        if (handle_modify_listing(lid, type, to_change)) {
-                                            print_header("modify success");
-                                        } else {
-                                            print_error("cannot modify");
-                                        }
-                                    } else if (modify_listing_decide.equals("2")) {
-                                        print_header("Modify listing - longitude");
-                                        System.out.println("Type the longitude your want to change to.");
-                                        to_change = validate_double(sc, -180, 180);
-                                        type = 2;
-                                        if (handle_modify_listing(lid, type, to_change)) {
-                                            print_header("modify success");
-                                        } else {
-                                            print_error("cannot modify");
-                                        }
-
-                                    } else if (modify_listing_decide.equals("3")) {
-                                        print_header("Modify listing - type");
-                                        System.out.println("Type the listing type your want to change to.");
-                                        System.out.println("1: full house, 2: apartment, 3: room");
-                                        to_change = validate_int(sc, 1, 3);
-                                        int listing_type_int = Integer.parseInt(to_change);
+                                } else if (listing_decide.equals("2")) {
+                                    // add a listing to database
+                                    print_header("Add a Listing");
+                                    System.out.println("Do you want to add a listing? Press 1 to continue.");
+                                    String add_input = validate(sc);
+                                    if(add_input.equals("1")) {
+                                        System.out.println("Add a Listing- Please input your listing latitude.");
+                                        String latitude = validate_double(sc, -90, 90);
+                                        System.out.println("Add a Listing - Please input your listing longitude.");
+                                        String longitude = validate_double(sc, -180, 180);
+                                        System.out.println("Add a Listing - Please input your listing type");
+                                        System.out.println("              - 1: full house, 2: apartment, 3: room");
+                                        String listing_type = validate_int(sc, 1, 3);
+                                        int listing_type_int = Integer.parseInt(listing_type);
                                         if (listing_type_int == 1) {
-                                            to_change = "full house";
+                                            listing_type = "full house";
                                         } else if (listing_type_int == 2) {
-                                            to_change = "apartment";
+                                            listing_type = "apartment";
                                         } else {
-                                            to_change = "room";
+                                            listing_type = "room";
                                         }
-                                        type = 3;
-                                        if (handle_modify_listing(lid, type, to_change)) {
-                                            print_header("modify success");
-                                        } else {
-                                            print_error("cannot modify");
-                                        }
-                                    } else if (modify_listing_decide.equals("4")) {
-                                        print_header("Modify listing - address");
-                                        System.out.println("Modify listing address - Please input your new postal code.");
+                                        System.out.println("Add Listing Address - Please input your postal code.");
                                         String postal_code = validate_postal_code(sc);
-                                        System.out.println("Modify listing address - Please input your new unit.");
+                                        System.out.println("Add Listing Address - Please input your unit.");
                                         String unit = validate_int(sc, 0, 9999);
-                                        System.out.println("Modify listing address - Please input your new city.");
+                                        System.out.println("Add Listing Address - Please input your city.");
                                         String city = validate(sc);
-                                        System.out.println("Modify listing address - Please input your new country.");
+                                        System.out.println("Add Listing Address - Please input your country.");
                                         String country = validate(sc);
-                                        if (change_address_listing(lid, postal_code, unit, city, country)) {
-                                            print_header("modify success");
-                                        } else {
-                                            print_error("cannot modify");
+                                        if (check_address_owner(postal_code, unit, city, country)) {
+                                            System.out.println("Address is valid");
+                                            String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
+                                            System.out.println(reg);
+                                            String success = create_listing(reg, postal_code, unit, city, country);
+                                            if (success.equals("false")) {
+                                                print_error("Cannot add, please try again");
+                                            } else {
+                                                // success, can continue
+                                                System.out.println("Add success!");
+                                            }
                                         }
+                                    }
+                                    // else not == 1
+
+                                } else if (listing_decide.equals("3")) {
+                                    print_header("Change a Listing Information");
+                                    System.out.println("Press the Corresponding number to continue.");
+                                    System.out.println("1: Modify a Listing, 2: Delete a Listing, 3: Go Back.");
+                                    String change_listing_decide = sc.nextLine();
+                                    label_listing:
+                                    if (change_listing_decide.equals("1")) {
+                                        print_header("Modify a Listing");
+                                        if (!show_user_owns(username)) {
+                                            print_header("Currently you don't have a listing.");
+                                            break label_listing;
+                                        }
+                                        System.out.println("Type the lid of the list your want to modify.");
+                                        String lid = validate(sc);
+                                        if (!check_lid_in_book(lid)) {
+                                            // it's in book where cancel == 0
+                                            print_error("It's in a book, you cannot change the listing information.");
+                                            break label_listing;
+                                        }
+                                        System.out.println("Choose the property of the listing you want to modify.");
+                                        System.out.println("1: latitude, 2: longitude, 3: type, 4: address");
+                                        String modify_listing_decide = sc.nextLine();
+                                        String to_change;
+                                        int type;
+                                        if (modify_listing_decide.equals("1")) {
+                                            print_header("Modify listing - latitude");
+                                            System.out.println("Type the latitude your want to change to.");
+                                            to_change = validate_double(sc, -90, 90);
+                                            type = 1;
+                                            if (handle_modify_listing(lid, type, to_change)) {
+                                                print_header("modify success");
+                                            } else {
+                                                print_error("cannot modify");
+                                            }
+                                        } else if (modify_listing_decide.equals("2")) {
+                                            print_header("Modify listing - longitude");
+                                            System.out.println("Type the longitude your want to change to.");
+                                            to_change = validate_double(sc, -180, 180);
+                                            type = 2;
+                                            if (handle_modify_listing(lid, type, to_change)) {
+                                                print_header("modify success");
+                                            } else {
+                                                print_error("cannot modify");
+                                            }
+
+                                        } else if (modify_listing_decide.equals("3")) {
+                                            print_header("Modify listing - type");
+                                            System.out.println("Type the listing type your want to change to.");
+                                            System.out.println("1: full house, 2: apartment, 3: room");
+                                            to_change = validate_int(sc, 1, 3);
+                                            int listing_type_int = Integer.parseInt(to_change);
+                                            if (listing_type_int == 1) {
+                                                to_change = "full house";
+                                            } else if (listing_type_int == 2) {
+                                                to_change = "apartment";
+                                            } else {
+                                                to_change = "room";
+                                            }
+                                            type = 3;
+                                            if (handle_modify_listing(lid, type, to_change)) {
+                                                print_header("modify success");
+                                            } else {
+                                                print_error("cannot modify");
+                                            }
+                                        } else if (modify_listing_decide.equals("4")) {
+                                            print_header("Modify listing - address");
+                                            System.out.println("Modify listing address - Please input your new postal code.");
+                                            String postal_code = validate_postal_code(sc);
+                                            System.out.println("Modify listing address - Please input your new unit.");
+                                            String unit = validate_int(sc, 0, 9999);
+                                            System.out.println("Modify listing address - Please input your new city.");
+                                            String city = validate(sc);
+                                            System.out.println("Modify listing address - Please input your new country.");
+                                            String country = validate(sc);
+                                            if (change_address_listing(lid, postal_code, unit, city, country)) {
+                                                print_header("modify success");
+                                            } else {
+                                                print_error("cannot modify");
+                                            }
+                                        } else {
+                                            print_error("Not Valid input when change a Listing!");
+                                        }
+                                    } else if (change_listing_decide.equals("2")) {
+                                        print_header("Delete a Listing");
+                                        if (!show_user_owns(username)) {
+                                            print_header("Currently you don't have a list");
+                                            break label_listing;
+                                        }
+                                        System.out.println("Type the lid of the listing your want to delete.");
+                                        String lid = validate(sc);
+                                        if (!check_lid_in_book(lid)) {
+                                            // it's in book where cancel == 0
+                                            print_error("It's in a book, you cannot delete the listing.");
+                                            break label_listing;
+                                        }
+                                        if (handle_delete_listing(username, lid)) {
+                                            print_header("delete success");
+                                        } else {
+                                            print_error("cannot delete");
+                                        }
+                                    } else if (change_listing_decide.equals("3")) {
+                                        // do nothing
                                     } else {
                                         print_error("Not Valid input when change a Listing!");
                                     }
-                                } else if (change_listing_decide.equals("2")) {
-                                    print_header("Delete a Listing");
-                                    if (!show_user_owns(username)) {
-                                        print_header("Currently you don't have a list");
-                                        break label_listing;
-                                    }
-                                    System.out.println("Type the lid of the listing your want to delete.");
-                                    String lid = validate(sc);
-                                    if (!check_lid_in_book(lid)) {
-                                        // it's in book where cancel == 0
-                                        print_error("It's in a book, you cannot delete the listing.");
-                                        break label_listing;
-                                    }
-                                    if (handle_delete_listing(username, lid)) {
-                                        print_header("delete success");
-                                    } else {
-                                        print_error("cannot delete");
-                                    }
-                                } else if (change_listing_decide.equals("3")) {
-                                    // do nothing
-                                } else {
-                                    print_error("Not Valid input when change a Listing!");
+                                } else if (listing_decide.equals("4")) {
+                                    break;
                                 }
-                            } else if (listing_decide.equals("4")) {
-                                // not valid
-                                // continue;
+                                System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Go Back.");
                             }
                         } else if (input.equals("3")) {
                             print_header("Listing Availability");
                             System.out.println("Press the Corresponding number to continue");
                             System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
-                            String avail = validate_int(sc, 1, 4);
-                            label_avail:
-                            if (avail.equals("1")) {
-                                print_header("Show Availability");
-                                if (!show_user_owns(username)) {
-                                    print_header("Currently you don't have a listing.");
-                                    break label_avail;
-                                }
-                                System.out.println("Please type the lid your want to check");
-                                String lid = validate_int(sc, 0, 9999);
-                                if (!show_available(lid)) {
-                                    print_error("Cannot find availability for the given lid.");
-                                }
-
-                            } else if (avail.equals("2")) {
-                                print_header("Add Availability");
-                                if (!show_user_owns(username)) {
-                                    print_header("Currently you don't have a listing.");
-                                    break label_avail;
-                                }
-                                // new add will replace old one, add can be not success
-                                System.out.println("Please type the lid you want to add availability to");
-                                String lid = validate_int(sc, 1, 10000);
-                                print_header("Add date period for Listing Available.");
-                                System.out.println(valid_date);
-                                System.out.println("Please input the start date in this format: yyyy-mm-dd");
-                                String start_time = validate_time(sc);
-                                System.out.println("Please input the end date in this format: yyyy-mm-dd");
-                                String end_time = validate_time(sc);
-                                LocalDate d1;
-                                LocalDate d2;
-                                try {
-                                    d1 = LocalDate.parse(start_time);
-                                    d2 = LocalDate.parse(end_time);
-                                } catch (Exception e) {
-                                    print_error("input date is not valid");
-                                    end_of_owner();
-                                    continue;
-                                }
-                                LocalDate d3 = LocalDate.parse("2022-01-01");
-                                LocalDate d4 = LocalDate.parse("2024-01-01");
-                                if (d1.isAfter(d2)) {
-                                    print_error("End date is before start date.");
-                                    end_of_owner();
-                                    continue;
-                                }
-                                if (d3.isAfter(d1)) {
-                                    print_error("Start date is too early");
-                                    end_of_owner();
-                                    continue;
-                                }
-                                if (d2.isAfter(d4)) {
-                                    print_error("End date is too late");
-                                    end_of_owner();
-                                    continue;
-                                }
-                                System.out.println("Please input daily price of the available:");
-                                String price = validate_double(sc, 0, 9999);
-                                // in this period, this listing is this price
-                                add_available(d1, d2, price, lid, false);
-                            } else if (avail.equals("3")) {
-                                print_header("Change Availability");
-                                System.out.println("1: Change Availability Price, 2: Remove Existing Availability, 3: Go Back.");
-                                String change_avail = validate_int(sc, 1, 3);
-                                if (change_avail.equals("1")) {
-                                    print_header("Change Availability Price.");
+                            while(sc.hasNextLine()) {
+                                String avail = validate_int(sc, 1, 4);
+                                label_if_avail:
+                                if (avail.equals("1")) {
+                                    print_header("Show Availability");
                                     if (!show_user_owns(username)) {
                                         print_header("Currently you don't have a listing.");
-                                        break label_avail;
+                                        break label_if_avail;
+                                    }
+                                    System.out.println("Please type the lid your want to check");
+                                    String lid = validate_int(sc, 0, 9999);
+                                    if (!show_available(lid)) {
+                                        print_error("Cannot find availability for the given lid.");
+                                    }
+
+                                } else if (avail.equals("2")) {
+                                    print_header("Add Availability");
+                                    if (!show_user_owns(username)) {
+                                        print_header("Currently you don't have a listing.");
+                                        break label_if_avail;
                                     }
                                     // new add will replace old one, add can be not success
-                                    System.out.println("Please type the lid you want to change it's availability");
+                                    System.out.println("Please type the lid you want to add availability to");
                                     String lid = validate_int(sc, 1, 10000);
-                                    print_header("Add date period for changing Listing Available.");
+                                    print_header("Add date period for Listing Available.");
                                     System.out.println(valid_date);
                                     System.out.println("Please input the start date in this format: yyyy-mm-dd");
                                     String start_time = validate_time(sc);
@@ -490,79 +448,131 @@ public class JDBCExample {
                                     } catch (Exception e) {
                                         print_error("input date is not valid");
                                         end_of_owner();
-                                        continue;
+                                        break label_if_avail;
                                     }
                                     LocalDate d3 = LocalDate.parse("2022-01-01");
                                     LocalDate d4 = LocalDate.parse("2024-01-01");
                                     if (d1.isAfter(d2)) {
                                         print_error("End date is before start date.");
                                         end_of_owner();
-                                        continue;
+                                        break label_if_avail;
                                     }
                                     if (d3.isAfter(d1)) {
                                         print_error("Start date is too early");
                                         end_of_owner();
-                                        continue;
+                                        break label_if_avail;
                                     }
                                     if (d2.isAfter(d4)) {
                                         print_error("End date is too late");
                                         end_of_owner();
-                                        continue;
+                                        break label_if_avail;
                                     }
                                     System.out.println("Please input daily price of the available:");
                                     String price = validate_double(sc, 0, 9999);
                                     // in this period, this listing is this price
-                                    // hard = true, will delete first
-                                    add_available(d1, d2, price, lid, true);
+                                    add_available(d1, d2, price, lid, false);
+                                } else if (avail.equals("3")) {
+                                    print_header("Change Availability");
+                                    System.out.println("1: Change Availability Price, 2: Remove Existing Availability, 3: Go Back.");
+                                    String change_avail = validate_int(sc, 1, 3);
+                                    if (change_avail.equals("1")) {
+                                        print_header("Change Availability Price.");
+                                        if (!show_user_owns(username)) {
+                                            print_header("Currently you don't have a listing.");
+                                            break label_if_avail;
+                                        }
+                                        // new add will replace old one, add can be not success
+                                        System.out.println("Please type the lid you want to change it's availability");
+                                        String lid = validate_int(sc, 1, 10000);
+                                        print_header("Add date period for changing Listing Available.");
+                                        System.out.println(valid_date);
+                                        System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                                        String start_time = validate_time(sc);
+                                        System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                                        String end_time = validate_time(sc);
+                                        LocalDate d1;
+                                        LocalDate d2;
+                                        try {
+                                            d1 = LocalDate.parse(start_time);
+                                            d2 = LocalDate.parse(end_time);
+                                        } catch (Exception e) {
+                                            print_error("input date is not valid");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        LocalDate d3 = LocalDate.parse("2022-01-01");
+                                        LocalDate d4 = LocalDate.parse("2024-01-01");
+                                        if (d1.isAfter(d2)) {
+                                            print_error("End date is before start date.");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        if (d3.isAfter(d1)) {
+                                            print_error("Start date is too early");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        if (d2.isAfter(d4)) {
+                                            print_error("End date is too late");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        System.out.println("Please input daily price of the available:");
+                                        String price = validate_double(sc, 0, 9999);
+                                        // in this period, this listing is this price
+                                        // hard = true, will delete first
+                                        add_available(d1, d2, price, lid, true);
 
-                                } else if (change_avail.equals("2")) {
-                                    print_header(" Remove Availability.");
-                                    if (!show_user_owns(username)) {
-                                        print_header("Currently you don't have a listing.");
-                                        break label_avail;
+                                    } else if (change_avail.equals("2")) {
+                                        print_header(" Remove Availability.");
+                                        if (!show_user_owns(username)) {
+                                            print_header("Currently you don't have a listing.");
+                                            break label_if_avail;
+                                        }
+                                        // new add will replace old one, add can be not success
+                                        System.out.println("Please type the lid you want to remove it's availability");
+                                        String lid = validate_int(sc, 1, 10000);
+                                        print_header("Add date period for remove Listing Available.");
+                                        System.out.println(valid_date);
+                                        System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                                        String start_time = validate_time(sc);
+                                        System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                                        String end_time = validate_time(sc);
+                                        LocalDate d1;
+                                        LocalDate d2;
+                                        try {
+                                            d1 = LocalDate.parse(start_time);
+                                            d2 = LocalDate.parse(end_time);
+                                        } catch (Exception e) {
+                                            print_error("input date is not valid");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        LocalDate d3 = LocalDate.parse("2022-01-01");
+                                        LocalDate d4 = LocalDate.parse("2024-01-01");
+                                        if (d1.isAfter(d2)) {
+                                            print_error("End date is before start date.");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        if (d3.isAfter(d1)) {
+                                            print_error("Start date is too early");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        if (d2.isAfter(d4)) {
+                                            print_error("End date is too late");
+                                            end_of_owner();
+                                            break label_if_avail;
+                                        }
+                                        remove_available(d1, d2, lid);
+                                    } else if (change_avail.equals("3")) {
+                                        // continue;
                                     }
-                                    // new add will replace old one, add can be not success
-                                    System.out.println("Please type the lid you want to remove it's availability");
-                                    String lid = validate_int(sc, 1, 10000);
-                                    print_header("Add date period for remove Listing Available.");
-                                    System.out.println(valid_date);
-                                    System.out.println("Please input the start date in this format: yyyy-mm-dd");
-                                    String start_time = validate_time(sc);
-                                    System.out.println("Please input the end date in this format: yyyy-mm-dd");
-                                    String end_time = validate_time(sc);
-                                    LocalDate d1;
-                                    LocalDate d2;
-                                    try {
-                                        d1 = LocalDate.parse(start_time);
-                                        d2 = LocalDate.parse(end_time);
-                                    } catch (Exception e) {
-                                        print_error("input date is not valid");
-                                        end_of_owner();
-                                        continue;
-                                    }
-                                    LocalDate d3 = LocalDate.parse("2022-01-01");
-                                    LocalDate d4 = LocalDate.parse("2024-01-01");
-                                    if (d1.isAfter(d2)) {
-                                        print_error("End date is before start date.");
-                                        end_of_owner();
-                                        continue;
-                                    }
-                                    if (d3.isAfter(d1)) {
-                                        print_error("Start date is too early");
-                                        end_of_owner();
-                                        continue;
-                                    }
-                                    if (d2.isAfter(d4)) {
-                                        print_error("End date is too late");
-                                        end_of_owner();
-                                        continue;
-                                    }
-                                    remove_available(d1, d2, lid);
-                                } else if (change_avail.equals("3")) {
-                                    // continue;
+                                } else if (avail.equals("4")) {
+                                    break;
                                 }
-                            } else if (avail.equals("4")) {
-                                // continue the loop;
+                                System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
                             }
                         } else if (input.equals("4")) {
                             System.out.println("Check Booking");
@@ -2089,85 +2099,91 @@ public class JDBCExample {
         try {
             System.out.println(half_line + "Update Information" + half_line);
             System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
-            String profile_decide = validate_int(sc, 1, 4);
-            if (profile_decide.equals("1")) {
-                print_header("Check My Profile");
-                boolean success = get_profile(username);
-                if (!success) {
-                    print_error("Cannot show my profile");
-                }
-            } else if (profile_decide.equals("2")) {
-                print_header("Change My Profile");
-                // select what your want to change
-                System.out.println("Select the profile you want to change");
-                System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
-                String change_profile_decide = validate_int(sc, 1, 7);
-                int change_profile_decide_int = Integer.parseInt(change_profile_decide);
-                if (change_profile_decide_int == 7) {
-                    // do nothing
-                } else if (change_profile_decide_int == 6) {
-                    // change address
-                    print_header("Change Address");
-                    System.out.println("Change Address - Please input your postal code.");
-                    // error checking of postal code
-                    String postal_code = validate_postal_code(sc);
-                    System.out.println("Change Address - Please input your unit.");
-                    String unit = validate_int(sc, 0, 9999);
-                    System.out.println("Change Address - Please input your city.");
-                    String city = validate(sc);
-                    System.out.println("Change Address - Please input your country.");
-                    String country = validate(sc);
-                    if (change_address(username, postal_code, unit, city, country)) {
-                        print_header("Successfully change address");
-                    } else {
-                        print_error("Cannot change address");
+            while(sc.hasNextLine()){
+                String profile_decide = validate_int(sc, 1, 4);
+                if (profile_decide.equals("1")) {
+                    print_header("Check My Profile");
+                    boolean success = get_profile(username);
+                    if (!success) {
+                        print_error("Cannot show my profile");
                     }
-                } else {
-                    System.out.println("What date do you want to change to? (Format: yyyy-mm-dd) ");
-                    boolean is_valid = true;
-                    String to_change;
-                    if (change_profile_decide_int == 2) {
-                        to_change = validate_time(sc);
-                        LocalDate d1 = LocalDate.parse(to_change);
-                        LocalDate d3 = LocalDate.parse("2004-01-01");
-                        if (d1.isAfter(d3)) {
-                            print_header("To young, should over 18.");
-                            is_valid = false;
-                        }
-                    } else {
-                        to_change = validate(sc);
-                    }
-                    if(!is_valid){
-                        // too young
-                    }else {
-                        if (change_profile(username, to_change, change_profile_decide_int)) {
-                            System.out.println("Successfully change profile");
+                } else if (profile_decide.equals("2")) {
+                    print_header("Change My Profile");
+                    // select what your want to change
+                    System.out.println("Select the profile you want to change");
+                    System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
+                    String change_profile_decide = validate_int(sc, 1, 7);
+                    int change_profile_decide_int = Integer.parseInt(change_profile_decide);
+                    if (change_profile_decide_int == 7) {
+                        // do nothing
+                    } else if (change_profile_decide_int == 6) {
+                        // change address
+                        print_header("Change Address");
+                        System.out.println("Change Address - Please input your postal code.");
+                        // error checking of postal code
+                        String postal_code = validate_postal_code(sc);
+                        System.out.println("Change Address - Please input your unit.");
+                        String unit = validate_int(sc, 0, 9999);
+                        System.out.println("Change Address - Please input your city.");
+                        String city = validate(sc);
+                        System.out.println("Change Address - Please input your country.");
+                        String country = validate(sc);
+                        if (change_address(username, postal_code, unit, city, country)) {
+                            print_header("Successfully change address");
                         } else {
-                            print_error("Cannot change profile");
+                            print_error("Cannot change address");
+                        }
+                    } else {
+                        System.out.println("What do you want to change to?");
+                        boolean is_valid = true;
+                        String to_change;
+                        if (change_profile_decide_int == 2) {
+                            System.out.println("Format: (yyyy-mm-dd) ");
+                            to_change = validate_time(sc);
+                            LocalDate d1 = LocalDate.parse(to_change);
+                            LocalDate d3 = LocalDate.parse("2004-01-01");
+                            if (d1.isAfter(d3)) {
+                                print_header("To young, should over 18.");
+                                is_valid = false;
+                            }
+                        } else {
+                            to_change = validate(sc);
+                            if(change_profile_decide_int == 5 && (!to_change.toLowerCase().equals(to_change.toUpperCase()))) {
+                                print_error("credit card can only have integer in it");
+                                is_valid = false;
+                            }
+                        }
+                        if(!is_valid){
+                            // too young
+                        }else {
+                            if (change_profile(username, to_change, change_profile_decide_int)) {
+                                System.out.println("Successfully change profile");
+                            } else {
+                                print_error("Cannot change profile");
+                            }
                         }
                     }
-                }
-            } else if (profile_decide.equals("3")) {
-                print_header("Delete My Account");
-                System.out.println("Are you sure you want to delete your user?");
-                System.out.println("Press 1 to continue");
-                String delete_decide = sc.nextLine();
-                if (delete_decide.equals("1")) {
-                    if (delete_user(username)) {
-                        print_header("delete_success");
-                        // set log out
-                        is_login = 0;
-                        is_owner = -1;
+                } else if (profile_decide.equals("3")) {
+                    print_header("Delete My Account");
+                    System.out.println("Are you sure you want to delete your user?");
+                    System.out.println("Press 1 to continue");
+                    String delete_decide = sc.nextLine();
+                    if (delete_decide.equals("1")) {
+                        if (delete_user(username)) {
+                            print_header("delete_success");
+                            // set log out
+                            is_login = 0;
+                            is_owner = -1;
+                            break;
+                        } else {
+                            print_error("delete error");
+                        }
                     } else {
-                        print_error("delete error");
                     }
-                } else {
-                    // don't delete
-                    // go back
+                } else if (profile_decide.equals("4")) {
+                    break;
                 }
-            } else if (profile_decide.equals("4")) {
-                // not valid
-                // go back
+                System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
