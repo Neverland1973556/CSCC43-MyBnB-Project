@@ -1323,14 +1323,14 @@ public class JDBCExample {
         try {
             boolean result = false;
             long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
-            System.out.println(date_between);
+            //System.out.println(date_between);
             // get all listing that satisfy start time and end time
             // find all that not qualified
             String count_query = String.format("select lid, count(date) as count from available where date >= '%s' and date <= '%s' group by lid;", start_time, end_time);
             ResultSet rs = stmt.executeQuery(count_query);
             while (rs.next()) {
                 long count = rs.getInt("count");
-                System.out.println(count);
+                //System.out.println(count);
                 String lid = rs.getString("lid");
                 if (count == date_between) {
                     // this one is qualified
