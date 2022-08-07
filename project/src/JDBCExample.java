@@ -2,6 +2,7 @@ import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -182,56 +183,56 @@ public class JDBCExample {
                     // todo: report
                     while (sc.hasNextLine()) {
                         String input = validate_int(sc, 1, 10);
-						
+
                         if (input.equals("1")) {
                             print_header("Number of booking within a date range by city");
-							System.out.println("Please input the start date in this format: yyyy-mm-dd");
-							String start_time = validate_time(sc);
-							System.out.println("Please input the end date in this format: yyyy-mm-dd");
-							String end_time = validate_time(sc);
-							
-	                        String reportsql = String.format("select COUNT(BID) as bookid, city from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' group by city;", start_time, end_time);
-							ResultSet rs = stmt.executeQuery(reportsql);
-							int count = 0;
-							while(rs.next()){
-								count++;
-								String bookid = rs.getString("bookid");
-								System.out.printf("Number of books: %s", bookid);
-								String city = rs.getString("city");
-								System.out.printf(", City: %s\n", city);
-							}
-							if(count ==0){
-								System.out.println("No booking within these days.");
-							}
+                            System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                            String start_time = validate_time(sc);
+                            System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                            String end_time = validate_time(sc);
+
+                            String reportsql = String.format("select COUNT(BID) as bookid, city from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' group by city;", start_time, end_time);
+                            ResultSet rs = stmt.executeQuery(reportsql);
+                            int count = 0;
+                            while (rs.next()) {
+                                count++;
+                                String bookid = rs.getString("bookid");
+                                System.out.printf("Number of books: %s", bookid);
+                                String city = rs.getString("city");
+                                System.out.printf(", City: %s\n", city);
+                            }
+                            if (count == 0) {
+                                System.out.println("No booking within these days.");
+                            }
                         } else if (input.equals("2")) {
                             print_header("Number of booking within a date range by postal_code within a city");
-							System.out.println("Please input the start date in this format: yyyy-mm-dd");
-							String start_time = validate_time(sc);
-							System.out.println("Please input the end date in this format: yyyy-mm-dd");
-							String end_time = validate_time(sc);
-							System.out.println("Please input the city:");
-							String city = validate(sc);
-	                        String reportsql = String.format("select COUNT(BID) as bookid, postal_code from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' and city = '%s' group by postal_code;", start_time, end_time, city);
-							ResultSet rs = stmt.executeQuery(reportsql);
-							int count = 0;
-							while(rs.next()){
-								count++;
-								String bookid = rs.getString("bookid");
-								System.out.printf("Number of books: %s", bookid);
-								//String city = rs.getString("city");
-								String postal_code = rs.getString("postal_code");
-								System.out.printf(", Postal Code: %s", postal_code);
-								System.out.printf(", City: %s\n", city);
-								
-							}
-							if(count ==0){
-								System.out.println("No booking within these days and this city.");
-							}
+                            System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                            String start_time = validate_time(sc);
+                            System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                            String end_time = validate_time(sc);
+                            System.out.println("Please input the city:");
+                            String city = validate(sc);
+                            String reportsql = String.format("select COUNT(BID) as bookid, postal_code from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' and city = '%s' group by postal_code;", start_time, end_time, city);
+                            ResultSet rs = stmt.executeQuery(reportsql);
+                            int count = 0;
+                            while (rs.next()) {
+                                count++;
+                                String bookid = rs.getString("bookid");
+                                System.out.printf("Number of books: %s", bookid);
+                                // String city = rs.getString("city");
+                                String postal_code = rs.getString("postal_code");
+                                System.out.printf(", Postal Code: %s", postal_code);
+                                System.out.printf(", City: %s\n", city);
+
+                            }
+                            if (count == 0) {
+                                System.out.println("No booking within these days and this city.");
+                            }
                         } else if (input.equals("3")) {
-							report3();
-                            
-                        }  else if (input.equals("4")) {
-							report4(sc);
+                            report3();
+
+                        } else if (input.equals("4")) {
+                            report4(sc);
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
@@ -321,7 +322,9 @@ public class JDBCExample {
                                         } else {
                                             listing_type = "room";
                                         }
-                                        System.out.println("Add a Listing - Please add your amenities - input the corresponding number and put space in between");
+                                        System.out.println("Add a Listing - Please add your amenities -");
+                                        recommend_amenities();
+                                        System.out.println("Add a Listing - Input the corresponding number and put space in between");
                                         System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
                                         String[] am = validate_am(sc);
 
@@ -858,7 +861,7 @@ public class JDBCExample {
                                                     System.out.println("Please input the amenities you want - input the corresponding number and put space in between");
                                                     System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
                                                     String[] am = validate_am(sc);
-                                                    if(!find_lid_by_am(d1, d2, am)){
+                                                    if (!find_lid_by_am(d1, d2, am)) {
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
@@ -1117,94 +1120,97 @@ public class JDBCExample {
             return false;
         }
     }
-    public static void report3() throws SQLException{
-		try{
-			print_header("Num of listing per ~~ ");
-			String reportsql = String.format("select COUNT(listing.lid) as listid, country from listing natural join located_at natural join address group by country");
-			ResultSet rs = stmt.executeQuery(reportsql);
-			int count = 0;
-			while(rs.next()){
-				count++;
-				String numlist = rs.getString("listid");
-				System.out.printf("Number of listing: %s", numlist);
-				String country = rs.getString("country");
-				System.out.printf(", Country: %s\n", country);
-				
-			}
-			if(count ==0){
-				System.out.println("No Listing added.");
-			}
-			System.out.println(half_line);
-			reportsql = String.format("select COUNT(listing.lid) as listid, country, city from listing natural join located_at natural join address group by country, city");
-			rs = stmt.executeQuery(reportsql);
-			count = 0;
-			while(rs.next()){
-				count++;
-				String numlist = rs.getString("listid");
-				System.out.printf("Number of listing: %s", numlist);
-				String city = rs.getString("city");
-				//String postal_code = rs.getString("postal_code");
-				// System.out.printf(", Postal Code: %s", postal_code);
-				System.out.printf(", City: %s", city);
-				String country = rs.getString("country");
-				System.out.printf(", Country: %s\n", country);
-				
-			}
-			if(count ==0){
-				System.out.println("No Listing added.");
-			}
-			System.out.println(half_line);
-			reportsql = String.format("select COUNT(listing.lid) as listid, country, city, postal_code from listing natural join located_at natural join address group by country, city, postal_code");
-			rs = stmt.executeQuery(reportsql);
-			count = 0;
-			while(rs.next()){
-				count++;
-				String numlist = rs.getString("listid");
-				System.out.printf("Number of listing: %s", numlist);
-				String city = rs.getString("city");
-				String postal_code = rs.getString("postal_code");
-				System.out.printf(", Postal Code: %s", postal_code);
-				System.out.printf(", City: %s", city);
-				String country = rs.getString("country");
-				System.out.printf(", Country: %s\n", country);
-				
-			}
-			if(count ==0){
-				System.out.println("No Listing added.");
-			}
-			System.out.println(half_line);
 
-		}catch (SQLException e) {
+    public static void report3() throws SQLException {
+        try {
+            print_header("Num of listing per ~~ ");
+            String reportsql = String.format("select COUNT(listing.lid) as listid, country from listing natural join located_at natural join address group by country");
+            ResultSet rs = stmt.executeQuery(reportsql);
+            int count = 0;
+            while (rs.next()) {
+                count++;
+                String numlist = rs.getString("listid");
+                System.out.printf("Number of listing: %s", numlist);
+                String country = rs.getString("country");
+                System.out.printf(", Country: %s\n", country);
+
+            }
+            if (count == 0) {
+                System.out.println("No Listing added.");
+            }
+            System.out.println(half_line);
+            reportsql = String.format("select COUNT(listing.lid) as listid, country, city from listing natural join located_at natural join address group by country, city");
+            rs = stmt.executeQuery(reportsql);
+            count = 0;
+            while (rs.next()) {
+                count++;
+                String numlist = rs.getString("listid");
+                System.out.printf("Number of listing: %s", numlist);
+                String city = rs.getString("city");
+                // String postal_code = rs.getString("postal_code");
+                // System.out.printf(", Postal Code: %s", postal_code);
+                System.out.printf(", City: %s", city);
+                String country = rs.getString("country");
+                System.out.printf(", Country: %s\n", country);
+
+            }
+            if (count == 0) {
+                System.out.println("No Listing added.");
+            }
+            System.out.println(half_line);
+            reportsql = String.format("select COUNT(listing.lid) as listid, country, city, postal_code from listing natural join located_at natural join address group by country, city, postal_code");
+            rs = stmt.executeQuery(reportsql);
+            count = 0;
+            while (rs.next()) {
+                count++;
+                String numlist = rs.getString("listid");
+                System.out.printf("Number of listing: %s", numlist);
+                String city = rs.getString("city");
+                String postal_code = rs.getString("postal_code");
+                System.out.printf(", Postal Code: %s", postal_code);
+                System.out.printf(", City: %s", city);
+                String country = rs.getString("country");
+                System.out.printf(", Country: %s\n", country);
+
+            }
+            if (count == 0) {
+                System.out.println("No Listing added.");
+            }
+            System.out.println(half_line);
+
+        } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
-	}
-	public static void report4(Scanner sc) throws SQLException{
-		try{
-			print_header("Rank host by number of listing within a country");
-			System.out.println("Please input the country you want ot check:");
-			String country = validate(sc);
-			String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
-			ResultSet rs = stmt.executeQuery(reportsql);
-			int count = 0;
-			while(rs.next()){
-				count++;
-				String hostname = rs.getString("hostname");
-				System.out.printf("Host: %s, ", hostname);
-				String ranking = rs.getString("ranking");
-				System.out.printf(", Ranking: %s", ranking);
-				String listid = rs.getString("listid");
-				System.out.printf(", Number of Listing: %s", listid);
-				System.out.printf(", Country: %s\n", country);
-			}
-			if(count ==0){
-				System.out.println("No listing in this country.");
-			}
-		}catch (SQLException e) {
+    }
+
+    public static void report4(Scanner sc) throws SQLException {
+        try {
+            print_header("Rank host by number of listing within a country");
+            System.out.println("Please input the country you want ot check:");
+            String country = validate(sc);
+            String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
+            ResultSet rs = stmt.executeQuery(reportsql);
+            int count = 0;
+            while (rs.next()) {
+                count++;
+                String hostname = rs.getString("hostname");
+                System.out.printf("Host: %s, ", hostname);
+                String ranking = rs.getString("ranking");
+                System.out.printf(", Ranking: %s", ranking);
+                String listid = rs.getString("listid");
+                System.out.printf(", Number of Listing: %s", listid);
+                System.out.printf(", Country: %s\n", country);
+            }
+            if (count == 0) {
+                System.out.println("No listing in this country.");
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
-	}
+    }
+
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
         try {
@@ -1541,7 +1547,7 @@ public class JDBCExample {
         try {
             boolean result = false;
             // use lid to show all avaiable
-           
+
             // check if the time is available
             String check_avail = String.format("select * from available where lid = '%s';", lid);
             ResultSet rs = stmt.executeQuery(check_avail);
@@ -1622,7 +1628,7 @@ public class JDBCExample {
             String temp_am = "";
             long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
             StringBuilder count_query = new StringBuilder(String.format("select lid, count(date) as count, type from available natural join listing where date >= '%s' and date <= '%s'", start_time, end_time));
-            for(String temp: am) {
+            for (String temp : am) {
                 switch (temp) {
                     case "1" -> temp_am = "wifi";
                     case "2" -> temp_am = "kitchen";
@@ -1721,8 +1727,9 @@ public class JDBCExample {
             while (temp.isBefore(end_time)) {
                 sql = String.format("select * from available where date = '%s' and lid = '%s';", temp, lid);
                 ResultSet rs = stmt.executeQuery(sql);
-                if(rs.next()){
-                    System.out.println("Price of " + temp + " is " + rs.getString("price") + ", ");;
+                if (rs.next()) {
+                    System.out.println("Price of " + temp + " is " + rs.getString("price") + ", ");
+                    ;
                 }
                 temp = temp.plusDays(1);
             }
@@ -1889,6 +1896,7 @@ public class JDBCExample {
             return false;
         }
     }
+
     public static boolean handle_modify_am(String lid, String[] am) throws SQLException {
         try {
             StringBuilder amenities = new StringBuilder();
@@ -2343,6 +2351,101 @@ public class JDBCExample {
         } catch (SQLException e) {
             System.err.println("Something went wrong with judgement showing.");
             return false;
+        }
+    }
+
+    public static void recommend_amenities() throws SQLException {
+        try {
+            int[] count_array = new int[9];
+            String sql;
+            ResultSet rs;
+
+            sql = "select count(*) as count from listing where FIND_IN_SET('wifi', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[0] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('kitchen', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[1] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('washer', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[2] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('dryer', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[3] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('ac', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[4] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('heating', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[5] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('tv', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[6] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('hair dryer', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[7] = rs.getInt("count");
+            }
+            sql = "select count(*) as count from listing where FIND_IN_SET('gym', amenities);";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                count_array[8] = rs.getInt("count");
+            }
+
+            // get the largest index
+            int largest = 0;
+            for ( int i = 0; i < 9; i++ ) {
+                if(count_array[i] > count_array[largest]) {
+                    largest = i;
+                }
+            }
+            count_array[largest] = 0;
+            int s_largest = 0;
+            for ( int i = 0; i < 9; i++ ) {
+                if(count_array[i] > count_array[s_largest]) {
+                    s_largest = i;
+                }
+            }
+
+            System.out.print("Recommend Listing amenities: ");
+            switch (largest + 1) {
+                case 1 -> System.out.print("wifi");
+                case 2 -> System.out.print("kitchen");
+                case 3 -> System.out.print("washer");
+                case 4 -> System.out.print("dryer");
+                case 5 -> System.out.print("ac");
+                case 6 -> System.out.print("heating");
+                case 7 -> System.out.print("tv");
+                case 8 -> System.out.print("hair dryer");
+                case 9 -> System.out.print("gym");
+            }
+            switch (s_largest + 1) {
+                case 1 -> System.out.println(" and wifi");
+                case 2 -> System.out.println(" and kitchen");
+                case 3 -> System.out.println(" and washer");
+                case 4 -> System.out.println(" and dryer");
+                case 5 -> System.out.println(" and ac");
+                case 6 -> System.out.println(" and heating");
+                case 7 -> System.out.println(" and tv");
+                case 8 -> System.out.println(" and hair dryer");
+                case 9 -> System.out.println(" and gym");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
