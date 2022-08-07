@@ -28,7 +28,7 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 10: logout";
+    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, 10: logout";
     private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -230,8 +230,13 @@ public class JDBCExample {
                         } else if (input.equals("3")) {
 							report3();
                             
-                        }  else if (input.equals("4")) {
+                        } else if (input.equals("4")) {
 							report4(sc);
+                        } else if (input.equals("5")) {
+							//report4(sc);
+							report5(sc);
+
+
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
@@ -1230,6 +1235,36 @@ public class JDBCExample {
 					System.out.println("No listing in this city.");
 				}
 			}
+		}catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+	}
+	public static void report5(Scanner sc) throws SQLException{
+		try{
+			print_header("Output the host that owns more than 10% listings in this city");
+			System.out.println("Please input the country you want ot check:");
+			String country = validate(sc);
+			System.out.println("Please input the city you want ot check:");
+			String city = validate(sc);
+			String reportsql = String.format("select COUNT(listing.lid) as listid, owns.username as hostname, (select COUNT(listing.lid) as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s') as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s'  group by owns.username having 10*listid > sum;", country, city, country, city);
+			ResultSet rs = stmt.executeQuery(reportsql);
+			int count = 0;
+			while(rs.next()){
+				count++;
+				String hostname = rs.getString("hostname");
+				System.out.printf("Host: %s, ", hostname);
+				String listid = rs.getString("listid");
+				System.out.printf(", Number of Listing: %s", listid);
+				String sum = rs.getString("sum");
+				System.out.printf(", Total num of listings in this city: %s", sum);
+				System.out.printf(", City: %s", city);
+				System.out.printf(", Country: %s\n", country);
+			}
+			if(count ==0){
+				System.out.println("No listing in this city.");
+			}
+			
 		}catch (SQLException e) {
             e.printStackTrace();
             return;
