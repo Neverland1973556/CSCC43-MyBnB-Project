@@ -1186,23 +1186,49 @@ public class JDBCExample {
 	public static void report4(Scanner sc) throws SQLException{
 		try{
 			print_header("Rank host by number of listing within a country");
-			System.out.println("Please input the country you want ot check:");
-			String country = validate(sc);
-			String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
-			ResultSet rs = stmt.executeQuery(reportsql);
-			int count = 0;
-			while(rs.next()){
-				count++;
-				String hostname = rs.getString("hostname");
-				System.out.printf("Host: %s, ", hostname);
-				String ranking = rs.getString("ranking");
-				System.out.printf(", Ranking: %s", ranking);
-				String listid = rs.getString("listid");
-				System.out.printf(", Number of Listing: %s", listid);
-				System.out.printf(", Country: %s\n", country);
-			}
-			if(count ==0){
-				System.out.println("No listing in this country.");
+			System.out.println("Please input: 1.per country, 2: per city and country");
+			String choice = validate_int(sc, 1, 2);
+			if(choice.equals("1")){
+				System.out.println("Please input the country you want ot check:");
+				String country = validate(sc);
+				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while(rs.next()){
+					count++;
+					String hostname = rs.getString("hostname");
+					System.out.printf("Host: %s, ", hostname);
+					String ranking = rs.getString("ranking");
+					System.out.printf(", Ranking: %s", ranking);
+					String listid = rs.getString("listid");
+					System.out.printf(", Number of Listing: %s", listid);
+					System.out.printf(", Country: %s\n", country);
+				}
+				if(count ==0){
+					System.out.println("No listing in this country.");
+				}
+			}else if (choice.equals("2")){
+				System.out.println("Please input the country you want ot check:");
+				String country = validate(sc);
+				System.out.println("Please input the city you want ot check:");
+				String city = validate(sc);
+				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s' group by owns.username;", country, city);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while(rs.next()){
+					count++;
+					String hostname = rs.getString("hostname");
+					System.out.printf("Host: %s, ", hostname);
+					String ranking = rs.getString("ranking");
+					System.out.printf(", Ranking: %s", ranking);
+					String listid = rs.getString("listid");
+					System.out.printf(", Number of Listing: %s", listid);
+					System.out.printf(", City: %s", city);
+					System.out.printf(", Country: %s\n", country);
+				}
+				if(count ==0){
+					System.out.println("No listing in this city.");
+				}
 			}
 		}catch (SQLException e) {
             e.printStackTrace();
