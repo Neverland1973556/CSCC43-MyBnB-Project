@@ -29,7 +29,7 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, 10: logout";
+    private static final String report_message = "1: Booking by city, 2: Booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, \n6:Renter ranked by booking, 10: logout";
 	private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -235,13 +235,15 @@ public class JDBCExample {
                             report4(sc);
                         } else if (input.equals("5")) {
                             report5(sc);
+                        } else if (input.equals("6")) {
+                            report6(sc);
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
                         }
                         System.out.println(a_line);
 
-                        System.out.println("Continue with Owner Account or Renter Account?");
+                        //System.out.println("Continue with Owner Account or Renter Account?");
                         System.out.println(report_message);
                     }
                 }
@@ -1215,9 +1217,9 @@ public class JDBCExample {
 					System.out.println("No listing in this country.");
 				}
 			}else if (choice.equals("2")){
-				System.out.println("Please input the country you want ot check:");
+				System.out.println("Please input the country you want to check:");
 				String country = validate(sc);
-				System.out.println("Please input the city you want ot check:");
+				System.out.println("Please input the city you want to check:");
 				String city = validate(sc);
 				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s' group by owns.username;", country, city);
 				ResultSet rs = stmt.executeQuery(reportsql);
@@ -1235,6 +1237,68 @@ public class JDBCExample {
 				}
 				if(count ==0){
 					System.out.println("No listing in this city.");
+				}
+			}
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+	
+    public static void report6(Scanner sc) throws SQLException {
+        try {
+            print_header("Rank renter by number of booking within a specific time");
+			System.out.println("Please input: 1.specify the time period, 2: specify the time period and the city");
+			String choice = validate_int(sc, 1, 2);
+			if(choice.equals("1")){
+				System.out.println("Please input the start date in this format: yyyy-mm-dd");
+				String start_time = validate_time(sc);
+				System.out.println("Please input the end date in this format: yyyy-mm-dd");
+				String end_time = validate_time(sc);
+				System.out.println(a_line);
+				// String city = validate(sc);
+				String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username from book where cancellation = 0 and start_date >= '%s' and end_date <= '%s' group by book.username having num >= 2;", start_time, end_time);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while (rs.next()) {
+					count++;
+					String username = rs.getString("username");
+					System.out.printf("Renter: %s", username);
+					String ranking = rs.getString("ranking");
+					String num = rs.getString("num");
+					System.out.printf(", Ranking: %s", ranking);
+					System.out.printf(", Number of booking: %s\n", num);
+
+				}
+				if (count == 0) {
+					System.out.println("No valid renter within these days.");
+				}
+			}else if (choice.equals("2")){
+
+				System.out.println("Please input the city you want to check:");
+				String city = validate(sc);
+				System.out.println("Please input the start date in this format: yyyy-mm-dd");
+				String start_time = validate_time(sc);
+				System.out.println("Please input the end date in this format: yyyy-mm-dd");
+				String end_time = validate_time(sc);
+                System.out.println(a_line);
+				String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username, city from book natural join listing natural join located_at natural join address where cancellation = 0 and start_date >= '%s' and end_date <= '%s' and city = '%s' group by book.username having num >= 2;", start_time, end_time, city);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while (rs.next()) {
+					count++;
+					String username = rs.getString("username");
+					System.out.printf("Renter: %s", username);
+					String ranking = rs.getString("ranking");
+					String num = rs.getString("num");
+					System.out.printf(", Ranking: %s", ranking);
+					System.out.printf(", Number of booking: %s", num);
+					String cityy = rs.getString("city");
+					System.out.printf(", City: %s\n", cityy);
+
+				}
+				if (count == 0) {
+					System.out.println("No valid renter within these days in the city.");
 				}
 			}
         } catch (SQLException e) {
