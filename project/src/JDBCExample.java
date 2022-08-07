@@ -12,8 +12,8 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "123456";
-    // private static final String PASS = "123456";
+    private static final String PASS = "Xzt1973556";
+    // private static final String PASS = "Xzt1973556";
     // connection
     private static Statement stmt;
     private static Connection conn;
@@ -27,11 +27,20 @@ public class JDBCExample {
     private static String username;
 
     // some strings
-    private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
-    private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Booking by city, 2: Booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, \n6:Renter ranked by booking, 7:Largest cancellation 10: logout";
-	private static final String a_line = "--------------------------------------------------"
-            + "--------------------------------------------------";
+    private static final String is_owner_prompt = "1: Manage Personal Information, 2: Manage My Listing, 3: Manage My Listing Availability, 4: Manage My Booking, 5: Manage My Rating, 6: logout";
+    private static final String is_renter_prompt = "1: Manage Personal Information, 2: Manage My Booking, 3. Comment a Listing, 4: Manage My Rating, 5: logout";
+    private static final String report_message = "1: Booking by city \n" +
+            "2: Booking by postal-code \n" +
+            "3: Num of booking per country, city, and zip code \n" +
+            "4. Rank host by num of listing within a country \n" +
+            "5: Flagged host \n" +
+            "6: Renter ranked by booking \n" +
+            "7: Largest cancellation \n" +
+            "8: xx \n" +
+            "9: yy \n" +
+            "10: logout";
+    private static final String a_line = "---------------------------------------------------------------------------"
+            + "---------------------------------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
 
     private static final String start_date = "2022-01-01";
@@ -48,8 +57,8 @@ public class JDBCExample {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
 
-            // File setup = new File("project/src/setup_table.sql");
-            File setup = new File("project/src/setup_table.sql");
+            // File setup = new File("src/setup_table.sql");
+            File setup = new File("src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -78,8 +87,8 @@ public class JDBCExample {
             calendar_sql = "CALL insert_year_dates();";
             stmt.execute(calendar_sql);
 
-            // setup = new File("project/src/insert_data.sql");
-            setup = new File("project/src/insert_data.sql");
+            // setup = new File("src/insert_data.sql");
+            setup = new File("src/insert_data.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -99,35 +108,28 @@ public class JDBCExample {
             while (true) {
                 // didn't login
                 if (is_login == 0) {
+                    print_header("Welcome to MyBnB, Please Login or register");
                     System.out.println(a_line);
-                    System.out.println("Please Login or register.");
-                    System.out.println("Press 1 to Login, 2 to Register, 3: Administer Mode.");
+                    System.out.println("Press 1: Login, 2: Register, 3: Administer Mode.");
                     while (sc.hasNextLine()) {
-                        String input = sc.nextLine();
+                        String input = validate_int(sc, 1, 3);
                         if (input.equals("1")) {
                             print_header("LOGIN");
-                            // need to log in
                             System.out.println("LOGIN - Please input your username.");
                             String username = validate(sc);
                             System.out.println("LOGIN - Please input your password.");
                             String password = validate(sc);
                             String reg = "UserName:" + username + ", Password:" + password + ", Login!";
-                            // debug use
-                            System.out.println(reg);
-                            boolean success = login(reg);
-                            if (!success) {
-                                // cannot login
-                                System.out.println("Your login is not success, Please try again.");
-                                System.out.println("Press 1 to Login, 2 to Register.");
-                                // continue the loop
+                            if (!login(reg)) {
+                                print_header("Your login is not success, Please try again.");
+                                System.out.println(a_line);
+                                System.out.println("Press 1: Login, 2: Register, 3: Administer Mode.");
                             } else {
-                                // success, can continue
                                 JDBCExample.username = username;
                                 is_login = 1;
                                 break;
                             }
                         } else if (input.equals("2")) {
-                            // need to register
                             print_header("REGISTER");
                             System.out.println("REGISTER - Please input your username.");
                             String username = validate(sc);
@@ -140,50 +142,37 @@ public class JDBCExample {
                             LocalDate d1 = LocalDate.parse(birth_year);
                             LocalDate d3 = LocalDate.parse("2004-01-01");
                             if (d1.isAfter(d3)) {
-                                print_header("To young to register, should over 18.");
+                                print_error("To young to register, should over 18.");
+                                System.out.println(a_line);
+                                System.out.println("Press 1: Login, 2: Register, 3: Administer Mode.");
                             } else {
                                 System.out.println("REGISTER - Please input your SIN.");
                                 String sin = validate_int(sc, 0, 0);
-
                                 String reg = "Name:" + real_name + ", Password:" + password + ", SIN:" + sin + ", Birth:" + birth_year + ", UserName:" + username;
-                                System.out.println(reg);
-                                boolean success = register(reg);
-                                if (!success) {
-                                    // cannot login
-                                    System.out.println("Your register is not valid, Please try again.");
-                                    System.out.println("Press 1 to Login, 2 to Register.");
-                                    // continue the loop
+                                if (!register(reg)) {
+                                    print_header("Your register is failed, Please try again.");
+                                    System.out.println(a_line);
+                                    System.out.println("Press 1: Login, 2: Register, 3: Administer Mode.");
                                 } else {
-                                    // success, can continue
                                     JDBCExample.username = username;
                                     is_login = 1;
                                     break;
                                 }
                             }
                         } else if (input.equals("3")) {
-                            print_header("You are in administer mode");
+                            print_header("You are now in administer mode");
                             is_admin = true;
                             break;
-                        } else if (input.equals("break")) {
-                            System.out.println("Terminate the program.");
-                            break label_whole;
                         }
-                        // not valid
-                        print_error("Please use valid input!");
-                        System.out.println(a_line);
-                        System.out.println("Press 1 to Login, 2 to Register, 3: Administer Mode.");
                     }
                 }
 
                 // output the report
                 if (is_admin) {
-                    // can see report
-                    System.out.println("Select a report to see!");
+                    System.out.println("Select a report:");
                     System.out.println(report_message);
-                    // todo: report
                     while (sc.hasNextLine()) {
                         String input = validate_int(sc, 1, 10);
-
                         if (input.equals("1")) {
                             print_header("Number of booking within a date range by city");
                             System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -244,8 +233,7 @@ public class JDBCExample {
                             continue label_whole;
                         }
                         System.out.println(a_line);
-
-                        //System.out.println("Continue with Owner Account or Renter Account?");
+                        System.out.println("Select a report:");
                         System.out.println(report_message);
                     }
                 }
@@ -253,43 +241,34 @@ public class JDBCExample {
                 // after logged in, username is set, check if the login is owner;
                 if (is_owner == -1) {
                     System.out.println(a_line);
-                    System.out.println("Continue with Owner Account or Renter Account?");
-                    System.out.println("Press 1: owner, 2: renter, 9: logout");
+                    System.out.println("Continue with Host Account or Renter Account?");
+                    System.out.println("Press 1: host, 2: renter, 3: logout");
                     while (sc.hasNextLine()) {
-                        String input = sc.nextLine();
+                        String input = validate_int(sc, 1, 3);
                         if (input.equals("1")) {
-                            print_header("OWNER");
-                            // is owner account
                             is_owner = 1;
                             break;
                         } else if (input.equals("2")) {
-                            print_header("RENTER");
                             is_owner = 0;
                             break;
-                        } else if (input.equals("9")) {
+                        } else if (input.equals("3")) {
                             // logout
                             is_login = 0;
                             is_owner = -1;
                             System.out.println("Logged out successfully");
                             continue label_whole;
-                        } else if (input.equals("break")) {
-                            System.out.println("Terminate the program.");
-                            break label_whole;
-                        } else {
-                            // not valid
-                            print_error("Please use valid input!");
                         }
                     }
                 }
                 System.out.println(a_line);
 
                 if (is_owner == 1) {
-                    // is owner account
-                    System.out.println("Welcome to MyBnB!, Owner \"" + username + "\"!");
-                    System.out.println("Press the Corresponding number to continue");
+                    // is host account
+                    print_header("Welcome to MyBnB, Host '" + username + "'!");
+                    System.out.println("Press the Corresponding Number to Continue");
                     System.out.println(is_owner_prompt);
                     while (sc.hasNextLine()) {
-                        String input = validate_int(sc, 1, 9);
+                        String input = validate_int(sc, 1, 6);
                         if (input.equals("1")) {
                             select_profile(sc);
                             if (is_owner == -1) {
@@ -298,7 +277,7 @@ public class JDBCExample {
                         } else if (input.equals("2")) {
                             print_header("Manage My Listings");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comments of my Listings, 5: Go Back.");
+                            System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comment of my Listings, 5: Go Back.");
                             while (sc.hasNextLine()) {
                                 String listing_decide = validate_int(sc, 1, 5);
                                 if (listing_decide.equals("1")) {
@@ -310,12 +289,12 @@ public class JDBCExample {
                                 } else if (listing_decide.equals("2")) {
                                     // add a listing to database
                                     print_header("Add a Listing");
-                                    System.out.println("Do you want to add a listing? Press 1 to continue.");
-                                    String add_input = validate(sc);
+                                    System.out.println("Do you want to add a listing? Press 1 to continue, 2 to go back.");
+                                    String add_input = validate_int(sc, 1, 2);
                                     if (add_input.equals("1")) {
-                                        System.out.println("Add a Listing- Please input your listing latitude.");
+                                        System.out.println("Add a Listing - Please input your listing latitude (-90 to 90).");
                                         String latitude = validate_double(sc, -90, 90);
-                                        System.out.println("Add a Listing - Please input your listing longitude.");
+                                        System.out.println("Add a Listing - Please input your listing longitude (-180 to 180).");
                                         String longitude = validate_double(sc, -180, 180);
                                         System.out.println("Add a Listing - Please input your listing type");
                                         System.out.println("              - 1: full house, 2: apartment, 3: room");
@@ -355,13 +334,11 @@ public class JDBCExample {
                                             }
                                         }
                                     }
-                                    // else not == 1
-
                                 } else if (listing_decide.equals("3")) {
                                     print_header("Change a Listing Information");
                                     System.out.println("Press the Corresponding number to continue.");
                                     System.out.println("1: Modify a Listing, 2: Delete a Listing, 3: Go Back.");
-                                    String change_listing_decide = sc.nextLine();
+                                    String change_listing_decide = validate_int(sc, 1, 3);
                                     label_listing:
                                     if (change_listing_decide.equals("1")) {
                                         print_header("Modify a Listing");
@@ -374,6 +351,11 @@ public class JDBCExample {
                                         if (!check_lid_in_book(lid)) {
                                             // it's in book where cancel == 0
                                             print_error("It's in a book, you cannot change the listing information.");
+                                            break label_listing;
+                                        }
+                                        if (!check_lid_belongs_to_you(lid, 1)) {
+                                            // it's in book where cancel == 0
+                                            print_error("It's not your listing, cannot change.");
                                             break label_listing;
                                         }
                                         System.out.println("Choose the property of the listing you want to modify.");
@@ -464,41 +446,45 @@ public class JDBCExample {
                                             print_error("It's in a book, you cannot delete the listing.");
                                             break label_listing;
                                         }
+                                        if (!check_lid_belongs_to_you(lid, 1)) {
+                                            // it's in book where cancel == 0
+                                            print_error("It's not your listing, cannot change.");
+                                            break label_listing;
+                                        }
                                         if (handle_delete_listing(username, lid)) {
                                             print_header("delete success");
                                         } else {
                                             print_error("cannot delete");
                                         }
                                     } else if (change_listing_decide.equals("3")) {
-                                        // do nothing
-                                    } else {
-                                        print_error("Not Valid input when change a Listing!");
+                                        // do nothing to go back
                                     }
-                                } else if (listing_decide.equals("5")) {
-                                    break;
                                 } else if (listing_decide.equals("4")) {
                                     print_header("Comment of my Listing");
                                     if (!show_user_owns(username)) {
-                                        print_error("You don't have any listings so far.");
-                                        continue;
-                                    }
-                                    System.out.println("Select the listing's LID which you want to look at: (input any other number to go back)");
-                                    // boolean indicator = false;
-
-                                    while (sc.hasNextLine()) {
-                                        String lid = validate_int(sc, 0, 99999);
-                                        if (!show_listing_comment(lid, username)) {
-                                            break;
+                                        print_header("You don't have any listings so far.");
+                                    } else {
+                                        System.out.println("Select the listing's LID which you want to look at: (input any other number to go back).");
+                                        while (sc.hasNextLine()) {
+                                            String lid = validate_int(sc, 0, 99999);
+                                            if (!show_listing_comment(lid, username)) {
+                                                System.out.println("Go Back.");
+                                                break;
+                                            }
+                                            System.out.println("Select the listing's LID which you want to look at: (input any other number to go back).");
                                         }
-                                        System.out.println("Select the listing's LID which you want to look at:(input any other number to go back)");
                                     }
+                                } else if (listing_decide.equals("5")) {
+                                    break;
                                 }
+                                print_header("Manage My Listings");
+                                System.out.println("Press the Corresponding number to continue");
                                 System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comments of my Listings, 5: Go Back.");
                             }
                         } else if (input.equals("3")) {
-                            print_header("Listing Availability");
+                            print_header("Manage Listing Availability");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
+                            System.out.println("1: Show listing Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
                             while (sc.hasNextLine()) {
                                 String avail = validate_int(sc, 1, 4);
                                 label_if_avail:
@@ -510,8 +496,12 @@ public class JDBCExample {
                                     }
                                     System.out.println("Please type the lid your want to check");
                                     String lid = validate_int(sc, 0, 9999);
+                                    if (!check_lid_belongs_to_you(lid, 1)) {
+                                        print_error("It's not your listing, cannot change availability.");
+                                        break label_if_avail;
+                                    }
                                     if (!show_available(lid)) {
-                                        print_error("Cannot find availability for the given lid.");
+                                        print_header("Cannot find availability for the given lid.");
                                     }
 
                                 } else if (avail.equals("2")) {
@@ -523,6 +513,10 @@ public class JDBCExample {
                                     // new add will replace old one, add can be not success
                                     System.out.println("Please type the lid you want to add availability to");
                                     String lid = validate_int(sc, 1, 10000);
+                                    if (!check_lid_belongs_to_you(lid, 1)) {
+                                        print_error("It's not your listing, cannot change availability.");
+                                        break label_if_avail;
+                                    }
                                     print_header("Add date period for Listing Available.");
                                     System.out.println(valid_date);
                                     System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -574,6 +568,10 @@ public class JDBCExample {
                                         // new add will replace old one, add can be not success
                                         System.out.println("Please type the lid you want to change it's availability");
                                         String lid = validate_int(sc, 1, 10000);
+                                        if (!check_lid_belongs_to_you(lid, 1)) {
+                                            print_error("It's not your listing, cannot change availability.");
+                                            break label_if_avail;
+                                        }
                                         print_header("Add date period for changing Listing Available.");
                                         System.out.println(valid_date);
                                         System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -623,6 +621,10 @@ public class JDBCExample {
                                         // new add will replace old one, add can be not success
                                         System.out.println("Please type the lid you want to remove it's availability");
                                         String lid = validate_int(sc, 1, 10000);
+                                        if (!check_lid_belongs_to_you(lid, 1)) {
+                                            print_error("It's not your listing, cannot change availability.");
+                                            break label_if_avail;
+                                        }
                                         print_header("Add date period for remove Listing Available.");
                                         System.out.println(valid_date);
                                         System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -666,14 +668,13 @@ public class JDBCExample {
                                 System.out.println("1: Show Availability, 2: Add Availability, 3: Change Availability, 4: Go Back.");
                             }
                         } else if (input.equals("4")) {
-                            System.out.println("Check Booking");
-                            print_header("Show My Bookings - Owner");
+                            print_header("Show My Bookings - Host");
                             if (!show_owner_books(username)) {
                                 print_header("you don't have any booking");
                             } else {
                                 System.out.println("Do you want to cancel existing booking?");
-                                System.out.println("Press 1 to cancel a booking, other to go back");
-                                String booking_input = validate(sc);
+                                System.out.println("Press 1 to cancel a booking, 2 to go back");
+                                String booking_input = validate_int(sc, 1, 2);
                                 if (booking_input.equals("1")) {
                                     System.out.println("Input the booking id you want to cancel.");
                                     String bid = validate_int(sc, 1, 9999);
@@ -685,12 +686,12 @@ public class JDBCExample {
                                 }
                             }
                         } else if (input.equals("5")) {
-                            print_header("Rate User");
-
+                            print_header("Manage My Rating - Host");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
+                            System.out.println("1: Show how I was being rated as a host,          2: Show what I've rated \n" +
+                                    "3: Rate a renter,          4: Delete a rating,          5: Go Back.");
                             while (sc.hasNextLine()) {
-                                String booking_decide = sc.nextLine();
+                                String booking_decide = validate_int(sc, 1, 5);
                                 if (booking_decide.equals("1")) {
                                     print_header("Show how I was being rated");
                                     if (!show_host_s_judgement(username)) {
@@ -703,7 +704,7 @@ public class JDBCExample {
                                     }
                                 } else if (booking_decide.equals("3")) {
                                     print_header("Rate a renter");
-                                    String sql = String.format("SELECT distinct Book.username as rentername, BID, Owns.lid as llid, postal_code, unit FROM Book Join Owns join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Owns.username = '%s';", username);
+                                    String sql = String.format("SELECT distinct Book.username as rentername, BID, Owns.lid as llid, postal_code, unit, start_date, end_date FROM Book inner Join Owns inner join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Owns.username = '%s';", username);
                                     ResultSet rs = stmt.executeQuery(sql);
                                     int count = 0;
                                     while (rs.next()) {
@@ -713,48 +714,43 @@ public class JDBCExample {
                                         String lid = rs.getString("llid");
                                         String postal_code = rs.getString("postal_code");
                                         String unit = rs.getString("unit");
-                                        System.out.format("Renter: %s, BID: %s, Lid: %s, Postal Code: %s, Unit: %s\n", renter, bid, lid, postal_code, unit);
+                                        String start_date = rs.getString("start_date");
+                                        String end_date = rs.getString("end_date");
+                                        System.out.format("BID: '%s', Renter: '%s', Lid: '%s', Postal Code: '%s', Unit: '%s', Start Date: '%s', End Date: '%s'\n", bid, renter, lid, postal_code, unit, start_date, end_date);
                                     }
                                     if (count == 0) {
                                         System.out.println("You can't comment any renter yet, no one booked your house!");
-                                        print_header("Rate User");
-                                        System.out.println("Press the Corresponding number to continue");
-                                        System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
-                                        continue;
+                                    } else {
+                                        System.out.println("Please input the renter's username that you want to rate");
+                                        String renter_username = validate(sc);
+                                        System.out.println("Please input how much you like this renter from 1-5");
+                                        String likes = validate_int(sc, 1, 5);
+                                        System.out.println("Please make any comment (100 words max):");
+                                        String words = validate(sc);
+                                        create_host_rate(renter_username, username, likes, words);
                                     }
-                                    System.out.println("Please input the renter's username that you want to rate");
-                                    String renter_username = validate(sc);
-                                    System.out.println("Please input how much you like this renter from 1-5");
-                                    String likes = validate_int(sc, 1, 5);
-                                    System.out.println("Please make any comment (100 words limit):");
-                                    String words = validate(sc);
-
-                                    create_host_rate(renter_username, username, likes, words);
                                 } else if (booking_decide.equals("4")) {
                                     // cannot change a book
                                     print_header("Delete a rating");
                                     System.out.println("Input the JID that you want to cancel (If you don't want to delete, just input any other integer)");
                                     if (!show_host_s_rate(username)) {
                                         print_header("you haven't rate anyone");
-                                    }
-                                    String jid = validate_int(sc, 1, 9999);
-                                    if (!cancel_judgement_host(jid, username)) {
-                                        print_error("Cannot cancel the rate");
+                                    } else {
+                                        String jid = validate_int(sc, 1, 9999);
+                                        if (!cancel_judgement_host(jid, username)) {
+                                            print_error("Cannot cancel the rate");
+                                        }
                                     }
                                 } else if (booking_decide.equals("5")) {
                                     // go back
                                     break;
                                 }
-                                print_header("Rate User");
+                                print_header("Manage My Rating - Host");
                                 System.out.println("Press the Corresponding number to continue");
-                                System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
+                                System.out.println("1: Show how I was being rated as a host,          2: Show what I've rated \n" +
+                                        "3: Rate a renter,          4: Delete a rating,          5: Go Back.");
                             }
-
-
-                        } else if (input.equals("8")) {
-                            System.out.println("Terminate the program.");
-                            break label_whole;
-                        } else if (input.equals("9")) {
+                        } else if (input.equals("6")) {
                             // logout
                             is_login = 0;
                             is_owner = -1;
@@ -764,13 +760,12 @@ public class JDBCExample {
                         end_of_owner();
                     }
                 } else {
-                    // is_owner == 0
                     // is renter account
-                    System.out.println("Welcome to MyBnB!, Renter \"" + username + "\"!");
+                    print_header("Welcome to MyBnB!, Renter \"" + username + "\"!");
                     System.out.println("Press the Corresponding number to continue");
                     System.out.println(is_renter_prompt);
                     while (sc.hasNextLine()) {
-                        String input = validate_int(sc, 1, 9);
+                        String input = validate_int(sc, 1, 5);
                         if (input.equals("1")) {
                             select_profile(sc);
                             if (is_owner == -1) {
@@ -785,7 +780,7 @@ public class JDBCExample {
                                 label_if_book:
                                 if (booking_decide.equals("1")) {
                                     print_header("Show my bookings");
-                                    if (!show_user_books(username)) {
+                                    if (!show_user_books(username, 1)) {
                                         print_header("you don't have any booking");
                                     }
                                 } else if (booking_decide.equals("2")) {
@@ -916,12 +911,22 @@ public class JDBCExample {
                                     // cannot change a book
                                     print_header("Cancel a booking");
                                     System.out.println("Input the bid that you want to cancel");
-                                    if (!show_user_books(username)) {
+                                    if (!show_user_books(username, 1)) {
                                         print_header("you don't have any booking");
                                     }
                                     String bid = validate_int(sc, 1, 9999);
-                                    if (!cancel_book(bid, 1)) {
-                                        print_error("Cannot cancel book");
+                                    if (!check_bid_belongs_to_you(bid)) {
+                                        print_error("It's not your bid, cannot cancel.");
+                                    } else {
+                                        System.out.println("Press 1 to cancel Booking with BID: '" + bid + "', 2 to go back");
+                                        String booking_input = validate_int(sc, 1, 2);
+                                        if (booking_input.equals("1")) {
+                                            if (!cancel_book(bid, 1)) {
+                                                print_error("Cannot cancel book.");
+                                            }
+                                        } else {
+                                            print_header("Go Back.");
+                                        }
                                     }
                                 } else if (booking_decide.equals("4")) {
                                     break;
@@ -930,12 +935,60 @@ public class JDBCExample {
                                 System.out.println("Press the Corresponding number to continue");
                                 System.out.println("1: Show my bookings, 2: Book a listing, 3: Cancel a booking, 4: Go Back.");
                             }
-                        } else if (input.equals("5")) {
-                            print_header("Rate User");
-
+                        } else if (input.equals("3")) {
+                            // comment
+                            print_header("Comment a Listing");
                             System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
+                            System.out.println("1: Show My Comments, 2: Comment a Listing, 3: Delete a Comment, 4: Go Back.");
+                            while (sc.hasNextLine()) {
+                                String booking_decide = validate_int(sc, 1, 4);
+                                if (booking_decide.equals("1")) {
+                                    print_header("Show what I have commented");
+                                    if (!show_renter_comment(username)) {
+                                        print_header("You haven't comment any listing so far.");
+                                    }
+                                } else if (booking_decide.equals("2")) {
+                                    print_header("Comment a Listing");
+                                    if (!show_user_books(username, 2)) {
+                                        print_header("You haven't book any listing so far.");
+                                    }
+                                    System.out.println("Please input the ListingID that you want to rate");
+                                    String lid = validate_int(sc, 0, 9999);
 
+                                    if (!check_lid_belongs_to_you(lid, 2)) {
+                                        print_error("You cannot comment this lid.");
+                                    } else {
+                                        System.out.println("Please input how much you like this listing from 1-5");
+                                        String rate = validate_int(sc, 1, 5);
+                                        System.out.println("Please make any comment (250 words limit):");
+                                        String text = validate(sc);
+                                        create_renter_listing_comment(username, lid, rate, text);
+                                    }
+                                } else if (booking_decide.equals("3")) {
+                                    // cannot change a book
+                                    print_header("Delete a Comment");
+                                    if (!show_renter_comment(username)) {
+                                        print_header("you don't have any comment");
+                                    } else {
+                                        System.out.println("Input the LID of that comment that you want to delete (If you don't want to delete, just input any other integer)");
+                                        String lid = validate_int(sc, 1, 9999);
+                                        if (!delete_renter_listing_comment(username, lid)) {
+                                            print_error("Cannot cancel the comment of this Listing");
+                                        }
+                                    }
+                                } else if (booking_decide.equals("4")) {
+                                    // go back
+                                    break;
+                                }
+                                print_header("Comment a Listing");
+                                System.out.println("Press the Corresponding number to continue");
+                                System.out.println("1: Show My Comments, 2: Comment a Listing, 3: Delete a Comment, 4: Go Back.");
+                            }
+                        } else if (input.equals("4")) {
+                            print_header("Manage My Rating");
+                            System.out.println("Press the Corresponding number to continue");
+                            System.out.println("1: Show how I was being rated as a renter,          2: Show what I've rated\n" +
+                                    "3: Rate a Host,          4: Delete a Rating,          5: Go Back.");
                             while (sc.hasNextLine()) {
                                 String booking_decide = sc.nextLine();
                                 if (booking_decide.equals("1")) {
@@ -949,33 +1002,32 @@ public class JDBCExample {
                                         print_header("You haven't rate anyone yet.");
                                     }
                                 } else if (booking_decide.equals("3")) {
-                                    print_header("Rate a host");
-                                    String sql = String.format("SELECT distinct Owns.username as hostname, Owns.lid as llid, postal_code, unit FROM Book Join Owns join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Book.username = '%s';", username);
+                                    print_header("Rate a Host");
+                                    String sql = String.format("SELECT distinct book.bid, Owns.username as hostname, Owns.lid as lid, postal_code, unit, start_date, end_date FROM Book Join Owns join Located_At where Book.lid = Owns.lid and Owns.lid = Located_At.lid and cancellation = 0 and Book.username = '%s' order by lid;", username);
                                     ResultSet rs = stmt.executeQuery(sql);
                                     int count = 0;
                                     while (rs.next()) {
                                         count++;
                                         String host = rs.getString("hostname");
-                                        String lid = rs.getString("llid");
+                                        String lid = rs.getString("lid");
                                         String postal_code = rs.getString("postal_code");
                                         String unit = rs.getString("unit");
-                                        System.out.format("Host: %s, Lid: %s, Postal Code: %s, Unit: %s\n", host, lid, postal_code, unit);
+                                        String bid = rs.getString("bid");
+                                        String start_date = rs.getString("start_date");
+                                        String end_date = rs.getString("end_date");
+                                        System.out.format("Host: '%s', Lid: '%s', Postal Code: '%s', Unit: '%s', Book BID: '%s', Start Date: '%s', End Date: '%s'\n", host, lid, postal_code, unit, bid, start_date, end_date);
                                     }
                                     if (count == 0) {
-                                        System.out.println("You can't comment any host yet, you should book first!");
-                                        print_header("Rate User");
-                                        System.out.println("Press the Corresponding number to continue");
-                                        System.out.println("1: Show how I was being rated as a host, 2: Show what I've rated, 3: Rate a renter, 4: Delete a rating, 5: Go Back.");
-                                        continue;
+                                        print_header("Cannot find book, cannot rate a host.");
+                                    } else {
+                                        System.out.println("Please input the host's username that you want to rate");
+                                        String host_username = validate(sc);
+                                        System.out.println("Please input how much you like this host from 1-5");
+                                        String likes = validate_int(sc, 1, 5);
+                                        System.out.println("Please make any comment (100 words limit):");
+                                        String words = validate(sc);
+                                        create_renter_rate(username, host_username, likes, words);
                                     }
-                                    System.out.println("Please input the host's username that you want to rate");
-                                    String host_username = validate(sc);
-                                    System.out.println("Please input how much you like this host from 1-5");
-                                    String likes = validate_int(sc, 1, 5);
-                                    System.out.println("Please make any comment (100 words limit):");
-                                    String words = validate(sc);
-
-                                    create_renter_rate(username, host_username, likes, words);
                                 } else if (booking_decide.equals("4")) {
                                     // cannot change a book
                                     print_header("Delete a rating");
@@ -984,72 +1036,20 @@ public class JDBCExample {
                                         print_header("you don't have any booking");
                                     }
                                     String jid = validate_int(sc, 1, 9999);
-                                    if (!cancel_judgement_renter(jid, username)) {
-                                        print_error("Cannot cancel the rate");
-                                    }
+                                    cancel_judgement_renter(jid, username);
                                 } else if (booking_decide.equals("5")) {
                                     break;
                                 }
-                                print_header("Rate User");
+                                print_header("Manage My Rating");
                                 System.out.println("Press the Corresponding number to continue");
-                                System.out.println("1: Show how I was being rated as a renter, 2: Show what I've rated, 3: Rate a host, 4: Delete a rating, 5: Go Back.");
-
+                                System.out.println("1: Show how I was being rated as a renter,          2: Show what I've rated\n" +
+                                        "3: Rate a Host,          4: Delete a Rating,          5: Go Back.");
                             }
-                        } else if (input.equals("4")) {
-                            // comment
-                            print_header("Comment Listing");
-
-                            System.out.println("Press the Corresponding number to continue");
-                            System.out.println("1: Show my comments, 2: Comment a listing, 3: Delete a comment, 5: Go Back.");
-                            while (sc.hasNextLine()) {
-                                String booking_decide = sc.nextLine();
-                                if (booking_decide.equals("1")) {
-                                    print_header("Show what I have commented");
-                                    if (!show_renter_comment(username)) {
-                                        print_header("You haven't comment any listing so far.");
-                                    }
-                                } else if (booking_decide.equals("2")) {
-                                    print_header("Comment a Listing");
-                                    if (!show_renter_booked_listing(username)) {
-                                        print_header("You haven't book any listing so far.");
-                                    }
-                                    System.out.println("Please input the ListingID that you want to rate");
-                                    String lid = validate_int(sc, 0, 9999);
-                                    System.out.println("Please input how much you like this listing from 1-5");
-                                    String rate = validate_int(sc, 1, 5);
-                                    System.out.println("Please make any comment (250 words limit):");
-                                    String text = validate(sc);
-
-                                    create_renter_listing_comment(username, lid, rate, text);
-
-                                } else if (booking_decide.equals("3")) {
-                                    // cannot change a book
-                                    print_header("Delete a rating");
-                                    System.out.println("Input the LID of that comment that you want to delete (If you don't want to delete, just input any other integer)");
-                                    if (!show_renter_comment(username)) {
-                                        print_header("you don't have any comment");
-                                    }
-                                    String lid = validate_int(sc, 1, 9999);
-                                    if (!delete_renter_listing_comment(username, lid)) {
-                                        print_error("Cannot cancel the comment of this Listing");
-                                    }
-                                } else if (booking_decide.equals("5")) {
-                                    // go back
-                                    break;
-                                }
-                                print_header("Comment Listing");
-                                System.out.println("Press the Corresponding number to continue");
-                                System.out.println("1: Show my comments, 2: Comment a lising, 3: Delete a comment, 5: Go Back.");
-                            }
-
-                        } else if (input.equals("8")) {
-                            print_header("Terminate the program.");
-                            break label_whole;
-                        } else if (input.equals("9")) {
+                        } else if (input.equals("5")) {
                             // logout
                             is_login = 0;
                             is_owner = -1;
-                            System.out.println("Try to logout");
+                            System.out.println("Log Out");
                             continue label_whole;
                         }
                         end_of_renter();
@@ -1083,18 +1083,13 @@ public class JDBCExample {
                     System.out.println("User: " + UserName + " Login succeed!");
                     return true;
                 } else {
-                    System.out.println("Login failed");
+                    print_header("Login failed");
                     return false;
                 }
-                /**/
-
-            } else {
-                System.out.print("sad");
-                return false;
             }
-
+            return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            print_header("Something went wrong when log in");
             return false;
         }
     }
@@ -1126,7 +1121,7 @@ public class JDBCExample {
                 return false;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            print_header("Username is duplicated.");
             return false;
         }
     }
@@ -1197,179 +1192,181 @@ public class JDBCExample {
     public static void report4(Scanner sc) throws SQLException {
         try {
             print_header("Rank host by number of listing within a country");
-			System.out.println("Please input: 1.per country, 2: per city and country");
-			String choice = validate_int(sc, 1, 2);
-			if(choice.equals("1")){
-				System.out.println("Please input the country you want ot check:");
-				String country = validate(sc);
-				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
-				ResultSet rs = stmt.executeQuery(reportsql);
-				int count = 0;
-				while(rs.next()){
-					count++;
-					String hostname = rs.getString("hostname");
-					System.out.printf("Host: %s, ", hostname);
-					String ranking = rs.getString("ranking");
-					System.out.printf(", Ranking: %s", ranking);
-					String listid = rs.getString("listid");
-					System.out.printf(", Number of Listing: %s", listid);
-					System.out.printf(", Country: %s\n", country);
-				}
-				if(count ==0){
-					System.out.println("No listing in this country.");
-				}
-			}else if (choice.equals("2")){
-				System.out.println("Please input the country you want to check:");
-				String country = validate(sc);
-				System.out.println("Please input the city you want to check:");
-				String city = validate(sc);
-				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s' group by owns.username;", country, city);
-				ResultSet rs = stmt.executeQuery(reportsql);
-				int count = 0;
-				while(rs.next()){
-					count++;
-					String hostname = rs.getString("hostname");
-					System.out.printf("Host: %s, ", hostname);
-					String ranking = rs.getString("ranking");
-					System.out.printf(", Ranking: %s", ranking);
-					String listid = rs.getString("listid");
-					System.out.printf(", Number of Listing: %s", listid);
-					System.out.printf(", City: %s", city);
-					System.out.printf(", Country: %s\n", country);
-				}
-				if(count ==0){
-					System.out.println("No listing in this city.");
-				}
-			}
+            System.out.println("Please input: 1.per country, 2: per city and country");
+            String choice = validate_int(sc, 1, 2);
+            if (choice.equals("1")) {
+                System.out.println("Please input the country you want ot check:");
+                String country = validate(sc);
+                String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
+                ResultSet rs = stmt.executeQuery(reportsql);
+                int count = 0;
+                while (rs.next()) {
+                    count++;
+                    String hostname = rs.getString("hostname");
+                    System.out.printf("Host: %s, ", hostname);
+                    String ranking = rs.getString("ranking");
+                    System.out.printf(", Ranking: %s", ranking);
+                    String listid = rs.getString("listid");
+                    System.out.printf(", Number of Listing: %s", listid);
+                    System.out.printf(", Country: %s\n", country);
+                }
+                if (count == 0) {
+                    System.out.println("No listing in this country.");
+                }
+            } else if (choice.equals("2")) {
+                System.out.println("Please input the country you want to check:");
+                String country = validate(sc);
+                System.out.println("Please input the city you want to check:");
+                String city = validate(sc);
+                String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s' group by owns.username;", country, city);
+                ResultSet rs = stmt.executeQuery(reportsql);
+                int count = 0;
+                while (rs.next()) {
+                    count++;
+                    String hostname = rs.getString("hostname");
+                    System.out.printf("Host: %s, ", hostname);
+                    String ranking = rs.getString("ranking");
+                    System.out.printf(", Ranking: %s", ranking);
+                    String listid = rs.getString("listid");
+                    System.out.printf(", Number of Listing: %s", listid);
+                    System.out.printf(", City: %s", city);
+                    System.out.printf(", Country: %s\n", country);
+                }
+                if (count == 0) {
+                    System.out.println("No listing in this city.");
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
     }
-	
+
     public static void report6(Scanner sc) throws SQLException {
         try {
             print_header("Rank renter by number of booking within a specific time");
-			System.out.println("Please input: 1.specify the time period, 2: specify the time period and the city");
-			String choice = validate_int(sc, 1, 2);
-			if(choice.equals("1")){
-				System.out.println("Please input the start date in this format: yyyy-mm-dd");
-				String start_time = validate_time(sc);
-				System.out.println("Please input the end date in this format: yyyy-mm-dd");
-				String end_time = validate_time(sc);
-				System.out.println(a_line);
-				// String city = validate(sc);
-				String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username from book where cancellation = 0 and start_date >= '%s' and end_date <= '%s' group by book.username having num >= 2;", start_time, end_time);
-				ResultSet rs = stmt.executeQuery(reportsql);
-				int count = 0;
-				while (rs.next()) {
-					count++;
-					String username = rs.getString("username");
-					System.out.printf("Renter: %s", username);
-					String ranking = rs.getString("ranking");
-					String num = rs.getString("num");
-					System.out.printf(", Ranking: %s", ranking);
-					System.out.printf(", Number of booking: %s\n", num);
-
-				}
-				if (count == 0) {
-					System.out.println("No valid renter within these days.");
-				}
-			}else if (choice.equals("2")){
-
-				System.out.println("Please input the city you want to check:");
-				String city = validate(sc);
-				System.out.println("Please input the start date in this format: yyyy-mm-dd");
-				String start_time = validate_time(sc);
-				System.out.println("Please input the end date in this format: yyyy-mm-dd");
-				String end_time = validate_time(sc);
+            System.out.println("Please input: 1.specify the time period, 2: specify the time period and the city");
+            String choice = validate_int(sc, 1, 2);
+            if (choice.equals("1")) {
+                System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                String start_time = validate_time(sc);
+                System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                String end_time = validate_time(sc);
                 System.out.println(a_line);
-				String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username, city from book natural join listing natural join located_at natural join address where cancellation = 0 and start_date >= '%s' and end_date <= '%s' and city = '%s' group by book.username having num >= 2;", start_time, end_time, city);
-				ResultSet rs = stmt.executeQuery(reportsql);
-				int count = 0;
-				while (rs.next()) {
-					count++;
-					String username = rs.getString("username");
-					System.out.printf("Renter: %s", username);
-					String ranking = rs.getString("ranking");
-					String num = rs.getString("num");
-					System.out.printf(", Ranking: %s", ranking);
-					System.out.printf(", Number of booking: %s", num);
-					String cityy = rs.getString("city");
-					System.out.printf(", City: %s\n", cityy);
+                // String city = validate(sc);
+                String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username from book where cancellation = 0 and start_date >= '%s' and end_date <= '%s' group by book.username having num >= 2;", start_time, end_time);
+                ResultSet rs = stmt.executeQuery(reportsql);
+                int count = 0;
+                while (rs.next()) {
+                    count++;
+                    String username = rs.getString("username");
+                    System.out.printf("Renter: %s", username);
+                    String ranking = rs.getString("ranking");
+                    String num = rs.getString("num");
+                    System.out.printf(", Ranking: %s", ranking);
+                    System.out.printf(", Number of booking: %s\n", num);
 
-				}
-				if (count == 0) {
-					System.out.println("No valid renter within these days in the city.");
-				}
-			}
+                }
+                if (count == 0) {
+                    System.out.println("No valid renter within these days.");
+                }
+            } else if (choice.equals("2")) {
+
+                System.out.println("Please input the city you want to check:");
+                String city = validate(sc);
+                System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                String start_time = validate_time(sc);
+                System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                String end_time = validate_time(sc);
+                System.out.println(a_line);
+                String reportsql = String.format("select count(bid) as num, Rank() Over(Order by COUnt(bid) DESC) as ranking, book.username, city from book natural join listing natural join located_at natural join address where cancellation = 0 and start_date >= '%s' and end_date <= '%s' and city = '%s' group by book.username having num >= 2;", start_time, end_time, city);
+                ResultSet rs = stmt.executeQuery(reportsql);
+                int count = 0;
+                while (rs.next()) {
+                    count++;
+                    String username = rs.getString("username");
+                    System.out.printf("Renter: %s", username);
+                    String ranking = rs.getString("ranking");
+                    String num = rs.getString("num");
+                    System.out.printf(", Ranking: %s", ranking);
+                    System.out.printf(", Number of booking: %s", num);
+                    String cityy = rs.getString("city");
+                    System.out.printf(", City: %s\n", cityy);
+
+                }
+                if (count == 0) {
+                    System.out.println("No valid renter within these days in the city.");
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
     }
-	public static void report5(Scanner sc) throws SQLException{
-		try{
-			print_header("Output the host that owns more than 10% listings in this city");
-			System.out.println("Please input the country you want ot check:");
-			String country = validate(sc);
-			System.out.println("Please input the city you want ot check:");
-			String city = validate(sc);
-			String reportsql = String.format("select COUNT(listing.lid) as listid, owns.username as hostname, (select COUNT(listing.lid) as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s') as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s'  group by owns.username having 10*listid > sum;", country, city, country, city);
-			ResultSet rs = stmt.executeQuery(reportsql);
-			int count = 0;
-			while(rs.next()){
-				count++;
-				String hostname = rs.getString("hostname");
-				System.out.printf("Host: %s, ", hostname);
-				String listid = rs.getString("listid");
-				System.out.printf(", Number of Listing: %s", listid);
-				String sum = rs.getString("sum");
-				System.out.printf(", Total num of listings in this city: %s", sum);
-				System.out.printf(", City: %s", city);
-				System.out.printf(", Country: %s\n", country);
-			}
-			if(count ==0){
-				System.out.println("No listing in this city.");
-			}
 
-		}catch (SQLException e) {
+    public static void report5(Scanner sc) throws SQLException {
+        try {
+            print_header("Output the host that owns more than 10% listings in this city");
+            System.out.println("Please input the country you want ot check:");
+            String country = validate(sc);
+            System.out.println("Please input the city you want ot check:");
+            String city = validate(sc);
+            String reportsql = String.format("select COUNT(listing.lid) as listid, owns.username as hostname, (select COUNT(listing.lid) as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s') as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s'  group by owns.username having 10*listid > sum;", country, city, country, city);
+            ResultSet rs = stmt.executeQuery(reportsql);
+            int count = 0;
+            while (rs.next()) {
+                count++;
+                String hostname = rs.getString("hostname");
+                System.out.printf("Host: %s, ", hostname);
+                String listid = rs.getString("listid");
+                System.out.printf(", Number of Listing: %s", listid);
+                String sum = rs.getString("sum");
+                System.out.printf(", Total num of listings in this city: %s", sum);
+                System.out.printf(", City: %s", city);
+                System.out.printf(", Country: %s\n", country);
+            }
+            if (count == 0) {
+                System.out.println("No listing in this city.");
+            }
+
+        } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
-	}
-    public static void report7() throws SQLException{
-		try{
-			print_header("Output the host and the renter with the largest cancellation:");
-			
-			String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation = 1 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation = 1 group by book.username);");
-			ResultSet rs = stmt.executeQuery(reportsql);
-			int count = 0;
-			while(rs.next()){
-				count++;
-				String username = rs.getString("username");
-				System.out.printf("Renter: %s, ", username);
-				String num = rs.getString("num");
-				System.out.printf(", Number of cancellation: %s\n", num);
-			}
+    }
+
+    public static void report7() throws SQLException {
+        try {
+            print_header("Output the host and the renter with the largest cancellation:");
+
+            String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation = 1 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation = 1 group by book.username);");
+            ResultSet rs = stmt.executeQuery(reportsql);
+            int count = 0;
+            while (rs.next()) {
+                count++;
+                String username = rs.getString("username");
+                System.out.printf("Renter: %s, ", username);
+                String num = rs.getString("num");
+                System.out.printf(", Number of cancellation: %s\n", num);
+            }
             reportsql = String.format("select num, username from (select count(bid) as num, owns.username from book natural join owns where cancellation = 1 group by owns.username) as good where num >= ALL (select count(bid) as num from book natural join owns where cancellation = 1 group by owns.username);");
-			rs = stmt.executeQuery(reportsql);
-            while(rs.next()){
-				count++;
-				String username = rs.getString("username");
-				System.out.printf("Host: %s, ", username);
-				String num = rs.getString("num");
-				System.out.printf(", Number of cancellation: %s\n", num);
-			}
-			if(count ==0){
-				System.out.println("No cancellation so far.");
-			}
+            rs = stmt.executeQuery(reportsql);
+            while (rs.next()) {
+                count++;
+                String username = rs.getString("username");
+                System.out.printf("Host: %s, ", username);
+                String num = rs.getString("num");
+                System.out.printf(", Number of cancellation: %s\n", num);
+            }
+            if (count == 0) {
+                System.out.println("No cancellation so far.");
+            }
 
-		}catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
-	}
+    }
 
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
@@ -1467,7 +1464,8 @@ public class JDBCExample {
                 String password = rs.getString("password");
                 String credit_card = rs.getString("payment");
                 // Display values
-                System.out.print("My Information --- Username: " + username);
+                print_header("My Information:");
+                System.out.print("Username: " + username);
                 System.out.print(", Password: " + password);
                 System.out.print(", Real Name: " + name);
                 System.out.print(", SIN: " + sid);
@@ -1524,42 +1522,56 @@ public class JDBCExample {
             stmt.executeUpdate(sql);
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
             return false;
         }
     }
 
-    public static boolean show_user_books(String username) throws SQLException {
+    public static boolean show_user_books(String username, int status) throws SQLException {
         boolean result = false;
         try {
-            String sql = String.format("SELECT distinct cancellation, owns.username as owner_name, book.bid, book.lid, lon, lat, type, start_date, end_date, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address inner join owns where book.lid = listing.lid and listing.lid = located_at.lid and owns.lid = located_at.lid and book.username = '%s'", username);
+            String sql;
+            if (status == 1) {
+                sql = String.format("SELECT distinct listing.amenities as am, cancellation, owns.username as owner_name, book.bid, book.lid, lon, lat, type, start_date, end_date, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address inner join owns where book.lid = listing.lid and listing.lid = located_at.lid and owns.lid = located_at.lid and book.username = '%s' order by bid;", username);
+            } else {
+                sql = String.format("SELECT distinct listing.amenities as am, cancellation, owns.username as owner_name, book.bid, book.lid, lon, lat, type, start_date, end_date, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address inner join owns where book.lid = listing.lid and listing.lid = located_at.lid and owns.lid = located_at.lid and book.username = '%s' order by lid;", username);
+            }
+
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             // STEP 5: Extract data from result set
             while (rs.next()) {
                 // Retrieve by column name
+                System.out.println(half_line);
                 String bid = rs.getString("BID");
-                System.out.print("BID: " + bid);
                 String owner_name = rs.getString("owner_name");
-                System.out.print(", Owner Name: " + owner_name);
                 String lid = rs.getString("lid");
-                System.out.print(", ListingID: " + lid);
+                if (status == 1) {
+                    System.out.print("BID: " + bid);
+                    System.out.print(", Owner Name: " + owner_name);
+                    System.out.println(", ListingID: " + lid);
+                } else {
+                    System.out.print("ListingID: " + lid);
+                    System.out.print(", Owner Name: " + owner_name);
+                    System.out.println(", BID: " + bid);
+                }
                 String lon = rs.getString("lon");
-                System.out.print(", Longitude: " + lon);
+                System.out.print("Longitude: " + lon);
                 String lat = rs.getString("lat");
                 System.out.print(", Latitude: " + lat);
                 String type = rs.getString("type");
                 System.out.print(", Type: " + type);
+                String am = rs.getString("am");
+                System.out.println(", Amenities: " + am);
                 String unit = rs.getString("unit");
-                System.out.print(", unit: " + unit);
+                System.out.print("Unit: " + unit);
                 String postal_code = rs.getString("postal_code");
                 System.out.print(", postal_code: " + postal_code);
                 String city = rs.getString("city");
                 System.out.print(", City: " + city);
                 String country = rs.getString("country");
-                System.out.print(", Country: " + country);
+                System.out.println(", Country: " + country);
                 String start_date = rs.getString("start_date");
-                System.out.print(", start date: " + start_date);
+                System.out.print("Start date: " + start_date);
                 String end_date = rs.getString("end_date");
                 System.out.print(", end date: " + end_date);
                 String cancellation = rs.getString("cancellation");
@@ -1568,10 +1580,11 @@ public class JDBCExample {
                 } else if (cancellation.equals("1")) {
                     System.out.println(", Cancelled by Renter.");
                 } else if (cancellation.equals("2")) {
-                    System.out.println(", Cancelled by Owner.");
+                    System.out.println(", Cancelled by Host.");
                 }
                 result = true;
             }
+            System.out.println(half_line);
             rs.close();
             return result;
         } catch (SQLException e) {
@@ -1583,7 +1596,7 @@ public class JDBCExample {
     public static boolean show_renter_booked_listing(String rentername) throws SQLException {
         boolean result = false;
         try {
-            String sql = String.format("SELECT lid, lon, lat, type, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address where book.username = '%s' and cancellation = 0 group by lid;", rentername);
+            String sql = String.format("SELECT lid, lon, lat, type, unit, postal_code, city, country FROM Book Natural Join Listing natural join located_at natural join address where book.username = '%s' and cancellation = 0 order by lid;", rentername);
             // System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             // STEP 5: Extract data from result set
@@ -1629,7 +1642,7 @@ public class JDBCExample {
                     stmt.executeUpdate(sql4);
                 }
                 String sql2 = String.format("INSERT INTO Comment (text, lid, username, rate) VALUES ('%s', '%s', '%s', '%s');", text, lid, rentername, rate);
-                print_header("Comment added.");
+                print_header("Comment add successfully.");
                 stmt.executeUpdate(sql2);
                 return true;
 
@@ -1666,7 +1679,7 @@ public class JDBCExample {
     public static boolean show_owner_books(String username) throws SQLException {
         boolean result = false;
         try {
-            String sql = String.format("select distinct cancellation, book.username as renter_name, book.bid as bid, start_date, end_date, payment, book.price, book.lid as lid, located_at.unit as unit, located_at.postal_code as postal_code from book inner join located_at inner join owns where book.lid = located_at.lid and located_at.lid = owns.lid and owns.username = '%s'", username);
+            String sql = String.format("select distinct cancellation, book.username as renter_name, book.bid as bid, start_date, end_date, payment, book.price, book.lid as lid, located_at.unit as unit, located_at.postal_code as postal_code from book inner join located_at inner join owns where book.lid = located_at.lid and located_at.lid = owns.lid and owns.username = '%s' ORDER BY book.bid", username);
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             // STEP 5: Extract data from result set
@@ -1691,7 +1704,7 @@ public class JDBCExample {
                 } else if (cancellation.equals("1")) {
                     System.out.println(", Cancelled by Renter.");
                 } else if (cancellation.equals("2")) {
-                    System.out.println(", Cancelled by Owner.");
+                    System.out.println(", Cancelled by Host.");
                 }
                 result = true;
             }
@@ -1715,7 +1728,13 @@ public class JDBCExample {
                 result = true;
                 String date = rs.getString("date");
                 String price = rs.getString("price");
+                String bid = rs.getString("bid");
                 System.out.print("Date: " + date);
+                if (bid != null) {
+                    System.out.print(", Booked");
+                } else {
+                    System.out.print(", No Book Yet");
+                }
                 System.out.println(", Price: " + price);
             }
             return result;
@@ -1922,6 +1941,43 @@ public class JDBCExample {
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Error in check lid.");
+            return false;
+        }
+
+    }
+
+    public static boolean check_lid_belongs_to_you(String lid, int status) throws SQLException {
+        try {
+            // check if the lid is in book
+            String sql;
+            if (status == 1) {
+                sql = String.format("select * from owns where lid = '%s' and username = '%s';", lid, username);
+            } else {
+                sql = String.format("select * from book where lid = '%s' and username = '%s';", lid, username);
+            }
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            System.out.println("Error in check lid belongs to you.");
+            return false;
+        }
+
+    }
+
+    public static boolean check_bid_belongs_to_you(String bid) throws SQLException {
+        try {
+            // check if the lid is in book
+            String sql = String.format("select * from book where bid = '%s' and username = '%s';", bid, username);
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            System.out.println("Error in check lid belongs to you.");
             return false;
         }
 
@@ -2279,7 +2335,7 @@ public class JDBCExample {
             return false;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Cannot rate host.");
             return false;
         }
     }
@@ -2340,64 +2396,53 @@ public class JDBCExample {
 
     public static boolean create_renter_rate(String rentername, String hostname, String rate, String text) throws SQLException {
         try {
-
-            String sql = String.format("SELECT Owns.username FROM Book Join Owns where Book.lid = Owns.lid and cancellation = 0 and Book.username = '%s';", rentername);
+            String sql = String.format("SELECT Owns.username FROM Book Join Owns where Book.lid = Owns.lid and cancellation = 0 and Book.username = '%s' and owns.username = '%s';", rentername, hostname);
             ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String host = rs.getString("username");
-                if (host.equals(hostname)) {
-                    String sql3 = String.format("SELECT * FROM Judgement where renter_username = '%s' and host_username = '%s' and direction = 0;", rentername, hostname);
-                    ResultSet rs3 = stmt.executeQuery(sql3);
-                    if (rs3.next()) {
-                        System.out.println("Since you have already rated this host, we delete the previous one and create new rating.");
-                        String JID = rs3.getString("JID");
-                        String sql4 = String.format("DELETE FROM Judgement where JID = '%s';", JID);
-                        stmt.executeUpdate(sql4);
-                    }
-                    String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname, rentername, "0", rate);
-                    System.out.print(sql2.concat("Rating added."));
-                    stmt.executeUpdate(sql2);
-                    return true;
+            if (rs.next()) {
+                String sql3 = String.format("SELECT * FROM Judgement where renter_username = '%s' and host_username = '%s' and direction = 0;", rentername, hostname);
+                ResultSet rs3 = stmt.executeQuery(sql3);
+                if (rs3.next()) {
+                    System.out.println("Since you have already rated this host, we delete the previous one and create new rating.");
+                    String JID = rs3.getString("JID");
+                    String sql4 = String.format("DELETE FROM Judgement where JID = '%s';", JID);
+                    stmt.executeUpdate(sql4);
                 }
-
+                String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname, rentername, "0", rate);
+                stmt.executeUpdate(sql2);
+                print_header("Rating add successfully.");
+                return true;
             }
             print_header("You can't judge this host since you haven't book any from this host.");
             return false;
 
         } catch (SQLException e) {
-            System.err.println("You can't judge this host since you haven't book any from this host.");
+            System.err.println("Cannot rate host by renter.");
             return false;
         }
     }
 
     public static boolean create_host_rate(String rentername, String hostname, String rate, String text) throws SQLException {
         try {
-
-            String sql = String.format("SELECT Book.username FROM Book Join Owns where Book.lid = Owns.lid and cancellation = 0 and Owns.username = '%s';", hostname);
+            String sql = String.format("SELECT * FROM Book inner Join Owns where Book.lid = Owns.lid and cancellation = 0 and Owns.username = '%s' and book.username = '%s';", hostname, rentername);
             ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String renter = rs.getString("username");
-                if (renter.equals(rentername)) {
-                    String sql3 = String.format("SELECT * FROM Judgement where renter_username = '%s' and host_username = '%s' and direction = 1;", rentername, hostname);
-                    ResultSet rs3 = stmt.executeQuery(sql3);
-                    if (rs3.next()) {
-                        System.out.println("Since you have already rated this renter, we delete the previous one and create new rating.");
-                        String JID = rs3.getString("JID");
-                        String sql4 = String.format("DELETE FROM Judgement where JID = '%s';", JID);
-                        stmt.executeUpdate(sql4);
-                    }
-                    String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname, rentername, "1", rate);
-                    print_header("Rating added.");
-                    stmt.executeUpdate(sql2);
-                    return true;
+            if (rs.next()) {
+                String sql3 = String.format("SELECT * FROM Judgement where renter_username = '%s' and host_username = '%s' and direction = 1;", rentername, hostname);
+                ResultSet rs3 = stmt.executeQuery(sql3);
+                if (rs3.next()) {
+                    System.out.println("Since you have already rated this renter, we delete the previous one and create new rating.");
+                    String JID = rs3.getString("JID");
+                    String sql4 = String.format("DELETE FROM Judgement where JID = '%s';", JID);
+                    stmt.executeUpdate(sql4);
                 }
-
+                String sql2 = String.format("INSERT INTO Judgement (words, host_username, renter_username, direction, likes) VALUES ('%s', '%s', '%s', '%s', '%s');", text, hostname, rentername, "1", rate);
+                print_header("Rating added.");
+                stmt.executeUpdate(sql2);
+                return true;
             }
             print_header("You can't judge this renter since he/she hasn't book any from you.");
             return false;
-
         } catch (SQLException e) {
-            System.err.println("You can't judge this renter since he/she hasn't book any from you.");
+            System.err.println("Something error with host rate user.");
             return false;
         }
     }
@@ -2434,7 +2479,7 @@ public class JDBCExample {
     public static boolean show_host_s_judgement(String hostname) throws SQLException {
         try {
             boolean result = false;
-            String sql = String.format("SELECT * FROM Judgement where host_username = '%s';", hostname);
+            String sql = String.format("SELECT * FROM Judgement where host_username = '%s' order by jid;", hostname);
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 String JID = rs.getString("JID");
@@ -2444,7 +2489,7 @@ public class JDBCExample {
                 String renter_username = rs.getString("renter_username");
 
                 if (direction.equals("0")) {
-                    String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
+                    String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s'.", JID, renter_username, likes, words);
                     System.out.print(sql2.concat("\n"));
                     // stmt.executeUpdate(sql2);
                     result = true;
@@ -2500,7 +2545,7 @@ public class JDBCExample {
                 String renter_username = rs.getString("renter_username");
 
                 if (direction.equals("1")) {
-                    String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s';", JID, renter_username, likes, words);
+                    String sql2 = String.format("JID = '%s', Renter: '%s', Likes = '%s', Comment: '%s'.", JID, renter_username, likes, words);
                     System.out.print(sql2.concat("\n"));
                     // stmt.executeUpdate(sql2);
                     result = true;
@@ -2568,22 +2613,22 @@ public class JDBCExample {
 
             // get the largest index
             int largest = 0;
-            for ( int i = 0; i < 9; i++ ) {
-                if(count_array[i] > count_array[largest]) {
+            for (int i = 0; i < 9; i++) {
+                if (count_array[i] > count_array[largest]) {
                     largest = i;
                 }
             }
             count_array[largest] = 0;
             int s_largest = 0;
-            for ( int i = 0; i < 9; i++ ) {
-                if(count_array[i] > count_array[s_largest]) {
+            for (int i = 0; i < 9; i++) {
+                if (count_array[i] > count_array[s_largest]) {
                     s_largest = i;
                 }
             }
             count_array[s_largest] = 0;
             int t_largest = 0;
-            for ( int i = 0; i < 9; i++ ) {
-                if(count_array[i] > count_array[t_largest]) {
+            for (int i = 0; i < 9; i++) {
+                if (count_array[i] > count_array[t_largest]) {
                     t_largest = i;
                 }
             }
@@ -2633,7 +2678,7 @@ public class JDBCExample {
             int all_price_avg = 0;
             String sql = "select avg(price) as avg from available;";
             ResultSet rs = stmt.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 all_price_avg = rs.getInt("avg");
             }
 
@@ -2641,25 +2686,25 @@ public class JDBCExample {
             String type = "";
             sql = String.format("select * from listing where lid = '%s';", lid);
             rs = stmt.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 type = rs.getString("type");
             }
 
             sql = String.format("select avg(price) as avg from listing natural join available where lid != '%s' and type = '%s';", lid, type);
             rs = stmt.executeQuery(sql);
-            if(rs.next()){
+            if (rs.next()) {
                 type_price_avg = rs.getInt("avg");
             }
 
-            if(type_price_avg == 0){
+            if (type_price_avg == 0) {
                 System.out.println("No Recommend Listing price range for your listing type since no enough host sample.");
-            }else{
-                int type_price_low =  (int) (type_price_avg * 0.9);
+            } else {
+                int type_price_low = (int) (type_price_avg * 0.9);
                 int type_price_high = (int) (type_price_avg * 1.1);
                 System.out.println("Recommend Listing price range for your listing type: " + type_price_low + " to " + type_price_high + ",");
             }
 
-            int all_price_low =  (int) (all_price_avg * 0.9);
+            int all_price_low = (int) (all_price_avg * 0.9);
             int all_price_high = (int) (all_price_avg * 1.1);
             System.out.println("Recommend Listing price range for new listing: " + all_price_low + " to " + all_price_high + ".");
         } catch (SQLException e) {
@@ -2775,10 +2820,10 @@ public class JDBCExample {
 
     public static String validate_postal_code(Scanner sc) {
         String input;
-        String regex = "^(?!.*[DFIOQU])[A-VXY][0-9][A-Z] ?[0-9][A-Z][0-9]$";
+        String regex = "^(?!.*[DFIOQU])[A-VXY][0-9][A-Z] [0-9][A-Z][0-9]$";
         Pattern pattern = Pattern.compile(regex);
         while (true) {
-            input = sc.nextLine();
+            input = sc.nextLine().toUpperCase();
             Matcher matcher = pattern.matcher(input);
             if (!matcher.matches()) {
                 print_error("Input postal code is not valid!");
@@ -2891,7 +2936,7 @@ public class JDBCExample {
 
     public static void select_profile(Scanner sc) throws SQLException {
         try {
-            System.out.println(half_line + "Update Information" + half_line);
+            print_header("Personal Information");
             System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
             while (sc.hasNextLine()) {
                 String profile_decide = validate_int(sc, 1, 4);
@@ -2905,7 +2950,7 @@ public class JDBCExample {
                     print_header("Change My Profile");
                     // select what your want to change
                     System.out.println("Select the profile you want to change");
-                    System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5:Payment(Credit Card), 6: Address, 7: Go Back.");
+                    System.out.println("1: Real Name, 2: Birth Year, 3: Password, 4: Occupation, 5: Payment(Credit Card), 6: Address, 7: Go Back.");
                     String change_profile_decide = validate_int(sc, 1, 7);
                     int change_profile_decide_int = Integer.parseInt(change_profile_decide);
                     if (change_profile_decide_int == 7) {
@@ -2953,7 +2998,7 @@ public class JDBCExample {
                             if (change_profile(username, to_change, change_profile_decide_int)) {
                                 System.out.println("Successfully change profile");
                             } else {
-                                print_error("Cannot change profile");
+                                print_error("Cannot change profile, check your input");
                             }
                         }
                     }
@@ -2977,6 +3022,7 @@ public class JDBCExample {
                 } else if (profile_decide.equals("4")) {
                     break;
                 }
+                print_header("Profile Information");
                 System.out.println("1: Check My Profile, 2: Change My Profile, 3: Delete My Account, 4: Go Back.");
             }
         } catch (SQLException e) {
@@ -2985,11 +3031,11 @@ public class JDBCExample {
     }
 
     public static void print_header(String string) {
-        System.out.println(half_line + string + half_line);
+        System.out.println(half_line + "  " + string + "  " + half_line);
     }
 
     public static void print_error(String string) {
-        System.err.println(half_line + string + half_line);
+        System.err.println(half_line + "  " + string + "  " + half_line);
     }
 
     public static void end_of_owner() {

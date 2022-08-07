@@ -1,6 +1,7 @@
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A2");
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A3");
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1369", "Toronto", "Canada", "M1C 1A3");
+INSERT INTO Address (unit, city, country, postal_code) VALUES ("1369", "Toronto", "Canada", "M1C 1A9");
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1366", "Hangzhou", "China", "M1P 2M6");
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001-01-01", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002-12-25", "IronMan", "Felix"); /*Do we need to parse sin*/
@@ -38,6 +39,7 @@ INSERT INTO Available (price, date, lid) VALUES ("30", "2022-08-19","2");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A2", "1367", "Jonathan");
 INSERT INTO Lives (postal_code, unit, username) VALUES ( "M1C 1A3", "1367", "test");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A2", "1367", "1");
+INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A9", "1369", "2");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A3", "1367", "3");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1P 2M6", "1366", "4");
 INSERT INTO Located_At (postal_code, unit, lid) VALUES ( "M1C 1A3", "1369", "5");
