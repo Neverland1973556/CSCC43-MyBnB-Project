@@ -29,16 +29,12 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Manage Personal Information, 2: Manage My Listing, 3: Manage My Listing Availability, 4: Manage My Booking, 5: Manage My Rating, 6: logout";
     private static final String is_renter_prompt = "1: Manage Personal Information, 2: Manage My Booking, 3. Comment a Listing, 4: Manage My Rating, 5: logout";
-    private static final String report_message = "1: Booking by city \n" +
-            "2: Booking by postal-code \n" +
-            "3: Num of booking per country, city, and zip code \n" +
-            "4. Rank host by num of listing within a country \n" +
-            "5: Flagged host \n" +
-            "6: Renter ranked by booking \n" +
-            "7: Largest cancellation \n" +
-            "8: xx \n" +
-            "9: yy \n" +
-            "10: logout";
+    private static final String report_message =
+            "1: Number of Booking by Date Range,                              2: Number of Booking by Postal Code \n" +
+            "3: Num of Booking per Country, City, and Postal Code,            4. Rank Host by Num of Listing within a Country / City \n" +
+            "5: Host that should be flag to prohibit,                         6: Renter Ranked by Booking \n" +
+            "7: Largest Number of Cancellation,                               8: xx \n" +
+            "9: yy,                                                           10: Log Out";
     private static final String a_line = "---------------------------------------------------------------------------"
             + "---------------------------------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -174,13 +170,12 @@ public class JDBCExample {
                     while (sc.hasNextLine()) {
                         String input = validate_int(sc, 1, 10);
                         if (input.equals("1")) {
-                            print_header("Number of booking within a date range by city");
-                            System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                            print_header("REPORT 1 - Number of Booking within a date range by city");
+                            System.out.println("Please input the start date of the report in this format: yyyy-mm-dd");
                             String start_time = validate_time(sc);
-                            System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                            System.out.println("Please input the end date of the report in this format: yyyy-mm-dd");
                             String end_time = validate_time(sc);
-
-                            String reportsql = String.format("select COUNT(BID) as bookid, city from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' group by city;", start_time, end_time);
+                            String reportsql = String.format("select COUNT(BID) as bookid, city from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' group by city order by count(BID) DESC;", start_time, end_time);
                             ResultSet rs = stmt.executeQuery(reportsql);
                             int count = 0;
                             while (rs.next()) {
@@ -194,12 +189,12 @@ public class JDBCExample {
                                 System.out.println("No booking within these days.");
                             }
                         } else if (input.equals("2")) {
-                            print_header("Number of booking within a date range by postal_code within a city");
-                            System.out.println("Please input the start date in this format: yyyy-mm-dd");
+                            print_header("REPORT 2 - Number of Booking within a date range by postal_code within a city");
+                            System.out.println("Please input the start date of the report in this format: yyyy-mm-dd");
                             String start_time = validate_time(sc);
-                            System.out.println("Please input the end date in this format: yyyy-mm-dd");
+                            System.out.println("Please input the end date  of the report in this format: yyyy-mm-dd");
                             String end_time = validate_time(sc);
-                            System.out.println("Please input the city:");
+                            System.out.println("Please input the city of the report:");
                             String city = validate(sc);
                             String reportsql = String.format("select COUNT(BID) as bookid, postal_code from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' and city = '%s' group by postal_code;", start_time, end_time, city);
                             ResultSet rs = stmt.executeQuery(reportsql);
@@ -212,14 +207,12 @@ public class JDBCExample {
                                 String postal_code = rs.getString("postal_code");
                                 System.out.printf(", Postal Code: %s", postal_code);
                                 System.out.printf(", City: %s\n", city);
-
                             }
                             if (count == 0) {
                                 System.out.println("No booking within these days and this city.");
                             }
                         } else if (input.equals("3")) {
                             report3();
-
                         } else if (input.equals("4")) {
                             report4(sc);
                         } else if (input.equals("5")) {
@@ -228,6 +221,10 @@ public class JDBCExample {
                             report6(sc);
                         } else if (input.equals("7")) {
                             report7();
+                        } else if (input.equals("8")) {
+                            // report8();
+                        } else if (input.equals("9")) {
+                            // report9();
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
@@ -1128,7 +1125,8 @@ public class JDBCExample {
 
     public static void report3() throws SQLException {
         try {
-            print_header("Num of listing per ~~ ");
+            print_header("REPORT 3 - Stat of Number Listing");
+            System.out.println(half_line);
             String reportsql = String.format("select COUNT(listing.lid) as listid, country from listing natural join located_at natural join address group by country");
             ResultSet rs = stmt.executeQuery(reportsql);
             int count = 0;
@@ -1138,7 +1136,6 @@ public class JDBCExample {
                 System.out.printf("Number of listing: %s", numlist);
                 String country = rs.getString("country");
                 System.out.printf(", Country: %s\n", country);
-
             }
             if (count == 0) {
                 System.out.println("No Listing added.");
@@ -1157,7 +1154,6 @@ public class JDBCExample {
                 System.out.printf(", City: %s", city);
                 String country = rs.getString("country");
                 System.out.printf(", Country: %s\n", country);
-
             }
             if (count == 0) {
                 System.out.println("No Listing added.");
@@ -1176,7 +1172,6 @@ public class JDBCExample {
                 System.out.printf(", City: %s", city);
                 String country = rs.getString("country");
                 System.out.printf(", Country: %s\n", country);
-
             }
             if (count == 0) {
                 System.out.println("No Listing added.");
@@ -1184,18 +1179,17 @@ public class JDBCExample {
             System.out.println(half_line);
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            print_error("Cannot the the report 3");
         }
     }
 
     public static void report4(Scanner sc) throws SQLException {
         try {
-            print_header("Rank host by number of listing within a country");
-            System.out.println("Please input: 1.per country, 2: per city and country");
+            print_header("REPORT 4 - Rank host by number of listing within a country");
+            System.out.println("Please input: 1: per country, 2: per country and city");
             String choice = validate_int(sc, 1, 2);
             if (choice.equals("1")) {
-                System.out.println("Please input the country you want ot check:");
+                System.out.println("Please input the country you want to check:");
                 String country = validate(sc);
                 String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
                 ResultSet rs = stmt.executeQuery(reportsql);
@@ -1203,7 +1197,7 @@ public class JDBCExample {
                 while (rs.next()) {
                     count++;
                     String hostname = rs.getString("hostname");
-                    System.out.printf("Host: %s, ", hostname);
+                    System.out.printf("Host: %s", hostname);
                     String ranking = rs.getString("ranking");
                     System.out.printf(", Ranking: %s", ranking);
                     String listid = rs.getString("listid");
@@ -1224,7 +1218,7 @@ public class JDBCExample {
                 while (rs.next()) {
                     count++;
                     String hostname = rs.getString("hostname");
-                    System.out.printf("Host: %s, ", hostname);
+                    System.out.printf("Host: %s", hostname);
                     String ranking = rs.getString("ranking");
                     System.out.printf(", Ranking: %s", ranking);
                     String listid = rs.getString("listid");
@@ -1244,8 +1238,8 @@ public class JDBCExample {
 
     public static void report6(Scanner sc) throws SQLException {
         try {
-            print_header("Rank renter by number of booking within a specific time");
-            System.out.println("Please input: 1.specify the time period, 2: specify the time period and the city");
+            print_header("REPORT 6 - Rank renter by number of booking within a specific time");
+            System.out.println("Please input: 1: specify the time period, 2: specify the time period and the city");
             String choice = validate_int(sc, 1, 2);
             if (choice.equals("1")) {
                 System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -1264,14 +1258,13 @@ public class JDBCExample {
                     String ranking = rs.getString("ranking");
                     String num = rs.getString("num");
                     System.out.printf(", Ranking: %s", ranking);
-                    System.out.printf(", Number of booking: %s\n", num);
+                    System.out.printf(", Number of Booking: %s\n", num);
 
                 }
                 if (count == 0) {
                     System.out.println("No valid renter within these days.");
                 }
             } else if (choice.equals("2")) {
-
                 System.out.println("Please input the city you want to check:");
                 String city = validate(sc);
                 System.out.println("Please input the start date in this format: yyyy-mm-dd");
@@ -1289,7 +1282,7 @@ public class JDBCExample {
                     String ranking = rs.getString("ranking");
                     String num = rs.getString("num");
                     System.out.printf(", Ranking: %s", ranking);
-                    System.out.printf(", Number of booking: %s", num);
+                    System.out.printf(", Number of Booking: %s", num);
                     String cityy = rs.getString("city");
                     System.out.printf(", City: %s\n", cityy);
 
@@ -1306,10 +1299,10 @@ public class JDBCExample {
 
     public static void report5(Scanner sc) throws SQLException {
         try {
-            print_header("Output the host that owns more than 10% listings in this city");
-            System.out.println("Please input the country you want ot check:");
+            print_header("REPORT 5 - Host that owns more than 10% listings in this city");
+            System.out.println("Please input the country you want to check:");
             String country = validate(sc);
-            System.out.println("Please input the city you want ot check:");
+            System.out.println("Please input the city you want to check:");
             String city = validate(sc);
             String reportsql = String.format("select COUNT(listing.lid) as listid, owns.username as hostname, (select COUNT(listing.lid) as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s') as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s'  group by owns.username having 10*listid > sum;", country, city, country, city);
             ResultSet rs = stmt.executeQuery(reportsql);
@@ -1317,7 +1310,7 @@ public class JDBCExample {
             while (rs.next()) {
                 count++;
                 String hostname = rs.getString("hostname");
-                System.out.printf("Host: %s, ", hostname);
+                System.out.printf("Host: %s", hostname);
                 String listid = rs.getString("listid");
                 System.out.printf(", Number of Listing: %s", listid);
                 String sum = rs.getString("sum");
@@ -1337,15 +1330,14 @@ public class JDBCExample {
 
     public static void report7() throws SQLException {
         try {
-            print_header("Output the host and the renter with the largest cancellation:");
-
+            print_header("REPORT 7 - the Host and the Renter with the largest cancellation:");
             String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation = 1 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation = 1 group by book.username);");
             ResultSet rs = stmt.executeQuery(reportsql);
             int count = 0;
             while (rs.next()) {
                 count++;
                 String username = rs.getString("username");
-                System.out.printf("Renter: %s, ", username);
+                System.out.printf("Renter: %s", username);
                 String num = rs.getString("num");
                 System.out.printf(", Number of cancellation: %s\n", num);
             }
@@ -1354,7 +1346,7 @@ public class JDBCExample {
             while (rs.next()) {
                 count++;
                 String username = rs.getString("username");
-                System.out.printf("Host: %s, ", username);
+                System.out.printf("Host: %s", username);
                 String num = rs.getString("num");
                 System.out.printf(", Number of cancellation: %s\n", num);
             }
