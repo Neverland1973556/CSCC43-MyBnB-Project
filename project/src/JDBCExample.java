@@ -29,7 +29,7 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Booking by city, 2: Booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, \n6:Renter ranked by booking, 10: logout";
+    private static final String report_message = "1: Booking by city, 2: Booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, \n6:Renter ranked by booking, 7:Largest cancellation 10: logout";
 	private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -237,6 +237,8 @@ public class JDBCExample {
                             report5(sc);
                         } else if (input.equals("6")) {
                             report6(sc);
+                        } else if (input.equals("7")) {
+                            report7();
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
@@ -1336,6 +1338,39 @@ public class JDBCExample {
             return;
         }
 	}
+    public static void report7() throws SQLException{
+		try{
+			print_header("Output the host and the renter with the largest cancellation:");
+			
+			String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation = 1 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation = 1 group by book.username);");
+			ResultSet rs = stmt.executeQuery(reportsql);
+			int count = 0;
+			while(rs.next()){
+				count++;
+				String username = rs.getString("username");
+				System.out.printf("Renter: %s, ", username);
+				String num = rs.getString("num");
+				System.out.printf(", Number of cancellation: %s\n", num);
+			}
+            reportsql = String.format("select num, username from (select count(bid) as num, owns.username from book natural join owns where cancellation = 1 group by owns.username) as good where num >= ALL (select count(bid) as num from book natural join owns where cancellation = 1 group by owns.username);");
+			rs = stmt.executeQuery(reportsql);
+            while(rs.next()){
+				count++;
+				String username = rs.getString("username");
+				System.out.printf("Host: %s, ", username);
+				String num = rs.getString("num");
+				System.out.printf(", Number of cancellation: %s\n", num);
+			}
+			if(count ==0){
+				System.out.println("No cancellation so far.");
+			}
+
+		}catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+	}
+
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
         try {
