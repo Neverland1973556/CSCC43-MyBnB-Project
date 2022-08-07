@@ -11,7 +11,7 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "123456";
+    private static final String PASS = "Xzt1973556";
     // private static final String PASS = "123456";
     // connection
     private static Statement stmt;
@@ -48,7 +48,7 @@ public class JDBCExample {
             System.out.println("Successfully connected to MySQL!");
 
             // File setup = new File("project/src/setup_table.sql");
-            File setup = new File("project/src/setup_table.sql");
+            File setup = new File("src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -78,7 +78,7 @@ public class JDBCExample {
             stmt.execute(calendar_sql);
 
             // setup = new File("project/src/insert_data.sql");
-            setup = new File("project/src/insert_data.sql");
+            setup = new File("src/insert_data.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -855,13 +855,10 @@ public class JDBCExample {
                                                 System.out.println("1: yes, 2: No");
                                                 String vague_input_3 = validate_int(sc, 1, 2);
                                                 if (vague_input_3.equals("1")) {
-                                                    // String am = "";
-                                                    // if(!find_lid_by_am(d1, d2, am)){
-                                                    //     // find_lid_by_am
-                                                    //     print_header("No listing qualified.");
-                                                    //     break label_if_book;
-                                                    // }
-                                                    if (!get_available(d1, d2)) {
+                                                    System.out.println("Please input the amenities you want - input the corresponding number and put space in between");
+                                                    System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
+                                                    String[] am = validate_am(sc);
+                                                    if(!find_lid_by_am(d1, d2, am)){
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
@@ -878,10 +875,9 @@ public class JDBCExample {
                                         lid = validate_int(sc, 1, 9999);
                                     }
 
-                                    // todo: combined price in
                                     // at this point, we should have d1, d2, lid, start_time, end_time
                                     // get the price and payment method
-                                    int total_price = get_price_book(lid, start_time, end_time);
+                                    int total_price = get_price_book(lid, d1, d2);
                                     if (total_price == 0) {
                                         print_error("Input lid is not valid");
                                         break label_if_book;
@@ -1620,6 +1616,48 @@ public class JDBCExample {
     }
 
     // renter use
+    public static boolean find_lid_by_am(LocalDate start_time, LocalDate end_time, String[] am) throws SQLException {
+        try {
+            boolean result = false;
+            String temp_am = "";
+            long date_between = ChronoUnit.DAYS.between(start_time, end_time) + 1;
+            StringBuilder count_query = new StringBuilder(String.format("select lid, count(date) as count, type from available natural join listing where date >= '%s' and date <= '%s'", start_time, end_time));
+            for(String temp: am) {
+                switch (temp) {
+                    case "1" -> temp_am = "wifi";
+                    case "2" -> temp_am = "kitchen";
+                    case "3" -> temp_am = "washer";
+                    case "4" -> temp_am = "dryer";
+                    case "5" -> temp_am = "ac";
+                    case "6" -> temp_am = "heating";
+                    case "7" -> temp_am = "tv";
+                    case "8" -> temp_am = "hair dryer";
+                    case "9" -> temp_am = "gym";
+                }
+                count_query.append(" and FIND_IN_SET('").append(temp_am).append("', amenities)");
+            }
+            count_query.append(" group by lid;");
+            System.out.println(count_query);
+            ResultSet rs = stmt.executeQuery(count_query.toString());
+            while (rs.next()) {
+                long count = rs.getInt("count");
+                // System.out.println(count);
+                String lid = rs.getString("lid");
+                if (count == date_between) {
+                    // this one is qualified
+                    System.out.println("lid: " + lid);
+                    result = true;
+                }
+            }
+            return result;
+        } catch (SQLException e) {
+            print_error("Cannot get available");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // renter use
     public static boolean find_lid_by_location(String lat, String lon, LocalDate start_time, LocalDate end_time, String distance) throws SQLException {
         try {
             double lat_double = Double.parseDouble(lat);
@@ -1675,14 +1713,26 @@ public class JDBCExample {
         }
     }
 
-    public static int get_price_book(String lid, String start_time, String end_time) throws SQLException {
+    public static int get_price_book(String lid, LocalDate start_time, LocalDate end_time) throws SQLException {
         try {
+            System.out.println("Price of the Listing: ");
+            LocalDate temp = start_time;
+            String sql;
+            while (temp.isBefore(end_time)) {
+                sql = String.format("select * from available where date = '%s' and lid = '%s';", temp, lid);
+                ResultSet rs = stmt.executeQuery(sql);
+                if(rs.next()){
+                    System.out.println("Price of " + temp + " is " + rs.getString("price") + ", ");;
+                }
+                temp = temp.plusDays(1);
+            }
+
             int result = 0;
             String query = String.format("select sum(price) as price from available where date >= '%s' and date <= '%s' and lid = '%s';", start_time, end_time, lid);
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 result = rs.getInt("price");
-                System.out.println("Total cost is: " + result);
+                System.out.println("Total cost is: " + result + ".");
             }
             return result;
         } catch (SQLException e) {
