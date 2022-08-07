@@ -1,6 +1,6 @@
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A2");
 INSERT INTO Address (unit, city, country, postal_code) VALUES ("1367", "Toronto", "Canada", "M1C 1A3");
-INSERT INTO Address (unit, city, country, postal_code) VALUES ("1366", "Hangzhou", "Canada", "M1P 2M6");
+INSERT INTO Address (unit, city, country, postal_code) VALUES ("1366", "Hangzhou", "China", "M1P 2M6");
 INSERT INTO User (SIN, name, password, birth, username) VALUES ("123124125", "Jonathan", "123456", "2001-01-01", "Jonathan"); /*Do we need to parse sin*/
 INSERT INTO User (SIN, name, password, birth, occupation, username) VALUES ("987654321", "Felix", "123456", "2002-12-25", "IronMan", "Felix"); /*Do we need to parse sin*/
 /*delete from user where name="Felix"*/

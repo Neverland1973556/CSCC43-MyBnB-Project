@@ -28,7 +28,7 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: report 3,  10: logout";
+    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code,  10: logout";
     private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -219,20 +219,23 @@ public class JDBCExample {
 								String bookid = rs.getString("bookid");
 								System.out.printf("Number of books: %s", bookid);
 								//String city = rs.getString("city");
-								System.out.printf(", City: %s", city);
 								String postal_code = rs.getString("postal_code");
-								System.out.printf(", Postal Code: %s\n", postal_code);
+								System.out.printf(", Postal Code: %s", postal_code);
+								System.out.printf(", City: %s\n", city);
+								
 							}
 							if(count ==0){
 								System.out.println("No booking within these days and this city.");
 							}
                         } else if (input.equals("3")) {
-                            print_header("report 3");
+							report3();
+                            
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
                         }
                         System.out.println(a_line);
+
                         System.out.println("Continue with Owner Account or Renter Account?");
                         System.out.println(report_message);
                     }
@@ -1116,7 +1119,71 @@ public class JDBCExample {
             return false;
         }
     }
+    public static void report3() throws SQLException{
+		try{
+			print_header("Num of listing per ~~ ");
+			String reportsql = String.format("select COUNT(listing.lid) as listid, country from listing natural join located_at natural join address group by country");
+			ResultSet rs = stmt.executeQuery(reportsql);
+			int count = 0;
+			while(rs.next()){
+				count++;
+				String numlist = rs.getString("listid");
+				System.out.printf("Number of listing: %s", numlist);
+				String country = rs.getString("country");
+				System.out.printf(", Country: %s\n", country);
+				
+			}
+			if(count ==0){
+				System.out.println("No Listing added.");
+			}
+			System.out.println(half_line);
+			reportsql = String.format("select COUNT(listing.lid) as listid, country, city from listing natural join located_at natural join address group by country, city");
+			rs = stmt.executeQuery(reportsql);
+			count = 0;
+			while(rs.next()){
+				count++;
+				String numlist = rs.getString("listid");
+				System.out.printf("Number of listing: %s", numlist);
+				String city = rs.getString("city");
+				//String postal_code = rs.getString("postal_code");
+				// System.out.printf(", Postal Code: %s", postal_code);
+				System.out.printf(", City: %s", city);
+				String country = rs.getString("country");
+				System.out.printf(", Country: %s\n", country);
+				
+			}
+			if(count ==0){
+				System.out.println("No Listing added.");
+			}
+			System.out.println(half_line);
+			reportsql = String.format("select COUNT(listing.lid) as listid, country, city, postal_code from listing natural join located_at natural join address group by country, city, postal_code");
+			rs = stmt.executeQuery(reportsql);
+			count = 0;
+			while(rs.next()){
+				count++;
+				String numlist = rs.getString("listid");
+				System.out.printf("Number of listing: %s", numlist);
+				String city = rs.getString("city");
+				String postal_code = rs.getString("postal_code");
+				System.out.printf(", Postal Code: %s", postal_code);
+				System.out.printf(", City: %s", city);
+				String country = rs.getString("country");
+				System.out.printf(", Country: %s\n", country);
+				
+			}
+			if(count ==0){
+				System.out.println("No Listing added.");
+			}
+			System.out.println(half_line);
 
+
+
+
+		}catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+	}
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
         try {
