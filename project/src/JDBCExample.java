@@ -27,7 +27,7 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Report 1, 2: report 2, 3: report 3,  9: logout";
+    private static final String report_message = "1: Number of booking in date range, 2: report 2, 3: report 3,  10: logout";
     private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -178,14 +178,33 @@ public class JDBCExample {
                     System.out.println(report_message);
                     // todo: report
                     while (sc.hasNextLine()) {
-                        String input = validate_int(sc, 1, 9);
+                        String input = validate_int(sc, 1, 10);
+						label_report:
                         if (input.equals("1")) {
-                            print_header("report 1");
+                            print_header("Number of booking within a date range");
+							System.out.println("Please input the start date in this format: yyyy-mm-dd");
+							String start_time = validate_time(sc);
+							System.out.println("Please input the end date in this format: yyyy-mm-dd");
+							String end_time = validate_time(sc);
+							
+	                        String reportsql = String.format("select COUNT(BID) as bookid, city from Book Natural join listing natural join located_at natural join address where start_date >= '%s' and end_date <= '%s' group by city;", start_time, end_time);
+							ResultSet rs = stmt.executeQuery(reportsql);
+							int count = 0;
+							while(rs.next()){
+								count++;
+								String bookid = rs.getString("bookid");
+								System.out.printf("Number of books: %s", bookid);
+								String city = rs.getString("city");
+								System.out.printf(", City: %s\n", city);
+							}
+							if(count ==0){
+								System.out.println("No booking within these days.");
+							}
                         } else if (input.equals("2")) {
                             print_header("report 2");
                         } else if (input.equals("3")) {
                             print_header("report 3");
-                        } else if (input.equals("9")) {
+                        } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
                         }
@@ -1377,7 +1396,7 @@ public class JDBCExample {
         try {
             boolean result = false;
             // use lid to show all avaiable
-            String sql;
+           
             // check if the time is available
             String check_avail = String.format("select * from available where lid = '%s';", lid);
             ResultSet rs = stmt.executeQuery(check_avail);
