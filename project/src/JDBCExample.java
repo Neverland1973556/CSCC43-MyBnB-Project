@@ -11,7 +11,8 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "123456";
+    private static final String PASS = "Xzt1973556";
+    // private static final String PASS = "123456";
     // connection
     private static Statement stmt;
     private static Connection conn;
@@ -46,7 +47,8 @@ public class JDBCExample {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
 
-            File setup = new File("project/src/setup_table.sql");
+            // File setup = new File("project/src/setup_table.sql");
+            File setup = new File("src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -75,7 +77,8 @@ public class JDBCExample {
             calendar_sql = "CALL insert_year_dates();";
             stmt.execute(calendar_sql);
 
-            setup = new File("project/src/insert_data.sql");
+            // setup = new File("project/src/insert_data.sql");
+            setup = new File("src/insert_data.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -292,6 +295,10 @@ public class JDBCExample {
                                         } else {
                                             listing_type = "room";
                                         }
+                                        System.out.println("Add a Listing - Please add your amenities - input the corresponding number and put space in between");
+                                        System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
+                                        String[] am = validate_am(sc);
+
                                         System.out.println("Add Listing Address - Please input your postal code.");
                                         String postal_code = validate_postal_code(sc);
                                         System.out.println("Add Listing Address - Please input your unit.");
@@ -304,7 +311,7 @@ public class JDBCExample {
                                             System.out.println("Address is valid");
                                             String reg = "UserName:" + username + ", Lon:" + longitude + ", Lat:" + latitude + ", Type:" + listing_type;
                                             System.out.println(reg);
-                                            String success = create_listing(reg, postal_code, unit, city, country);
+                                            String success = create_listing(reg, postal_code, unit, city, country, am);
                                             if (success.equals("false")) {
                                                 print_error("Cannot add, please try again");
                                             } else {
@@ -335,7 +342,7 @@ public class JDBCExample {
                                             break label_listing;
                                         }
                                         System.out.println("Choose the property of the listing you want to modify.");
-                                        System.out.println("1: latitude, 2: longitude, 3: type, 4: address");
+                                        System.out.println("1: latitude, 2: longitude, 3: type, 4: address, 5: amenities");
                                         String modify_listing_decide = sc.nextLine();
                                         String to_change;
                                         int type;
@@ -394,6 +401,16 @@ public class JDBCExample {
                                             } else {
                                                 print_error("cannot modify");
                                             }
+                                        } else if (modify_listing_decide.equals("5")) {
+                                            print_header("Modify listing - amenities");
+                                            System.out.println("Please choose your amenities - input the corresponding number and put space in between");
+                                            System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
+                                            String[] am = validate_am(sc);
+                                            if (handle_modify_am(lid, am)) {
+                                                print_header("modify success");
+                                            } else {
+                                                print_error("cannot modify");
+                                            }
                                         } else {
                                             print_error("Not Valid input when change a Listing!");
                                         }
@@ -422,23 +439,23 @@ public class JDBCExample {
                                     }
                                 } else if (listing_decide.equals("5")) {
                                     break;
-                                }else if (listing_decide.equals("4")) {
-									print_header("Comment of my Listing");
-									if(!show_user_owns(username)){
-										print_error("You don't have any listings so far.");
-										continue;
-									}
-									System.out.println("Select the listing's LID which you want to look at: (input any other number to go back)");
-									//boolean indicator = false;
+                                } else if (listing_decide.equals("4")) {
+                                    print_header("Comment of my Listing");
+                                    if (!show_user_owns(username)) {
+                                        print_error("You don't have any listings so far.");
+                                        continue;
+                                    }
+                                    System.out.println("Select the listing's LID which you want to look at: (input any other number to go back)");
+                                    // boolean indicator = false;
 
-									while (sc.hasNextLine()){
-										String lid = validate_int(sc, 0, 99999);
-										if(!show_listing_comment(lid, username)){
-											break;
-										}
-										System.out.println("Select the listing's LID which you want to look at:(input any other number to go back)");
-									}
-								}
+                                    while (sc.hasNextLine()) {
+                                        String lid = validate_int(sc, 0, 99999);
+                                        if (!show_listing_comment(lid, username)) {
+                                            break;
+                                        }
+                                        System.out.println("Select the listing's LID which you want to look at:(input any other number to go back)");
+                                    }
+                                }
                                 System.out.println("1: Check My Listings, 2: Add a Listing, 3: Change a Listing, 4: Comments of my Listings, 5: Go Back.");
                             }
                         } else if (input.equals("3")) {
@@ -818,13 +835,13 @@ public class JDBCExample {
                                                     //     print_header("No listing qualified.");
                                                     //     break label_if_book;
                                                     // }
-                                                    if(!get_available(d1, d2)){
+                                                    if (!get_available(d1, d2)) {
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
                                                 } else {
                                                     System.out.println("Get all available with the time period.");
-                                                    if(!get_available(d1, d2)){
+                                                    if (!get_available(d1, d2)) {
                                                         print_header("No listing qualified.");
                                                         break label_if_book;
                                                     }
@@ -1095,7 +1112,9 @@ public class JDBCExample {
                 String lon = rs.getString("lon");
                 System.out.print(", Longitude: " + lon);
                 String type = rs.getString("type");
-                System.out.println(", Type: " + type);
+                System.out.print(", Type: " + type);
+                String amenities = rs.getString("amenities");
+                System.out.println(", Amenities: " + amenities);
             }
             rs.close();
             return result;
@@ -1105,7 +1124,7 @@ public class JDBCExample {
         }
     }
 
-    public static String create_listing(String input, String postal_code, String unit, String city, String country) throws SQLException {
+    public static String create_listing(String input, String postal_code, String unit, String city, String country, String[] am) throws SQLException {
         String result;
         try {
             String reg = "UserName:(?<username>.*), Lon:(?<lon>.*), Lat:(?<lat>.*), Type:(?<type>.*)";
@@ -1116,7 +1135,24 @@ public class JDBCExample {
                 String lon = matcher.group("lon");
                 String type = matcher.group("type");
                 String username = matcher.group("username");
-                String sql = String.format("INSERT INTO Listing (lon, lat, type) VALUES ( '%s', '%s', '%s');", lon, lat, type);
+
+                StringBuilder amenities = new StringBuilder();
+                for (String temp : am) {
+                    switch (temp) {
+                        case "1" -> amenities.append(",").append("wifi");
+                        case "2" -> amenities.append(",").append("kitchen");
+                        case "3" -> amenities.append(",").append("washer");
+                        case "4" -> amenities.append(",").append("dryer");
+                        case "5" -> amenities.append(",").append("ac");
+                        case "6" -> amenities.append(",").append("heating");
+                        case "7" -> amenities.append(",").append("tv");
+                        case "8" -> amenities.append(",").append("hair dryer");
+                        case "9" -> amenities.append(",").append("gym");
+                    }
+                }
+
+                System.out.println(amenities);
+                String sql = String.format("INSERT INTO Listing (lon, lat, type, amenities) VALUES ( '%s', '%s', '%s', '%s');", lon, lat, type, amenities.substring(1));
                 System.out.println(sql);
                 stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
                 String lid = "";
@@ -1441,6 +1477,7 @@ public class JDBCExample {
             return false;
         }
     }
+
     // renter use
     public static boolean find_lid_by_postal_code(String postal_code, LocalDate start_time, LocalDate end_time) throws SQLException {
         try {
@@ -1468,6 +1505,7 @@ public class JDBCExample {
             return false;
         }
     }
+
     // renter use
     public static boolean find_lid_by_location(String lat, String lon, LocalDate start_time, LocalDate end_time, String distance) throws SQLException {
         try {
@@ -1500,6 +1538,7 @@ public class JDBCExample {
             return false;
         }
     }
+
     public static String search_lid(LocalDate start_time, LocalDate end_time, String postal_code, String unit) throws SQLException {
         String result = "";
         try {
@@ -1679,6 +1718,32 @@ public class JDBCExample {
                 return false;
             }
             String sql = String.format("update listing set %s = '%s' where lid = '%s';", type, to_change, lid);
+            System.out.println(sql);
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Cannot modify listing");
+            return false;
+        }
+    }
+    public static boolean handle_modify_am(String lid, String[] am) throws SQLException {
+        try {
+            StringBuilder amenities = new StringBuilder();
+            for (String temp : am) {
+                switch (temp) {
+                    case "1" -> amenities.append(",").append("wifi");
+                    case "2" -> amenities.append(",").append("kitchen");
+                    case "3" -> amenities.append(",").append("washer");
+                    case "4" -> amenities.append(",").append("dryer");
+                    case "5" -> amenities.append(",").append("ac");
+                    case "6" -> amenities.append(",").append("heating");
+                    case "7" -> amenities.append(",").append("tv");
+                    case "8" -> amenities.append(",").append("hair dryer");
+                    case "9" -> amenities.append(",").append("gym");
+                }
+            }
+            System.out.println(amenities);
+            String sql = String.format("update listing set amenities = '%s' where lid = '%s';", amenities.substring(1), lid);
             System.out.println(sql);
             stmt.executeUpdate(sql);
             return true;
@@ -2116,36 +2181,37 @@ public class JDBCExample {
             System.err.println("Something went wrong with judgement showing.");
             return false;
         }
-    } 
-	public static boolean show_listing_comment(String lid, String username) throws SQLException {
+    }
+
+    public static boolean show_listing_comment(String lid, String username) throws SQLException {
         boolean result = false;
         try {
             String sql = String.format("SELECT * FROM Owns Natural Join Listing where username = '%s' and Listing.lid = '%s';", username, lid);
             ResultSet rs = stmt.executeQuery(sql);
-			int count = 0;
+            int count = 0;
             // STEP 5: Extract data from result set
             if (rs.next()) {
                 result = true;
 
                 // Retrieve by column name
-				String sqll = String.format("SELECT * FROM Comment Natural Join Listing where Listing.lid = '%s';", lid);
-				ResultSet rss = stmt.executeQuery(sqll);
-				while(rss.next()){
-					count++;
-					//System.out.print("Lid: " + lid);
-					String renter = rss.getString("username");
-					System.out.print("Renter: " + renter);
-					String rate = rss.getString("rate");
-					System.out.print(", Rate: " + rate);
-					String text = rss.getString("text");
-					System.out.println(", Comment: " + text);
-				}
+                String sqll = String.format("SELECT * FROM Comment Natural Join Listing where Listing.lid = '%s';", lid);
+                ResultSet rss = stmt.executeQuery(sqll);
+                while (rss.next()) {
+                    count++;
+                    // System.out.print("Lid: " + lid);
+                    String renter = rss.getString("username");
+                    System.out.print("Renter: " + renter);
+                    String rate = rss.getString("rate");
+                    System.out.print(", Rate: " + rate);
+                    String text = rss.getString("text");
+                    System.out.println(", Comment: " + text);
+                }
 
-				rss.close();
-				if(count == 0){
-					System.out.println("No one comment yet.");
-				}
-				System.out.println(a_line);
+                rss.close();
+                if (count == 0) {
+                    System.out.println("No one comment yet.");
+                }
+                System.out.println(a_line);
             }
 
             rs.close();
@@ -2285,6 +2351,33 @@ public class JDBCExample {
             }
         }
         return result;
+    }
+
+    public static String[] validate_am(Scanner sc) {
+        String[] result;
+        String temp;
+        label_am_list:
+        while (true) {
+            temp = sc.nextLine();
+            if (!temp.toLowerCase().equals(temp.toUpperCase())) {
+                print_error("Input is not valid.");
+                continue;
+            }
+            result = temp.split(" ");
+            for (String one_string : result) {
+                try {
+                    int temp_int = Integer.parseInt(one_string);
+                    if (temp_int > 9 || temp_int < 1) {
+                        print_error("Input is not valid");
+                        continue label_am_list;
+                    }
+                } catch (Exception e) {
+                    print_error("Input is not valid");
+                    continue label_am_list;
+                }
+            }
+            return result;
+        }
     }
 
     public static String validate_double(Scanner sc, double min, double max) {

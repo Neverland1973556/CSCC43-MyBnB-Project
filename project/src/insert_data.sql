@@ -12,10 +12,11 @@ INSERT INTO Host (username) VALUES ("Felix");
 INSERT INTO Renter (username) VALUES ("Jonathan");
 INSERT INTO Renter (username) VALUES ("test");
 INSERT INTO Renter (username) VALUES ("Felix");
-INSERT INTO Listing (lon, lat, type) VALUES ( "30.22", "18.99", "full house");
-INSERT INTO Listing (lon, lat, type) VALUES ( "3.22", "19", "apartment");
-INSERT INTO Listing (lon, lat, type) VALUES ( "30.62", "1.99", "room");
-INSERT INTO Listing (lon, lat, type) VALUES ( "36", "36", "room");
+
+INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "30.22", "18.99", "full house", "wifi");
+INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "3.22", "19", "apartment", "wifi,tv");
+INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "30.62", "1.99", "room", "wifi,kitchen,washer,dryer,ac,heating,tv,hair dryer,gym");
+INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "36", "36", "room", "tv");
 
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-07-10", "2022-07-20","450", "4510199974972547", "3" , "Jonathan", "1");
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan", "3");

@@ -51,7 +51,8 @@ create table IF NOT EXISTS Listing (
     lid int(50) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     lon decimal(10,2) NOT NULL,
     lat decimal(10,2) NOT NULL,
-    type ENUM("full house", "apartment", "room") NOT NULL
+    type ENUM("full house", "apartment", "room") NOT NULL,
+    amenities SET("wifi", "kitchen", "washer", "dryer", "ac", "heating", "tv", "hair dryer", "gym") NOT NULL
     );
 
 create table IF NOT EXISTS Lives (
