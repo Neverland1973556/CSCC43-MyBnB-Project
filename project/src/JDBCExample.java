@@ -322,7 +322,7 @@ public class JDBCExample {
                                         } else {
                                             listing_type = "room";
                                         }
-                                        System.out.println("Add a Listing - Please add your amenities -");
+                                        System.out.println("Add a Listing - Please add your amenities");
                                         recommend_amenities();
                                         System.out.println("Add a Listing - Input the corresponding number and put space in between");
                                         System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
@@ -432,7 +432,9 @@ public class JDBCExample {
                                             }
                                         } else if (modify_listing_decide.equals("5")) {
                                             print_header("Modify listing - amenities");
-                                            System.out.println("Please choose your amenities - input the corresponding number and put space in between");
+                                            System.out.println("Please choose your amenities");
+                                            recommend_amenities();
+                                            System.out.println("Input the corresponding number and put space in between");
                                             System.out.println("1: wifi, 2: kitchen, 3: washer, 4: dryer, 5: ac, 6: heating, 7: tv, 8: hair dryer, 9: gym");
                                             String[] am = validate_am(sc);
                                             if (handle_modify_am(lid, am)) {
@@ -549,6 +551,7 @@ public class JDBCExample {
                                         break label_if_avail;
                                     }
                                     System.out.println("Please input daily price of the available:");
+                                    recommend_price(lid);
                                     String price = validate_double(sc, 0, 9999);
                                     // in this period, this listing is this price
                                     add_available(d1, d2, price, lid, false);
@@ -599,6 +602,7 @@ public class JDBCExample {
                                             break label_if_avail;
                                         }
                                         System.out.println("Please input daily price of the available:");
+                                        recommend_price(lid);
                                         String price = validate_double(sc, 0, 9999);
                                         // in this period, this listing is this price
                                         // hard = true, will delete first
@@ -2420,8 +2424,15 @@ public class JDBCExample {
                     s_largest = i;
                 }
             }
+            count_array[s_largest] = 0;
+            int t_largest = 0;
+            for ( int i = 0; i < 9; i++ ) {
+                if(count_array[i] > count_array[t_largest]) {
+                    t_largest = i;
+                }
+            }
 
-            System.out.print("Recommend Listing amenities: ");
+            System.out.print("Recommend Listing Amenities: ");
             switch (largest + 1) {
                 case 1 -> System.out.print("wifi");
                 case 2 -> System.out.print("kitchen");
@@ -2434,6 +2445,17 @@ public class JDBCExample {
                 case 9 -> System.out.print("gym");
             }
             switch (s_largest + 1) {
+                case 1 -> System.out.print(", wifi");
+                case 2 -> System.out.print(", kitchen");
+                case 3 -> System.out.print(", washer");
+                case 4 -> System.out.print(", dryer");
+                case 5 -> System.out.print(", ac");
+                case 6 -> System.out.print(", heating");
+                case 7 -> System.out.print(", tv");
+                case 8 -> System.out.print(", hair dryer");
+                case 9 -> System.out.print(", gym");
+            }
+            switch (t_largest + 1) {
                 case 1 -> System.out.println(" and wifi");
                 case 2 -> System.out.println(" and kitchen");
                 case 3 -> System.out.println(" and washer");
@@ -2444,6 +2466,46 @@ public class JDBCExample {
                 case 8 -> System.out.println(" and hair dryer");
                 case 9 -> System.out.println(" and gym");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void recommend_price(String lid) throws SQLException {
+        try {
+            int type_price_avg = 0;
+            int all_price_avg = 0;
+            String sql = "select avg(price) as avg from available;";
+            ResultSet rs = stmt.executeQuery(sql);
+            if(rs.next()){
+                all_price_avg = rs.getInt("avg");
+            }
+
+            // for your type
+            String type = "";
+            sql = String.format("select * from listing where lid = '%s';", lid);
+            rs = stmt.executeQuery(sql);
+            if(rs.next()){
+                type = rs.getString("type");
+            }
+
+            sql = String.format("select avg(price) as avg from listing natural join available where lid != '%s' and type = '%s';", lid, type);
+            rs = stmt.executeQuery(sql);
+            if(rs.next()){
+                type_price_avg = rs.getInt("avg");
+            }
+
+            if(type_price_avg == 0){
+                System.out.println("No Recommend Listing price range for your listing type since no enough host sample.");
+            }else{
+                int type_price_low =  (int) (type_price_avg * 0.9);
+                int type_price_high = (int) (type_price_avg * 1.1);
+                System.out.println("Recommend Listing price range for your listing type: " + type_price_low + " to " + type_price_high + ",");
+            }
+
+            int all_price_low =  (int) (all_price_avg * 0.9);
+            int all_price_high = (int) (all_price_avg * 1.1);
+            System.out.println("Recommend Listing price range for new listing: " + all_price_low + " to " + all_price_high + ".");
         } catch (SQLException e) {
             e.printStackTrace();
         }
