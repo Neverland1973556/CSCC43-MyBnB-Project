@@ -12,7 +12,7 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "Xzt1973556";
+    private static final String PASS = "123456";
     // private static final String PASS = "123456";
     // connection
     private static Statement stmt;
@@ -29,8 +29,8 @@ public class JDBCExample {
     // some strings
     private static final String is_owner_prompt = "1: Personal Information, 2: Manage My Listings, 3: Listing Availability, 4: Check Booking, 5: Rate User, 9: logout";
     private static final String is_renter_prompt = "1: Personal Information, 2: Manage My Booking, 4. Comment Listing 5: Rate User, 9: logout";
-    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 10: logout";
-    private static final String a_line = "--------------------------------------------------"
+    private static final String report_message = "1: Num of booking by city, 2: Num of booking by postal-code, 3: Num of booking per country, city, and zip code, 4. Rank host by num of listing within a country, 5: Flaggd host, 10: logout";
+	private static final String a_line = "--------------------------------------------------"
             + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
 
@@ -49,7 +49,7 @@ public class JDBCExample {
             System.out.println("Successfully connected to MySQL!");
 
             // File setup = new File("project/src/setup_table.sql");
-            File setup = new File("src/setup_table.sql");
+            File setup = new File("project/src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -79,7 +79,7 @@ public class JDBCExample {
             stmt.execute(calendar_sql);
 
             // setup = new File("project/src/insert_data.sql");
-            setup = new File("src/insert_data.sql");
+            setup = new File("project/src/insert_data.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -233,6 +233,8 @@ public class JDBCExample {
 
                         } else if (input.equals("4")) {
                             report4(sc);
+                        } else if (input.equals("5")) {
+                            report5(sc);
                         } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
@@ -1191,30 +1193,85 @@ public class JDBCExample {
     public static void report4(Scanner sc) throws SQLException {
         try {
             print_header("Rank host by number of listing within a country");
-            System.out.println("Please input the country you want ot check:");
-            String country = validate(sc);
-            String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
-            ResultSet rs = stmt.executeQuery(reportsql);
-            int count = 0;
-            while (rs.next()) {
-                count++;
-                String hostname = rs.getString("hostname");
-                System.out.printf("Host: %s, ", hostname);
-                String ranking = rs.getString("ranking");
-                System.out.printf(", Ranking: %s", ranking);
-                String listid = rs.getString("listid");
-                System.out.printf(", Number of Listing: %s", listid);
-                System.out.printf(", Country: %s\n", country);
-            }
-            if (count == 0) {
-                System.out.println("No listing in this country.");
-            }
+			System.out.println("Please input: 1.per country, 2: per city and country");
+			String choice = validate_int(sc, 1, 2);
+			if(choice.equals("1")){
+				System.out.println("Please input the country you want ot check:");
+				String country = validate(sc);
+				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' group by owns.username;", country);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while(rs.next()){
+					count++;
+					String hostname = rs.getString("hostname");
+					System.out.printf("Host: %s, ", hostname);
+					String ranking = rs.getString("ranking");
+					System.out.printf(", Ranking: %s", ranking);
+					String listid = rs.getString("listid");
+					System.out.printf(", Number of Listing: %s", listid);
+					System.out.printf(", Country: %s\n", country);
+				}
+				if(count ==0){
+					System.out.println("No listing in this country.");
+				}
+			}else if (choice.equals("2")){
+				System.out.println("Please input the country you want ot check:");
+				String country = validate(sc);
+				System.out.println("Please input the city you want ot check:");
+				String city = validate(sc);
+				String reportsql = String.format("select COUNT(listing.lid) as listid, RANK() OVER(ORDER BY COUNT(listing.lid) DESC) as ranking, owns.username as hostname from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s' group by owns.username;", country, city);
+				ResultSet rs = stmt.executeQuery(reportsql);
+				int count = 0;
+				while(rs.next()){
+					count++;
+					String hostname = rs.getString("hostname");
+					System.out.printf("Host: %s, ", hostname);
+					String ranking = rs.getString("ranking");
+					System.out.printf(", Ranking: %s", ranking);
+					String listid = rs.getString("listid");
+					System.out.printf(", Number of Listing: %s", listid);
+					System.out.printf(", City: %s", city);
+					System.out.printf(", Country: %s\n", country);
+				}
+				if(count ==0){
+					System.out.println("No listing in this city.");
+				}
+			}
         } catch (SQLException e) {
             e.printStackTrace();
             return;
         }
     }
+	public static void report5(Scanner sc) throws SQLException{
+		try{
+			print_header("Output the host that owns more than 10% listings in this city");
+			System.out.println("Please input the country you want ot check:");
+			String country = validate(sc);
+			System.out.println("Please input the city you want ot check:");
+			String city = validate(sc);
+			String reportsql = String.format("select COUNT(listing.lid) as listid, owns.username as hostname, (select COUNT(listing.lid) as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s') as sum from listing natural join owns natural join located_at natural join address where country = '%s' and city = '%s'  group by owns.username having 10*listid > sum;", country, city, country, city);
+			ResultSet rs = stmt.executeQuery(reportsql);
+			int count = 0;
+			while(rs.next()){
+				count++;
+				String hostname = rs.getString("hostname");
+				System.out.printf("Host: %s, ", hostname);
+				String listid = rs.getString("listid");
+				System.out.printf(", Number of Listing: %s", listid);
+				String sum = rs.getString("sum");
+				System.out.printf(", Total num of listings in this city: %s", sum);
+				System.out.printf(", City: %s", city);
+				System.out.printf(", Country: %s\n", country);
+			}
+			if(count ==0){
+				System.out.println("No listing in this city.");
+			}
 
+		}catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+	}
     public static boolean show_user_owns(String username) throws SQLException {
         boolean result = false;
         try {
