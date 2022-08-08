@@ -1,23 +1,11 @@
 -- Run this in the mysql terminal beforehand
+DROP DATABASE IF EXISTS mydatabase;
 Create DATABASE IF NOT EXISTS mydatabase;
 USE mydatabase;
--- Drop table
-Drop TABLE IF EXISTS Available;
-Drop TABLE IF EXISTS Judgement;
-Drop TABLE IF EXISTS Owns;
-Drop TABLE IF EXISTS Books;
-Drop TABLE IF EXISTS Located_At;
-Drop TABLE IF EXISTS Lives;
-Drop TABLE IF EXISTS Comment;
-Drop TABLE IF EXISTS Address;
-Drop TABLE IF EXISTS Book;
 
-Drop TABLE IF EXISTS Renter;
-Drop TABLE IF EXISTS Host;
-Drop TABLE IF EXISTS User;
-Drop TABLE IF EXISTS Listing;
-Drop TABLE IF EXISTS Calendar;
--- Create new tables and their schema
+create table IF NOT EXISTS ints (
+    i int not null unique
+    );
 
 create table IF NOT EXISTS User (
     SIN int(12) NOT NULL UNIQUE,

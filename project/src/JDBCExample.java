@@ -33,8 +33,8 @@ public class JDBCExample {
             "1: Number of Booking by Date Range,                              2: Number of Booking by Postal Code \n" +
             "3: Num of Booking per Country, City, and Postal Code,            4. Rank Host by Num of Listing within a Country / City \n" +
             "5: Host that should be flag to prohibit,                         6: Renter Ranked by Booking \n" +
-            "7: Largest Number of Cancellation,                               8: xx \n" +
-            "9: yy,                                                           10: Log Out";
+            "7: Largest Number of Cancellation,                               8: Popular Noun Phrases of Listing \n" +
+            "9: Log Out";
     private static final String a_line = "---------------------------------------------------------------------------"
             + "---------------------------------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
@@ -168,7 +168,7 @@ public class JDBCExample {
                     System.out.println("Select a report:");
                     System.out.println(report_message);
                     while (sc.hasNextLine()) {
-                        String input = validate_int(sc, 1, 10);
+                        String input = validate_int(sc, 1, 9);
                         if (input.equals("1")) {
                             print_header("REPORT 1 - Number of Booking within a date range by city");
                             System.out.println("Please input the start date of the report in this format: yyyy-mm-dd");
@@ -222,10 +222,8 @@ public class JDBCExample {
                         } else if (input.equals("7")) {
                             report7();
                         } else if (input.equals("8")) {
-                            // report8();
+                            report8();
                         } else if (input.equals("9")) {
-                            // report9();
-                        } else if (input.equals("10")) {
                             is_admin = false;
                             continue label_whole;
                         }
@@ -1179,7 +1177,7 @@ public class JDBCExample {
             System.out.println(half_line);
 
         } catch (SQLException e) {
-            print_error("Cannot the the report 3");
+            System.out.println("Cannot show report 3.");
         }
     }
 
@@ -1231,8 +1229,7 @@ public class JDBCExample {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            System.out.println("Cannot show report 4.");
         }
     }
 
@@ -1292,8 +1289,7 @@ public class JDBCExample {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            System.out.println("Cannot show report 6.");
         }
     }
 
@@ -1323,8 +1319,7 @@ public class JDBCExample {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            System.out.println("Cannot show report 5.");
         }
     }
 
@@ -1355,9 +1350,23 @@ public class JDBCExample {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            System.out.println("Cannot show report 7.");
         }
+    }
+    public static void report8() throws SQLException {
+        // try {
+            print_header("REPORT 8 - Popular Noun Phrases of Listing:");
+            String sql = "select noun_phrase, count(*) as count from (select distinct cid, SUBSTRING_INDEX(SUBSTRING_INDEX(text,' ',i+1),' ',-1) as noun_phrase FROM comment, ints where comment.lid = '1') as x GROUP BY noun_phrase HAVING count(*) > 0 order by count DESC;";
+            // Since renters comment on the listings, the listings accumulate comments in text form.
+            // We would like to run a report that presents for each listing the set of most popular
+            // noun phrases associated with the listing. That can form the basis of creating a word
+            // cloud for each listing that represents what renters say. You do not have to create any
+            // visualization as part of this project, only report the noun phrases.
+
+
+        // } catch (SQLException e) {
+        //     e.printStackTrace();
+        // }
     }
 
     public static boolean show_user_owns(String username) throws SQLException {
