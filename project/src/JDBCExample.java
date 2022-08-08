@@ -1327,7 +1327,7 @@ public class JDBCExample {
     public static void report7() throws SQLException {
         try {
             print_header("REPORT 7 - the Host and the Renter with the largest cancellation:");
-            String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation = 1 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation = 1 group by book.username);");
+            String reportsql = String.format("select num, username from (select count(bid) as num, book.username from book where cancellation != 0 group by book.username) as good where num >= ALL (select count(bid) as num from book where cancellation != 0 group by book.username);");
             ResultSet rs = stmt.executeQuery(reportsql);
             int count = 0;
             while (rs.next()) {
@@ -1337,7 +1337,7 @@ public class JDBCExample {
                 String num = rs.getString("num");
                 System.out.printf(", Number of cancellation: %s\n", num);
             }
-            reportsql = String.format("select num, username from (select count(bid) as num, owns.username from book natural join owns where cancellation = 1 group by owns.username) as good where num >= ALL (select count(bid) as num from book natural join owns where cancellation = 1 group by owns.username);");
+            reportsql = String.format("select num, username from (select count(bid) as num, owns.username from book natural join owns where cancellation != 0 group by owns.username) as good where num >= ALL (select count(bid) as num from book natural join owns where cancellation != 0 group by owns.username);");
             rs = stmt.executeQuery(reportsql);
             while (rs.next()) {
                 count++;
