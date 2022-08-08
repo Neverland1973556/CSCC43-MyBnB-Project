@@ -2,6 +2,7 @@ import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -1354,19 +1355,31 @@ public class JDBCExample {
         }
     }
     public static void report8() throws SQLException {
-        // try {
+        try {
             print_header("REPORT 8 - Popular Noun Phrases of Listing:");
-            String sql = "select noun_phrase, count(*) as count from (select distinct cid, SUBSTRING_INDEX(SUBSTRING_INDEX(text,' ',i+1),' ',-1) as noun_phrase FROM comment, ints where comment.lid = '1') as x GROUP BY noun_phrase HAVING count(*) > 0 order by count DESC;";
-            // Since renters comment on the listings, the listings accumulate comments in text form.
-            // We would like to run a report that presents for each listing the set of most popular
-            // noun phrases associated with the listing. That can form the basis of creating a word
-            // cloud for each listing that represents what renters say. You do not have to create any
-            // visualization as part of this project, only report the noun phrases.
+            // loop over the listing and get the name out to an String
+            ArrayList<String> lid_array = new ArrayList<>();
+            String sql = "select distinct lid from comment order by lid;";
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                String temp = rs.getString("lid");
+                lid_array.add(temp);
+            }
 
-
-        // } catch (SQLException e) {
-        //     e.printStackTrace();
-        // }
+            for(String temp: lid_array){
+                sql = String.format("select noun_phrase, count(*) as count from (select distinct cid, SUBSTRING_INDEX(SUBSTRING_INDEX(text,' ',i+1),' ',-1) as noun_phrase FROM comment, ints where comment.lid = '%s') as x GROUP BY noun_phrase HAVING count(*) > 0 order by count DESC;", temp);
+                rs = stmt.executeQuery(sql);
+                while(rs.next()){
+                    String get_top = rs.getString("noun_phrase");
+                    if(!(get_top.equals(".") || get_top.equals(",") || get_top.equals("") || get_top.equals(";"))){
+                        System.out.println("Popular Noun Phrase of Listing: '" + temp + "' is: " + get_top + ".");
+                        break;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean show_user_owns(String username) throws SQLException {

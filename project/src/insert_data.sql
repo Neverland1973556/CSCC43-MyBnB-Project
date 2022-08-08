@@ -33,7 +33,7 @@ INSERT INTO Book (start_date, end_date, price, payment, username, lid, cancellat
 /*INSERT INTO Calendar (date) VALUES("2022-08-19")*/
 INSERT INTO Comment (rate, text, lid, username) VALUES ("3", "The bed is noisy-- it is shaky. The air conditioner also doesn't work well. But the view is nice and all other service are good.",1,"Jonathan");
 /*Comment design for the comment report*/
-INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it , it is good .", 3,"Felix");
+INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "My husband loves it, it is good .", 3,"Felix");
 INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "good good good .", 3,"test");
 INSERT INTO Comment (rate, text, lid, username) VALUES ("5", "very good loves it want to have it all the time .", 3,"jonathan");
 INSERT INTO Judgement (words, host_username, renter_username, direction) VALUES ("The room was cleaned by the renter!", "Jonathan", "Jonathan",1);
