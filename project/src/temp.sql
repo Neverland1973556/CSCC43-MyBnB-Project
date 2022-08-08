@@ -279,12 +279,14 @@ INSERT INTO Owns (username, lid) VALUES ("test", "35");
 INSERT INTO Owns (username, lid) VALUES ("test", "40");
 INSERT INTO Owns (username, lid) VALUES ("test", "45");
 INSERT INTO Owns (username, lid) VALUES ("test", "50");
-
 INSERT INTO Owns (username, lid) VALUES ("zhentao", "51");
 
-
-INSERT INTO Available (price, date, lid) VALUES ("11", "2022-02-25", "3");
-
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-08", "200", "1234567891231111", "1", "1", 0, "tom");
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-09", "270", "1234567891231112", "2", "2", 0, "olivia");
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-07", "217", "1234567891234567", "3", "3", 0, "james");
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-09", "270", "1234567891234566", "4", "4", 0, "david");
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-07", "217", "1234567891234565", "5", "5", 0, "lisa");
+INSERT INTO Book (start_date, end_date, price, payment, BID, lid, cancellation, username) VALUES ("2023-01-01", "2023-01-08", "200", "1234567891234564", "6", "6", 0, "richard");
 
 INSERT INTO Available (price, date, lid) VALUES ('25', '2023-01-01', '1');
 INSERT INTO Available (price, date, lid) VALUES ('25', '2023-01-02', '1');
@@ -363,29 +365,217 @@ INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-18', '7');
 INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-19', '7');
 INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-20', '7');
 
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-11', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-12', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-13', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-14', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-15', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-16', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-17', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-18', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-19', '8');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-20', '8');
 
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-11', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-12', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-13', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-14', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-15', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-16', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-17', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-18', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-19', '6');
-INSERT INTO Available (price, date, lid) VALUES ('46', '2023-03-20', '6');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-11', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-12', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-13', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-14', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-15', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-16', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-17', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-18', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-19', '9');
+INSERT INTO Available (price, date, lid) VALUES ('50', '2023-03-20', '9');
 
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-11', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-12', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-13', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-14', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-15', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-16', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-17', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-18', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-19', '10');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2023-03-20', '10');
 
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-01', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-02', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-03', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-04', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-05', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-06', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-07', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-08', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-09', '11');
+INSERT INTO Available (price, date, lid) VALUES ('25', '2022-12-10', '11');
 
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-01', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-02', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-03', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-04', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-05', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-06', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-07', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-08', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-09', '12');
+INSERT INTO Available (price, date, lid) VALUES ('31', '2022-12-10', '12');
+
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-01', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-02', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-03', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-04', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-05', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-06', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-07', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-08', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-09', '13');
+INSERT INTO Available (price, date, lid) VALUES ('30', '2022-12-10', '13');
+
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-01', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-02', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-03', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-04', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-05', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-06', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-07', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-08', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-09', '14');
+INSERT INTO Available (price, date, lid) VALUES ('23', '2022-12-10', '14');
+
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-01', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-02', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-03', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-04', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-05', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-06', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-07', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-08', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-09', '15');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2022-12-10', '15');
+
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-11', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-12', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-13', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-14', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-15', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-16', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-17', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-18', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-19', '16');
+INSERT INTO Available (price, date, lid) VALUES ('26', '2023-08-20', '16');
+
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-11', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-12', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-13', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-14', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-15', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-16', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-17', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-18', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-19', '17');
+INSERT INTO Available (price, date, lid) VALUES ('24', '2023-08-20', '17');
+
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-11', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-12', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-13', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-14', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-15', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-16', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-17', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-18', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-19', '18');
+INSERT INTO Available (price, date, lid) VALUES ('35', '2023-08-20', '18');
+
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-11', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-12', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-13', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-14', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-15', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-16', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-17', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-18', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-19', '19');
+INSERT INTO Available (price, date, lid) VALUES ('36', '2023-08-20', '19');
+
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-11', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-12', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-13', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-14', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-15', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-16', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-17', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-18', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-19', '20');
+INSERT INTO Available (price, date, lid) VALUES ('51', '2023-08-20', '20');
+
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-01', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-02', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-03', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-04', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-05', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-06', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-07', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-08', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-09', '21');
+INSERT INTO Available (price, date, lid) VALUES ('42', '2022-03-10', '21');
+
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-11', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-12', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-13', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-14', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-15', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-16', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-17', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-18', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-19', '22');
+INSERT INTO Available (price, date, lid) VALUES ('33', '2023-03-20', '22');
+
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-11', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-12', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-13', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-14', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-15', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-16', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-17', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-18', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-19', '23');
+INSERT INTO Available (price, date, lid) VALUES ('37', '2023-03-20', '23');
+
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-11', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-12', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-13', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-14', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-15', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-16', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-17', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-18', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-19', '24');
+INSERT INTO Available (price, date, lid) VALUES ('29', '2023-03-20', '24');
+
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-11', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-12', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-13', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-14', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-15', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-16', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-17', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-18', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-19', '25');
+INSERT INTO Available (price, date, lid) VALUES ('40', '2023-03-20', '25');
+
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-11', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-12', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-13', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-14', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-15', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-16', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-17', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-18', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-19', '26');
+INSERT INTO Available (price, date, lid) VALUES ('32', '2023-03-20', '26');
 
 
 INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-01", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-02", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-03", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-04", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-05", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-06", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-07", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-08", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-08", "3", "2");
-INSERT INTO Available (price, date, lid, bid) VALUES ("11", "2022-03-08", "3", "2");
+
+
+
