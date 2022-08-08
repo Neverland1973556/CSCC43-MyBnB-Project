@@ -1917,7 +1917,7 @@ public class JDBCExample {
             System.out.println("Price of the Listing: ");
             LocalDate temp = start_time;
             String sql;
-            while (temp.isBefore(end_time)) {
+            while (!end_time.isBefore(temp)) {
                 sql = String.format("select * from available where date = '%s' and lid = '%s';", temp, lid);
                 ResultSet rs = stmt.executeQuery(sql);
                 if (rs.next()) {
