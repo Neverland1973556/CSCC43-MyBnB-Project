@@ -22,7 +22,7 @@ INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "36", "36", "room", "tv
 INSERT INTO Listing (lon, lat, type, amenities) VALUES ( "36", "39", "full house", "tv");
 
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid, cancellation) VALUES ("2022-07-10", "2022-07-20","450", "4510199974972547", "3" , "Jonathan", "1", 1);
-INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid, cancellation) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan", "3", 2);
+INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid, cancellation) VALUES ("2022-07-19", "2022-07-25","450", "4510199974972547", "1" , "Jonathan", "3", 0);
 INSERT INTO Book (start_date, end_date, price, payment, BID, username, lid, cancellation) VALUES ("2022-03-01", "2022-03-08","88", "4510199974972547", "2" , "test", "3", 0);
 INSERT INTO Book (start_date, end_date, price, payment, username, lid, cancellation) VALUES ("2022-03-01", "2022-03-08","98", "4510199974972547" , "test", "5", 2);
 INSERT INTO Book (start_date, end_date, price, payment, username, lid, cancellation) VALUES ("2022-04-01", "2022-04-08","98", "4510199974972547" , "test", "4", 2);

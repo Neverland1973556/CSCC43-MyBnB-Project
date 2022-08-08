@@ -13,7 +13,7 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "Xzt1973556";
+    private static final String PASS = "123456";
     // private static final String PASS = "Xzt1973556";
     // connection
     private static Statement stmt;
@@ -55,7 +55,7 @@ public class JDBCExample {
             System.out.println("Successfully connected to MySQL!");
 
             // File setup = new File("src/setup_table.sql");
-            File setup = new File("src/setup_table.sql");
+            File setup = new File("project/src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -85,7 +85,7 @@ public class JDBCExample {
             stmt.execute(calendar_sql);
 
             // setup = new File("src/insert_data.sql");
-            setup = new File("src/insert_data.sql");
+            setup = new File("project/src/temp.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
