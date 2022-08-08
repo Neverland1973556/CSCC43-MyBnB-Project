@@ -13,8 +13,8 @@ public class JDBCExample {
     private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
     private static final String CONNECTION = "jdbc:mysql://127.0.0.1:3306";
     private static final String USER = "root";
-    private static final String PASS = "123456";
-    // private static final String PASS = "Xzt1973556";
+//    private static final String PASS = "123456";
+     private static final String PASS = "Xzt1973556";
     // connection
     private static Statement stmt;
     private static Connection conn;
@@ -36,8 +36,8 @@ public class JDBCExample {
             "5: Host that should be flag to prohibit,                         6: Renter Ranked by Booking \n" +
             "7: Largest Number of Cancellation,                               8: Popular Noun Phrases of Listing \n" +
             "9: Log Out";
-    private static final String a_line = "---------------------------------------------------------------------------"
-            + "---------------------------------------------------------------------------";
+    private static final String a_line = "--------------------------------------------------"
+            + "--------------------------------------------------";
     private static final String half_line = "--------------------------------------------------";
 
     private static final String start_date = "2022-01-01";
@@ -54,8 +54,8 @@ public class JDBCExample {
             // initialize the database
             System.out.println("Successfully connected to MySQL!");
 
-            // File setup = new File("src/setup_table.sql");
-            File setup = new File("project/src/setup_table.sql");
+             File setup = new File("src/setup_table.sql");
+//            File setup = new File("project/src/setup_table.sql");
             assert (setup.exists());
             System.out.println("Preparing start up database...");
             Scanner set = new Scanner(setup);
@@ -84,8 +84,8 @@ public class JDBCExample {
             calendar_sql = "CALL insert_year_dates();";
             stmt.execute(calendar_sql);
 
-            // setup = new File("src/insert_data.sql");
-            setup = new File("project/src/temp.sql");
+             setup = new File("src/temp.sql");
+//            setup = new File("project/src/temp.sql");
             assert (setup.exists());
             set = new Scanner(setup);
             set.useDelimiter(";");
@@ -2298,7 +2298,10 @@ public class JDBCExample {
 
     public static boolean delete_user(String username) throws SQLException {
         try {
-            String sql = String.format("DELETE FROM User where username = \"%s\";", username);
+            String sql = String.format("delete from listing where lid in (select lid from user natural join owns where username = \"%s\");", username);
+            System.out.print(sql.concat("\n"));
+            stmt.executeUpdate(sql);
+            sql = String.format("DELETE FROM user where username = \"%s\";", username);
             System.out.print(sql.concat("\n"));
             stmt.executeUpdate(sql);
             return true;
